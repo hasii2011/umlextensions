@@ -60,7 +60,7 @@ class TestPythonToUmlShapes(UnitTestBaseW):
         simpleClass: PyutClass = pyutClasses[PyutClassName('SimpleClass')]
         self.assertEqual('SimpleClass', simpleClass.name, 'Name mismatch')
 
-        simpleClass: PyutClass = pyutClasses[PyutClassName('SimpleDataClass')]
+        simpleClass = pyutClasses[PyutClassName('SimpleDataClass')]
         self.assertEqual('SimpleDataClass', simpleClass.name, 'Name mismatch')
 
     def testPass2DeepInheritance(self):
@@ -87,7 +87,33 @@ class TestPythonToUmlShapes(UnitTestBaseW):
         self.logger.info(f'{umlClassesDict=}')
 
         pythonToUmlShapes.generateLinks(umlClassesDict=umlClassesDict)
-        self.assertEqual(4, len(pythonToUmlShapes.umlLinks), 'Did not generate enough links')
+        self.assertEqual(4, len(pythonToUmlShapes.umlLinks), 'Did not generate enough inheritance links')
+
+    def testPass2Associations(self):
+
+        traversable: Traversable = files(BaseTestPythonPegVisitor.RESOURCES_TEST_CLASSES_PACKAGE_NAME)
+        fileList:    List[str]   = ['AssociationClasses.py']
+
+        pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=self._classDiagramFrame, umlPubSubEngine=self._umlPubSubEngine)
+        pyutClasses:       PyutClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
+                                                                       files=fileList,
+                                                                       progressCallback=self._progressCallback,
+                                                                       )
+        self.logger.info(f'{len(pyutClasses)=}')
+
+        updatedPyutClasses: PyutClasses = pythonToUmlShapes.pass2(directoryName=str(traversable),
+                                                                  files=fileList,
+                                                                  pyutClasses=pyutClasses,
+                                                                  progressCallback=self._progressCallback
+                                                                  )
+        self.logger.info(f'{len(updatedPyutClasses)=}')
+
+        umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(updatedPyutClasses)
+
+        self.logger.info(f'{umlClassesDict=}')
+        pythonToUmlShapes.generateLinks(umlClassesDict=umlClassesDict)
+
+        self.assertEqual(2, len(pythonToUmlShapes.umlLinks), 'Did not generate enough association links')
 
     def _progressCallback(self, currentFileCount: int, message: str):
         self.logger.info(f'{currentFileCount=} {message=}')

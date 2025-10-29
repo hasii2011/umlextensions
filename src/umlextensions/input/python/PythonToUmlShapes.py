@@ -1,3 +1,4 @@
+
 from typing import Union
 from typing import cast
 from typing import Dict
@@ -14,20 +15,25 @@ from os import linesep as osLineSep
 from antlr4 import CommonTokenStream
 from antlr4 import FileStream
 from antlr4.error.ErrorListener import ErrorListener
-from pyutmodelv2.PyutClass import PyutClass
-from pyutmodelv2.PyutLink import PyutLink
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
-from umlshapes.ShapeTypes import UmlShape
-from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
-from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
-from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
 from wx import OK
 from wx import ICON_ERROR
 from wx import ICON_WARNING
 
 from wx import MessageBox
+
+from pyutmodelv2.PyutClass import PyutClass
+from pyutmodelv2.PyutLink import PyutLink
+from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
+
+from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
+
+from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
+from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
+
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+
+from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
 from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlText import UmlText
@@ -45,6 +51,11 @@ from umlextensions.input.python.PythonParseException import PythonParseException
 
 from umlextensions.input.python.pythonpegparser.PythonLexer import PythonLexer
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
+
+from umlextensions.input.python.visitor.ParserTypes import Associate
+from umlextensions.input.python.visitor.ParserTypes import Associates
+from umlextensions.input.python.visitor.ParserTypes import AssociationType
+from umlextensions.input.python.visitor.ParserTypes import Associations
 from umlextensions.input.python.visitor.ParserTypes import Children
 
 from umlextensions.input.python.visitor.ParserTypes import Parents
@@ -63,11 +74,13 @@ UmlAssociationGenre = UmlAssociation | UmlComposition | UmlAggregation
 
 UmlShapes       = NewType('UmlShapes', List[UmlShapeGenre])
 UmlLinks        = NewType('UmlLinks',  List[UmlLinkGenre])
-UmlAssociations = NewType('UmlAssociations', Dict[PyutClassName, UmlAssociationGenre])
+# UmlAssociations = NewType('UmlAssociations', Dict[PyutClassName, UmlAssociationGenre])
+
+# UmlAssociates = NewType('UmlAssociates', List[UmlAssociations])
 
 ProgressCallback = Callable[[int, str], None]
 
-UmlClassesDict = NewType('UmlClassesDict', Dict[Union[PyutClassName, ParentName, ChildName], UmlShape])
+UmlClassesDict = NewType('UmlClassesDict', Dict[Union[PyutClassName, ParentName, ChildName], UmlClass])
 
 
 class PythonErrorListener(ErrorListener):
@@ -104,7 +117,7 @@ class PythonToUmlShapes:
         This dictionary is keyed by a class name that is the base class of at least one subclass.  The
         subclass value is a list of subclasses
         """
-        self._cumulativeAssociations: UmlAssociations = UmlAssociations({})
+        self._cumulativeAssociations: Associations = Associations({})
 
     @property
     def umlLinks(self) -> UmlLinks:
@@ -226,7 +239,7 @@ class PythonToUmlShapes:
 
                 eventHandler.umlPubSubEngine = self._umlPubSubEngine
 
-                umlClassesDict[pyutClassName] = umlClass
+                umlClassesDict[PyutClassName(pyutClassName)] = umlClass
 
             except (ValueError, Exception) as e:
                 self.logger.error(f"Error while creating class {pyutClassName},  {e}")
@@ -235,6 +248,7 @@ class PythonToUmlShapes:
 
     def generateLinks(self, umlClassesDict: UmlClassesDict):
         self._generateInheritanceLinks(umlClassesDict)
+        self._generateAssociationLinks(umlClassesDict)
 
     def _generateInheritanceLinks(self, umlClassesDict: UmlClassesDict):
         """
@@ -243,7 +257,6 @@ class PythonToUmlShapes:
             umlClassesDict:
 
         """
-
         parents: Parents = self._cumulativeParents
 
         for parentName in parents.keys():
@@ -261,6 +274,24 @@ class PythonToUmlShapes:
                 except KeyError as ke:  # Probably there is no parent we are tracking
                     self.logger.warning(f'Apparently we are not tracking this parent:  {ke}')
                     continue
+
+    def _generateAssociationLinks(self, umlClassesDict: UmlClassesDict):
+
+        associations: Associations = self._cumulativeAssociations
+
+        for className in associations:
+            pyutClassName: PyutClassName = cast(PyutClassName, className)
+            associates:    Associates    = associations[pyutClassName]
+
+            for assoc in associates:
+                associate: Associate = cast(Associate, assoc)
+                sourceClass:      UmlClass = umlClassesDict[pyutClassName]
+                destinationClass: UmlClass = umlClassesDict[associate.associateName]
+
+                pyutLinkType: PyutLinkType = self._toPyutLinkType(associationType=associate.associationType)
+                oglLink: UmlAssociationGenre = self._createAssociationLink(sourceClass=sourceClass, destinationClass=destinationClass, linkType=pyutLinkType)
+
+                self._umlLinks.append(oglLink)
 
     def _setupPegBasedParser(self, fqFileName: str) -> PythonParser.File_inputContext:
         """
@@ -314,3 +345,60 @@ class PythonToUmlShapes:
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
 
         return umlInheritance
+
+    def _createAssociationLink(self, sourceClass, destinationClass, linkType: PyutLinkType) -> UmlAssociationGenre:
+
+        pyutLink: PyutLink = self._createAssociationPyutLink(linkType=linkType,
+                                                             sourcePyutClass=sourceClass.pyutClass,
+                                                             destinationPyutClass=destinationClass.pyutClass
+                                                             )
+        umlAssociation: UmlAssociationGenre
+
+        if linkType == PyutLinkType.ASSOCIATION:
+            umlAssociation = UmlAssociation(pyutLink=pyutLink)
+        elif linkType == PyutLinkType.AGGREGATION:
+            umlAssociation = UmlAggregation(pyutLink=pyutLink)
+        elif linkType == PyutLinkType.COMPOSITION:
+            umlAssociation = UmlComposition(pyutLink=pyutLink)
+        else:
+            assert False, 'Unknown association type'
+
+        umlAssociation.umlFrame = self._classDiagramFrame
+        umlAssociation.umlPubSubEngine = self._umlPubSubEngine
+        umlAssociation.MakeLineControlPoints(n=2)       # Make this configurable
+
+        sourceClass.addLink(umlLink=umlAssociation, destinationClass=destinationClass)
+
+        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
+        eventHandler.SetShape(umlAssociation)
+        eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
+        umlAssociation.SetEventHandler(eventHandler)
+
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
+
+        return umlAssociation
+
+    # noinspection PyUnboundLocalVariable
+    def _toPyutLinkType(self, associationType: AssociationType) -> PyutLinkType:
+
+        match associationType:
+            case AssociationType.ASSOCIATION:
+                pyutLinkType: PyutLinkType = PyutLinkType.ASSOCIATION
+            case AssociationType.AGGREGATION:
+                pyutLinkType = PyutLinkType.AGGREGATION
+            case AssociationType.COMPOSITION:
+                pyutLinkType = PyutLinkType.COMPOSITION
+            case _:
+                assert False, f'Unknown association type: {associationType.name}'
+
+        return pyutLinkType
+
+    def _createAssociationPyutLink(self, sourcePyutClass: PyutClass, destinationPyutClass: PyutClass, linkType: PyutLinkType) -> PyutLink:
+
+        name: str = f' Association '
+        pyutLink: PyutLink = PyutLink(name=name, source=sourcePyutClass, destination=destinationPyutClass, linkType=linkType)
+
+        pyutLink.sourceCardinality      = 'source Cardinality'
+        pyutLink.destinationCardinality = 'destination Cardinality'
+
+        return pyutLink

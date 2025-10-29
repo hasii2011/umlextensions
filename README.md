@@ -9,8 +9,6 @@
 
 # Introduction
 
-```
-
 # Overview
 
 # Installation
@@ -19,20 +17,15 @@
 pip install umlextensions
 ```
 ___
-
 Written by Humberto A. Sanchez II <mailto@Humberto.A.Sanchez.II@gmail.com>, (C) 2025
 
-## Note
+# Note
 For all kind of problems, requests, enhancements, bug reports, etc., please drop me an e-mail.
 
 ------
-
-
 ![Humberto's Modified Logo](https://raw.githubusercontent.com/wiki/hasii2011/gittodoistclone/images/SillyGitHub.png)
 
 I am concerned about GitHub's Copilot project
-
-
 
 I urge you to read about the
 [Give up GitHub](https://GiveUpGitHub.org) campaign from[the Software Freedom Conservancy](https://sfconservancy.org).
