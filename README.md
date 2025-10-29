@@ -15,7 +15,7 @@
 
 # Installation
 
-```bash
+```
 pip install umlextensions
 ```
 ___

@@ -14,7 +14,7 @@ from pyutmodelv2.PyutField import PyutFields
 from pyutmodelv2.PyutType import PyutType
 from pyutmodelv2.enumerations.PyutStereotype import PyutStereotype
 
-from tests.umlextensions.input.python.BaseTestPythonPegVisitor import PyutFieldHashIndex
+from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import PyutFieldHashIndex
 from umlextensions.input.python.pythonpegparser.PythonLexer import PythonLexer
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
 from umlextensions.input.python.visitor.ParserTypes import PyutClassName
@@ -22,7 +22,7 @@ from umlextensions.input.python.visitor.ParserTypes import PyutClassName
 from umlextensions.input.python.visitor.ParserTypes import PyutClasses
 from umlextensions.input.python.visitor.PythonPegParserClassVisitor import PythonPegParserClassVisitor
 
-from tests.umlextensions.input.python.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
+from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
 
 class PythonErrorListener(ConsoleErrorListener):
     pass

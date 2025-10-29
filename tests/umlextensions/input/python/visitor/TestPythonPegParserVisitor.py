@@ -25,7 +25,7 @@ from pyutmodelv2.PyutMethod import PyutMethod
 from pyutmodelv2.PyutMethod import PyutMethods
 from pyutmodelv2.enumerations.PyutVisibility import PyutVisibility
 
-from tests.umlextensions.input.python.BaseTestPythonPegVisitor import PyutFieldHashIndex
+from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import PyutFieldHashIndex
 
 from umlextensions.input.python.visitor.ParserTypes import Associations
 from umlextensions.input.python.visitor.ParserTypes import ParentName
@@ -38,7 +38,7 @@ from umlextensions.input.python.visitor.PythonPegParserClassVisitor import Pytho
 from umlextensions.input.python.pythonpegparser.PythonLexer import PythonLexer
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
 
-from tests.umlextensions.input.python.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
+from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
 
 SIMPLE_DATA_CLASS_NAME: PyutClassName = PyutClassName('SimpleDataClass')
 
