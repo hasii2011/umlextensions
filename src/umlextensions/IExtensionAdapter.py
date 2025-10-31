@@ -1,11 +1,18 @@
 
 from abc import ABC
+from abc import abstractmethod
+
+from umlextensions.AdapterTypes import FrameInformationCallback
 
 
 class IExtensionAdapter(ABC):
     """
-    The UML Diagrammer implements this interface in order to
-    provide services to the extensions
+    A diagramming system implements this interface in order to
+    provide interfaces to the plugins
     """
     def __init__(self):
+        pass
+
+    @abstractmethod
+    def getFrameInformation(self, callback: FrameInformationCallback):
         pass
