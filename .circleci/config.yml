@@ -44,7 +44,7 @@ jobs:
             pip install attrdict3
             pip install -v -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython
             pip install codeallyadvanced==2.2.0
-            pip install umlshapes==0.9.315
+            pip install umlshapes==0.9.316
             pip install antlr4-python3-runtime==4.13.2
 
 

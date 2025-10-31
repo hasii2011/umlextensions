@@ -35,17 +35,16 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
-from umlshapes.shapes.UmlNote import UmlNote
-from umlshapes.shapes.UmlText import UmlText
-from umlshapes.shapes.UmlActor import UmlActor
 from umlshapes.shapes.UmlClass import UmlClass
-from umlshapes.shapes.UmlUseCase import UmlUseCase
 
-from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.links.UmlAggregation import UmlAggregation
 from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlInheritance import UmlInheritance
+
+from umlshapes.ShapeTypes import UmlAssociationGenre
+from umlshapes.ShapeTypes import UmlShapes
+from umlshapes.ShapeTypes import UmlLinks
 
 from umlextensions.input.python.PythonParseException import PythonParseException
 
@@ -66,17 +65,6 @@ from umlextensions.input.python.visitor.ParserTypes import PyutClassName
 
 from umlextensions.input.python.visitor.PythonPegParserClassVisitor import PythonPegParserClassVisitor
 from umlextensions.input.python.visitor.PythonPegParserVisitor import PythonPegParserVisitor
-
-UmlShapeGenre = UmlClass | UmlActor | UmlNote | UmlText | UmlUseCase
-UmlLinkGenre  = UmlInheritance | UmlInterface | UmlAssociation | UmlComposition | UmlAggregation
-
-UmlAssociationGenre = UmlAssociation | UmlComposition | UmlAggregation
-
-UmlShapes       = NewType('UmlShapes', List[UmlShapeGenre])
-UmlLinks        = NewType('UmlLinks',  List[UmlLinkGenre])
-# UmlAssociations = NewType('UmlAssociations', Dict[PyutClassName, UmlAssociationGenre])
-
-# UmlAssociates = NewType('UmlAssociates', List[UmlAssociations])
 
 ProgressCallback = Callable[[int, str], None]
 
@@ -288,7 +276,7 @@ class PythonToUmlShapes:
                 sourceClass:      UmlClass = umlClassesDict[pyutClassName]
                 destinationClass: UmlClass = umlClassesDict[associate.associateName]
 
-                pyutLinkType: PyutLinkType = self._toPyutLinkType(associationType=associate.associationType)
+                pyutLinkType: PyutLinkType   = self._toPyutLinkType(associationType=associate.associationType)
                 oglLink: UmlAssociationGenre = self._createAssociationLink(sourceClass=sourceClass, destinationClass=destinationClass, linkType=pyutLinkType)
 
                 self._umlLinks.append(oglLink)
