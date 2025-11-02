@@ -26,7 +26,7 @@ dependencies = [
     'pyutmodelv2>=2.2.6',
     'umlshapes>=0.9.316',
     'antlr4-python3-runtime==4.13.2',
-
+    'Pypubsub==4.0.3',
 ]
 
 [project.optional-dependencies]

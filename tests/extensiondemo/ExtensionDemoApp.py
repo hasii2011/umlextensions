@@ -7,19 +7,22 @@ import json
 from click import command
 from click import option
 from click import version_option
-from codeallybasic.UnitTestBase import UnitTestBase
+
+from wx.lib.ogl import OGLInitialize
 
 from wx import App
 
+from codeallybasic.UnitTestBase import UnitTestBase
 
-__version__ = "3.0.0"
 
 from codeallybasic.UnitTestBase import JSON_LOGGING_CONFIG_FILENAME
 
 from tests.extensiondemo.ExtensionFrame import ExtensionFrame
 
 
-class ExtensionTestApp(App):
+__version__ = "3.0.0"
+
+class ExtensionDemoApp(App):
 
     WINDOW_WIDTH:  int = 900
     WINDOW_HEIGHT: int = 500
@@ -28,11 +31,12 @@ class ExtensionTestApp(App):
 
         self._createEmtpyProject: bool = createEmptyProject
 
-        super(ExtensionTestApp, self).__init__(redirect=redirect)
+        super(ExtensionDemoApp, self).__init__(redirect=redirect)
 
     def OnInit(self) -> bool:
 
-        ExtensionTestApp.setUpLogging()
+        OGLInitialize()
+        ExtensionDemoApp.setUpLogging()
 
         # noinspection PyAttributeOutsideInit
         self._frameTop: ExtensionFrame = ExtensionFrame()
@@ -76,10 +80,10 @@ class ExtensionTestApp(App):
 def commandHandler(input_file: str):
 
     if input_file is not None:
-        testApp: ExtensionTestApp = ExtensionTestApp(redirect=False, createEmptyProject=False)
+        testApp: ExtensionDemoApp = ExtensionDemoApp(redirect=False, createEmptyProject=False)
         testApp.loadXmlFile(input_file)
     else:
-        testApp = ExtensionTestApp(redirect=False)
+        testApp = ExtensionDemoApp(redirect=False)
 
     testApp.MainLoop()
 

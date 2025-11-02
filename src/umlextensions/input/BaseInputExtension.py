@@ -9,8 +9,8 @@ from wx import DirDialog
 from wx import ID_CANCEL
 from wx import DD_NEW_DIR_BUTTON
 
-from umlextensions.AdapterTypes import FrameInformation
-from umlextensions.IExtensionAdapter import IExtensionAdapter
+from umlextensions.ExtensionsTypes import FrameInformation
+from umlextensions.IExtensionsFacade import IExtensionsFacade
 from umlextensions.extensiontypes.BaseExtension import BaseExtension
 from umlextensions.input.ImportDirectoryResponse import ImportDirectoryResponse
 
@@ -35,9 +35,9 @@ class BaseInputExtension(BaseExtension, ABC):
         * Python code
 
     """
-    def __init__(self, extensionAdapter: IExtensionAdapter):
+    def __init__(self, extensionsFacade: IExtensionsFacade):
 
-        super().__init__(extensionAdapter)
+        super().__init__(extensionsFacade)
         self._bieLogger: Logger = getLogger(__name__)
 
         self._inputFormat: InputFormat = InputFormat(formatName=UNSPECIFIED_NAME, fileSuffix=UNSPECIFIED_FILE_SUFFIX, description=UNSPECIFIED_DESCRIPTION)
@@ -84,7 +84,7 @@ class BaseInputExtension(BaseExtension, ABC):
         Called by the extension manager to begin the import process.
         """
         # noinspection PyTypeChecker
-        self._extensionAdapter.getFrameInformation(callback=self._executeImport)   # type ignore
+        self._extensionsFacade.requestCurrentFrameInformation(callback=self._executeImport)   # type ignore
 
     def _executeImport(self, frameInformation: FrameInformation):
         """

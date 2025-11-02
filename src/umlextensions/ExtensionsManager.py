@@ -8,19 +8,35 @@ from typing import NewType
 from logging import Logger
 from logging import getLogger
 
+from os import linesep as osLineSep
+
+from sys import exc_info
+
+from traceback import StackSummary
+
 from enum import Enum
 
 from dataclasses import field
 from dataclasses import dataclass
 
-from wx import ICON_ERROR
-from wx import MessageDialog
 from wx import NewIdRef
-from wx import OK
+from wx import RichMessageDialog
+from wx import Window
 
-from umlextensions.ExtensionPreferences import ExtensionPreferences
+from umlextensions.ExtensionsPreferences import ExtensionsPreferences
+
+from umlextensions.ExtensionsFacade import ExtensionsFacade
+from umlextensions.IExtensionsFacade import IExtensionsFacade
+
+from umlextensions.StackTraceFormatter import StackTraceFormatter
+from umlextensions.StackTraceFormatter import StackTraceList
+
 from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
+
 from umlextensions.input.BaseInputExtension import BaseInputExtension
+from umlextensions.input.InputPython import InputPython
+
+from umlextensions.ExtensionsPubSub import ExtensionsPubSub
 
 # Return type from wx.NewIdRef()
 WindowId = NewType('WindowId', int)
@@ -62,7 +78,7 @@ class InputExtensionMap(BasePluginMap):
 
 
 INPUT_EXTENSIONS: ExtensionList = ExtensionList(
-    []
+    [InputPython]
 )
 
 @dataclass
@@ -71,7 +87,7 @@ class ExtensionDetails:
     author:  str = ''
     version: str = ''
 
-class ExtensionManager:
+class ExtensionsManager:
     """
     Manages the various extensions provided by this module
 
@@ -96,13 +112,47 @@ class ExtensionManager:
 
         self.logger: Logger = getLogger(__name__)
 
-        self._extensionPreferences: ExtensionPreferences = ExtensionPreferences()
+        self._extensionPreferences: ExtensionsPreferences = ExtensionsPreferences()
+        self._pubsub:               ExtensionsPubSub      = ExtensionsPubSub()
+        self._extensionsFacade:     IExtensionsFacade     = ExtensionsFacade(self._pubsub)
         #
         #
         #
         self._inputExtensionsMap:  InputExtensionMap   = InputExtensionMap()
 
         self._inputExtensionClasses:  ExtensionList = cast(ExtensionList, None)
+
+    @classmethod
+    def getErrorType(cls) -> str:
+        """
+        TODO:
+        This needs to be moved to code ally basic
+
+        Returns:
+            System exception information as a formatted string
+        """
+        eType, eObject, eTraceback = exc_info()  # Get exception info
+        return str(eType)
+
+    @classmethod
+    def getErrorObject(cls):
+        eType, eObject, eTraceback = exc_info()  # Get exception info
+        return str(eObject)
+
+    @classmethod
+    def getFormattedStack(cls) -> str:
+        import traceback
+        stackSummary:        StackSummary         = traceback.extract_stack()
+        stackTraceList:      StackTraceList       = traceback.format_list(stackSummary)
+        stackTraceFormatter: StackTraceFormatter = StackTraceFormatter(stackTraceList=stackTraceList)
+
+        bigString: str = stackTraceFormatter.dumpedStackList()
+
+        return bigString
+
+    @property
+    def extensionsPubSub(self) -> ExtensionsPubSub:
+        return self._pubsub
 
     @property
     def inputExtensions(self) -> ExtensionList:
@@ -123,7 +173,7 @@ class ExtensionManager:
         return ExtensionList(self._inputExtensionClasses[:])
 
     @property
-    def inputExtensionMap(self) -> InputExtensionMap:
+    def inputExtensionsMap(self) -> InputExtensionMap:
 
         if len(self._inputExtensionsMap.extensionIdMap) == 0:
             self._inputExtensionsMap.extensionIdMap = self._mapWxIdsToExtensions(self.inputExtensions)
@@ -135,13 +185,13 @@ class ExtensionManager:
         Args:
             wxId:       The ID ref of the menu item
         """
-        idMap:          ExtensionIDMap        = self.inputExtensionMap.extensionIdMap
-        clazz:          type               = idMap[wxId]
-        pluginInstance: BaseInputExtension = clazz(pluginAdapter=self._extensionPreferences)
+        idMap:             ExtensionIDMap     = self.inputExtensionsMap.extensionIdMap
+        clazz:             type               = idMap[wxId]
+        extensionInstance: BaseInputExtension = clazz(extensionsFacade=self._extensionsFacade)
 
-        self._doExtensionAction(methodToCall=pluginInstance.executeImport)
+        self._doExtensionAction(methodToCall=extensionInstance.executeImport)
 
-        return ExtensionDetails(name=pluginInstance.name, version=pluginInstance.version, author=pluginInstance.author)
+        return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
 
     def _doExtensionAction(self, methodToCall: Callable):
         """
@@ -153,9 +203,16 @@ class ExtensionManager:
             methodToCall()
         except (ValueError, Exception) as e:
             self.logger.error(f'{e}')
-            booBoo: MessageDialog = MessageDialog(parent=None,
-                                                  message=f'An error occurred while executing the selected extension - {e}',
-                                                  caption='Error!', style=OK | ICON_ERROR)
+            eType:           str = ExtensionsManager.getErrorType()
+            eObject:         str = ExtensionsManager.getErrorObject()
+            extendedMessage: str = f'{eType}{osLineSep}{eObject}'
+
+            self.logger.error(f'{extendedMessage}')
+
+            fs: str      = ExtensionsManager.getFormattedStack()
+
+            booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None), eType)
+            booBoo.ShowDetailedText(fs)
             booBoo.ShowModal()
 
     def _mapWxIdsToExtensions(self, extensionList: ExtensionList) -> ExtensionIDMap:

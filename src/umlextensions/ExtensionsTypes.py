@@ -39,8 +39,8 @@ class FrameInformation:
     The document title is the name of the frame
     """
     frameActive:        bool       = False
-    selectedOglObjects: UmlShapes = field(default_factory=umlShapesFactory)
-    diagramTitle:       str         = ''
+    selectedOglObjects: UmlShapes  = field(default_factory=umlShapesFactory)
+    diagramTitle:       str        = ''
     diagramType:        str        = ''
     frameSize:          FrameSize  = field(default_factory=createFrameSizeFactory)
     clientDC:           ClientDC   = cast(ClientDC, None)

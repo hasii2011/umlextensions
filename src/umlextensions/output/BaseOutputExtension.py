@@ -2,7 +2,7 @@
 from logging import Logger
 from logging import getLogger
 
-from umlextensions.IExtensionAdapter import IExtensionAdapter
+from umlextensions.IExtensionsFacade import IExtensionsFacade
 from umlextensions.extensiontypes.BaseExtension import BaseExtension
 
 
@@ -18,7 +18,7 @@ class BaseOutputExtension(BaseExtension):
         * Generate Java code
 
     """
-    def __init__(self, extensionAdapter: IExtensionAdapter):
+    def __init__(self, extensionsFacade: IExtensionsFacade):
 
-        super().__init__(extensionAdapter)
+        super().__init__(extensionsFacade)
         self.logger: Logger = getLogger(__name__)

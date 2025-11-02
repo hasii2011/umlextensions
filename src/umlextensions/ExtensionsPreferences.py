@@ -16,22 +16,29 @@ from codeallybasic.DynamicConfiguration import DynamicConfiguration
 MODULE_NAME:          str = 'umlextensions'
 PREFERENCES_FILENAME: str = f'{MODULE_NAME}.ini'
 
+SECTION_FEATURES: ValueDescriptions = ValueDescriptions(
+    {
+        KeyName('startDirectory'):           ValueDescription(defaultValue=''),
+    }
+)
+
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('debugTempFileLocation'): ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+        KeyName('autoSelectAll'): ValueDescription(defaultValue='True', deserializer=SecureConversions.secureBoolean),
     }
 )
 
 EXTENSION_SECTIONS: Sections = Sections(
     {
-        SectionName('Debug'): SECTION_DEBUG,
+        SectionName('Features'): SECTION_FEATURES,
+        SectionName('Debug'):    SECTION_DEBUG,
     }
 )
 
 
-class ExtensionPreferences(DynamicConfiguration, metaclass=SingletonV3):
+class ExtensionsPreferences(DynamicConfiguration, metaclass=SingletonV3):
     def __init__(self):
-        self.logger: Logger = getLogger(__name__)
+        self._logger: Logger = getLogger(__name__)
 
         super().__init__(baseFileName=f'{PREFERENCES_FILENAME}', moduleName=MODULE_NAME, sections=EXTENSION_SECTIONS)
 
