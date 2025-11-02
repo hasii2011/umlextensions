@@ -1,4 +1,6 @@
 
+from typing import cast
+
 from logging import Logger
 from logging import getLogger
 
@@ -40,7 +42,8 @@ class BaseInputExtension(BaseExtension, ABC):
         super().__init__(extensionsFacade)
         self._bieLogger: Logger = getLogger(__name__)
 
-        self._inputFormat: InputFormat = InputFormat(formatName=UNSPECIFIED_NAME, fileSuffix=UNSPECIFIED_FILE_SUFFIX, description=UNSPECIFIED_DESCRIPTION)
+        self._inputFormat:      InputFormat      = InputFormat(formatName=UNSPECIFIED_NAME, fileSuffix=UNSPECIFIED_FILE_SUFFIX, description=UNSPECIFIED_DESCRIPTION)
+        self._frameInformation: FrameInformation = cast(FrameInformation, None)
 
     @property
     def inputFormat(self) -> InputFormat:
@@ -93,6 +96,9 @@ class BaseInputExtension(BaseExtension, ABC):
             frameInformation:
         """
         assert self.inputFormat is not None, 'Developer error. We cannot import w/o an import format'
+
+        self._frameInformation = frameInformation
+
         if self._requireActiveFrame is True:
             if frameInformation.frameActive is False:
                 self.showNoUmlFrameDialog()

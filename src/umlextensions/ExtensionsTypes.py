@@ -8,6 +8,7 @@ from typing import Callable
 from dataclasses import dataclass
 from dataclasses import field
 
+from umlshapes.frames.UmlFrame import UmlFrame
 from wx import ClientDC
 
 from umlshapes.ShapeTypes import UmlShapes
@@ -38,6 +39,7 @@ class FrameInformation:
     """
     The document title is the name of the frame
     """
+    umlFrame:           UmlFrame   = cast(UmlFrame, None)
     frameActive:        bool       = False
     selectedOglObjects: UmlShapes  = field(default_factory=umlShapesFactory)
     diagramTitle:       str        = ''

@@ -4,8 +4,11 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from wx import ICON_ERROR
 from wx import MessageBox
+from wx import MessageDialog
 from wx import OK
 from wx import PD_APP_MODAL
 from wx import PD_ELAPSED_TIME
@@ -29,6 +32,7 @@ from umlextensions.input.BaseInputExtension import BaseInputExtension
 from umlextensions.input.InputFormat import InputFormat
 from umlextensions.input.python.DlgSelectMultiplePackages import DlgSelectMultiplePackages
 from umlextensions.input.python.PythonParseException import PythonParseException
+from umlextensions.input.python.PythonToUmlShapes import PythonToUmlShapes
 
 FORMAT_NAME:           FormatName           = FormatName("Python File(s)")
 FILE_SUFFIX:           FileSuffix           = FileSuffix('py')
@@ -54,22 +58,36 @@ class InputPython(BaseInputExtension):
         self._readProgressDlg: ProgressDialog = cast(ProgressDialog, None)
 
     def setImportOptions(self) -> bool:
-
         """
         We do need to ask for the input file names
 
+        TODO:  super complicated if else logic
+
         Returns:  'True', we support import
         """
-        startDirectory: str = self._preferences.startDirectory
-        with DlgSelectMultiplePackages(startDirectory=startDirectory, inputFormat=self.inputFormat) as dlg:
-            if dlg.ShowModal() == OK:
-                self._packageCount   = dlg.packageCount
-                self._moduleCount    = dlg.moduleCount
-                self._importPackages = dlg.importPackages
-
-                return True
-            else:
-                return False
+        if isinstance(self._frameInformation.umlFrame, ClassDiagramFrame) is True:
+            startDirectory: str = self._preferences.startDirectory
+            with DlgSelectMultiplePackages(startDirectory=startDirectory, inputFormat=self.inputFormat) as dlg:
+                if dlg.ShowModal() == OK:
+                    self._packageCount   = dlg.packageCount
+                    self._moduleCount    = dlg.moduleCount
+                    self._importPackages = dlg.importPackages
+                    #
+                    # Ensure we picked at least 1
+                    if self._packageCount == 0:
+                        return False
+                    else:
+                        return True
+                else:
+                    return False
+        else:
+            booBoo: MessageDialog = MessageDialog(parent=None,
+                                                  message='The import to frame must be a class diagram frame',
+                                                  caption='Error!',
+                                                  style=OK | ICON_ERROR
+                                                  )
+            booBoo.ShowModal()
+            return False
 
     def read(self) -> bool:
 
@@ -80,6 +98,13 @@ class InputPython(BaseInputExtension):
             self._readProgressDlg = ProgressDialog('Parsing Files', 'Starting', parent=None, style=PD_APP_MODAL | PD_ELAPSED_TIME)
 
             # reverseEngineer: ReverseEngineerPythonV3 = ReverseEngineerPythonV3()
+            # Should the extensions know about the UML pub/sub Engine ???
+            #
+            # TODO:   THIS DOES NOT BELONG HERE !!!
+            umlPubSubEngine: UmlPubSubEngine = UmlPubSubEngine()
+
+            classDiagramFrame: ClassDiagramFrame = cast(ClassDiagramFrame, self._frameInformation.umlFrame)
+            pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=classDiagramFrame, umlPubSubEngine=umlPubSubEngine)
 
             self._readProgressDlg.SetRange(self._moduleCount)
         except (ValueError, Exception, PythonParseException) as e:

@@ -33,13 +33,8 @@ class ExtensionsPubSub(BasePubSubEngine):
 
     # def subscribe(self, messageType: ExtensionsMessageType, adapterId: AdapterId, listener: Callable):
     def subscribe(self, messageType: ExtensionsMessageType, listener: Callable):
-        self._subscribe(topic=self._toTopic(messageType, EXTENSIONS_ID), listener=listener)
+        self._subscribe(topic=Topic(messageType.value), listener=listener)
 
     # def sendMessage(self, messageType: ExtensionsMessageType, adapterId: AdapterId, **kwargs):
     def sendMessage(self, messageType: ExtensionsMessageType, **kwargs):
-        self._sendMessage(topic=self._toTopic(messageType, EXTENSIONS_ID), **kwargs)
-
-    def _toTopic(self, eventType: ExtensionsMessageType, adapterId: AdapterId) -> Topic:
-
-        topic: Topic = Topic(f'{eventType.value}.{adapterId}')
-        return topic
+        self._sendMessage(topic=Topic(messageType.value), **kwargs)

@@ -148,6 +148,7 @@ class ExtensionFrame(SizedFrame):
     def _requestFrameInformationListener(self, callback: Callable):
         size: Size = self.GetSize()
         frameInfo: FrameInformation = FrameInformation(
+            umlFrame=self._diagramFrame,
             frameActive=True,
             selectedOglObjects=UmlShapes([]),
             diagramTitle='Demo Class Diagram',

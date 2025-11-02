@@ -28,4 +28,4 @@ class ExtensionsFacade(IExtensionsFacade):
         self._pubsub.sendMessage(messageType=ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT)
 
     def refreshFrame(self):
-        self._pubsub.sendMessage(messageType=ExtensionsMessageType.REQUEST_FRAME_INFORMATION)
+        self._pubsub.sendMessage(messageType=ExtensionsMessageType.REFRESH_FRAME)

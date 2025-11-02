@@ -11,29 +11,38 @@
         "functionNames": {
             "format": "%(asctime)s.%(msecs)03d %(module)s.%(funcName)s():%(lineno)d %(message)s",
             "datefmt" : "%H:%M:%S"
+        },
+        "bestFormat": {
+            "format": "%(asctime)s.%(msecs)03d %(levelname)-6s %(name)-15s - %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
         }
-
     },
     "handlers": {
         "consoleHandler": {
             "class": "logging.StreamHandler",
             "formatter": "testSimple",
             "stream": "ext://sys.stdout"
+        },
+        "rotatingFileHandler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "bestFormat",
+            "filename": "/tmp/uml-extensions.log",
+            "mode": "a",
+            "maxBytes": 81920,
+            "backupCount": 5,
+            "encoding": "utf-8"
         }
+
     },
     "loggers": {
-        "root": {
-            "level": "WARNING",
-            "handlers": ["consoleHandler"],
-            "propagate": "False"
-        },
-        "__main__": {
-            "level": "INFO",
-            "propagate": "False"
-        },
         "codeallybasic.UnitTestBase": {
-            "level": "INFO",
-            "propagate": "False"
+            "level": "WARNING",
+            "propagate": "false"
+        },
+        "umlextensions.ExtensionsManager": {
+            "level": "ERROR",
+            "handlers": ["rotatingFileHandler"],
+            "propagate": "true"
         }
     }
 }

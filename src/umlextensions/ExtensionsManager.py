@@ -1,5 +1,4 @@
 
-from typing import Callable
 from typing import cast
 from typing import Dict
 from typing import List
@@ -8,28 +7,23 @@ from typing import NewType
 from logging import Logger
 from logging import getLogger
 
-from os import linesep as osLineSep
-
-from sys import exc_info
-
-from traceback import StackSummary
-
 from enum import Enum
 
 from dataclasses import field
 from dataclasses import dataclass
 
-from wx import NewIdRef
-from wx import RichMessageDialog
-from wx import Window
+from wx import OK
+from wx import ICON_ERROR
 
+from wx import NewIdRef
+from wx import Window
+from wx import RichMessageDialog
+
+from umlextensions.ErrorFormatter import ErrorFormatter
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 from umlextensions.ExtensionsFacade import ExtensionsFacade
 from umlextensions.IExtensionsFacade import IExtensionsFacade
-
-from umlextensions.StackTraceFormatter import StackTraceFormatter
-from umlextensions.StackTraceFormatter import StackTraceList
 
 from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
 
@@ -122,34 +116,6 @@ class ExtensionsManager:
 
         self._inputExtensionClasses:  ExtensionList = cast(ExtensionList, None)
 
-    @classmethod
-    def getErrorType(cls) -> str:
-        """
-        TODO:
-        This needs to be moved to code ally basic
-
-        Returns:
-            System exception information as a formatted string
-        """
-        eType, eObject, eTraceback = exc_info()  # Get exception info
-        return str(eType)
-
-    @classmethod
-    def getErrorObject(cls):
-        eType, eObject, eTraceback = exc_info()  # Get exception info
-        return str(eObject)
-
-    @classmethod
-    def getFormattedStack(cls) -> str:
-        import traceback
-        stackSummary:        StackSummary         = traceback.extract_stack()
-        stackTraceList:      StackTraceList       = traceback.format_list(stackSummary)
-        stackTraceFormatter: StackTraceFormatter = StackTraceFormatter(stackTraceList=stackTraceList)
-
-        bigString: str = stackTraceFormatter.dumpedStackList()
-
-        return bigString
-
     @property
     def extensionsPubSub(self) -> ExtensionsPubSub:
         return self._pubsub
@@ -189,31 +155,25 @@ class ExtensionsManager:
         clazz:             type               = idMap[wxId]
         extensionInstance: BaseInputExtension = clazz(extensionsFacade=self._extensionsFacade)
 
-        self._doExtensionAction(methodToCall=extensionInstance.executeImport)
-
-        return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
-
-    def _doExtensionAction(self, methodToCall: Callable):
-        """
-        Args:
-            methodToCall:
-        """
-
         try:
-            methodToCall()
-        except (ValueError, Exception) as e:
-            self.logger.error(f'{e}')
-            eType:           str = ExtensionsManager.getErrorType()
-            eObject:         str = ExtensionsManager.getErrorObject()
-            extendedMessage: str = f'{eType}{osLineSep}{eObject}'
+            extensionInstance.executeImport()
+        except (ValueError, Exception):
+            self.logger.error(ErrorFormatter.getFormattedStack())
 
-            self.logger.error(f'{extendedMessage}')
+            errorMessage: str = ErrorFormatter.getErrorMessage()
+            fs:           str = ErrorFormatter.getSimpleStack()
 
-            fs: str      = ExtensionsManager.getFormattedStack()
-
-            booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None), eType)
+            #
+            # TODO: Build my own dialog so I can set the detailed text font
+            booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),
+                                                          message=errorMessage,
+                                                          caption='Extension Action Error',
+                                                          style=ICON_ERROR | OK
+                                                          )
             booBoo.ShowDetailedText(fs)
             booBoo.ShowModal()
+
+        return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
 
     def _mapWxIdsToExtensions(self, extensionList: ExtensionList) -> ExtensionIDMap:
         """
