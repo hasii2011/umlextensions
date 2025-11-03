@@ -2,6 +2,8 @@
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+
 from umlextensions.ExtensionsTypes import FrameInformationCallback
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
@@ -15,11 +17,16 @@ class ExtensionsFacade(IExtensionsFacade):
 
     """
 
-    def __init__(self, pubSub: ExtensionsPubSub):
+    def __init__(self, pubSub: ExtensionsPubSub, umlPubSubEngine: UmlPubSubEngine):
 
-        self.logger:  Logger           = getLogger(__name__)
+        self.logger: Logger = getLogger(__name__)
 
-        self._pubsub: ExtensionsPubSub = pubSub
+        self._pubsub:    ExtensionsPubSub = pubSub
+        self._umlPubSub: UmlPubSubEngine  = umlPubSubEngine
+
+    @property
+    def umlPubSubEngine(self) -> UmlPubSubEngine:
+        return self._umlPubSub
 
     def requestCurrentFrameInformation(self, callback: FrameInformationCallback):
         self._pubsub.sendMessage(messageType=ExtensionsMessageType.REQUEST_FRAME_INFORMATION, callback=callback)

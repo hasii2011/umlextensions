@@ -50,7 +50,7 @@ class ExtensionFrame(SizedFrame):
 
         self._umlPubSubEngine:  UmlPubSubEngine  = UmlPubSubEngine()
         self._editMenu:         Menu             = cast(Menu, None)
-        self._extensionManager: ExtensionsManager = ExtensionsManager()
+        self._extensionManager: ExtensionsManager = ExtensionsManager(umlPubSubEngine=self._umlPubSubEngine)
 
         self._createApplicationMenuBar()
 

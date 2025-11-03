@@ -2,6 +2,8 @@
 from abc import ABC
 from abc import abstractmethod
 
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+
 from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsTypes import FrameInformationCallback
 
@@ -11,6 +13,11 @@ class IExtensionsFacade(ABC):
     This facade simplifies communication to the UML diagrammer.  This interface serves as a front-facing interface
     that masks the complexity of the UML Diagrammer
     """
+    @property
+    @abstractmethod
+    def umlPubSubEngine(self) -> UmlPubSubEngine:
+        pass
+
     @abstractmethod
     def requestCurrentFrameInformation(self, callback: FrameInformationCallback) -> FrameInformation:
         pass

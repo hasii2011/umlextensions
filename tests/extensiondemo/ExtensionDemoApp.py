@@ -8,13 +8,11 @@ from click import command
 from click import option
 from click import version_option
 
-from wx.lib.ogl import OGLInitialize
+from umlshapes.lib.ogl import OGLInitialize
 
 from wx import App
 
 from codeallybasic.UnitTestBase import UnitTestBase
-
-
 from codeallybasic.UnitTestBase import JSON_LOGGING_CONFIG_FILENAME
 
 from tests.extensiondemo.ExtensionFrame import ExtensionFrame

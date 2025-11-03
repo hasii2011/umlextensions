@@ -12,6 +12,7 @@ from enum import Enum
 from dataclasses import field
 from dataclasses import dataclass
 
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from wx import OK
 from wx import ICON_ERROR
 
@@ -102,13 +103,13 @@ class ExtensionsManager:
     By convention prefix the plugin output module name with 'Output'
 
     """
-    def __init__(self):
+    def __init__(self, umlPubSubEngine: UmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
 
         self._extensionPreferences: ExtensionsPreferences = ExtensionsPreferences()
         self._pubsub:               ExtensionsPubSub      = ExtensionsPubSub()
-        self._extensionsFacade:     IExtensionsFacade     = ExtensionsFacade(self._pubsub)
+        self._extensionsFacade:     IExtensionsFacade     = ExtensionsFacade(self._pubsub, umlPubSubEngine=umlPubSubEngine)
         #
         #
         #

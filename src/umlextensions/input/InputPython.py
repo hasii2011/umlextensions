@@ -1,14 +1,10 @@
-
+from typing import List
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from wx import ICON_ERROR
-from wx import MessageBox
-from wx import MessageDialog
 from wx import OK
 from wx import PD_APP_MODAL
 from wx import PD_ELAPSED_TIME
@@ -16,8 +12,13 @@ from wx import PD_ELAPSED_TIME
 from wx import BeginBusyCursor
 from wx import EndBusyCursor
 from wx import ProgressDialog
+from wx import MessageBox
+from wx import MessageDialog
 
 from wx import Yield as wxYield
+
+from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -28,11 +29,18 @@ from umlextensions.extensiontypes.ExtensionDataTypes import FileSuffix
 from umlextensions.extensiontypes.ExtensionDataTypes import FormatName
 from umlextensions.extensiontypes.ExtensionDataTypes import Version
 
-from umlextensions.input.BaseInputExtension import BaseInputExtension
 from umlextensions.input.InputFormat import InputFormat
+
+from umlextensions.input.BaseInputExtension import BaseInputExtension
+
 from umlextensions.input.python.DlgSelectMultiplePackages import DlgSelectMultiplePackages
+from umlextensions.input.python.DlgSelectMultiplePackages import ImportPackages
+from umlextensions.input.python.DlgSelectMultiplePackages import Package
+
 from umlextensions.input.python.PythonParseException import PythonParseException
 from umlextensions.input.python.PythonToUmlShapes import PythonToUmlShapes
+from umlextensions.input.python.PythonToUmlShapes import UmlClassesDict
+from umlextensions.input.python.visitor.ParserTypes import PyutClasses
 
 FORMAT_NAME:           FormatName           = FormatName("Python File(s)")
 FILE_SUFFIX:           FileSuffix           = FileSuffix('py')
@@ -53,7 +61,7 @@ class InputPython(BaseInputExtension):
 
         self._packageCount:   int = 0
         self._moduleCount:    int = 0
-        self._importPackages: int = 0
+        self._importPackages: ImportPackages = ImportPackages([])
 
         self._readProgressDlg: ProgressDialog = cast(ProgressDialog, None)
 
@@ -100,13 +108,20 @@ class InputPython(BaseInputExtension):
             # reverseEngineer: ReverseEngineerPythonV3 = ReverseEngineerPythonV3()
             # Should the extensions know about the UML pub/sub Engine ???
             #
-            # TODO:   THIS DOES NOT BELONG HERE !!!
-            umlPubSubEngine: UmlPubSubEngine = UmlPubSubEngine()
+            self._readProgressDlg.SetRange(self._moduleCount)
 
             classDiagramFrame: ClassDiagramFrame = cast(ClassDiagramFrame, self._frameInformation.umlFrame)
-            pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=classDiagramFrame, umlPubSubEngine=umlPubSubEngine)
+            pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=classDiagramFrame, umlPubSubEngine=self._extensionsFacade.umlPubSubEngine)
 
-            self._readProgressDlg.SetRange(self._moduleCount)
+            pyutClasses: PyutClasses = self._collectPyutClassesInPass1(pythonToUmlShapes=pythonToUmlShapes)
+            pyutClasses              = self._enhancePyutClassesInPass2(pythonToUmlShapes=pythonToUmlShapes, pyutClasses=pyutClasses)
+
+            umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(pyutClasses)
+            pythonToUmlShapes.generateLinks(umlClassesDict)
+
+            self._layoutUmlClasses(umlClasses=list(umlClassesDict.values()))
+            # self._layoutLinks(oglLinks=reverseEngineer.oglLinks)
+
         except (ValueError, Exception, PythonParseException) as e:
             self._readProgressDlg.Destroy()
 
@@ -121,3 +136,59 @@ class InputPython(BaseInputExtension):
             wxYield()
 
         return status
+
+    def _collectPyutClassesInPass1(self, pythonToUmlShapes: PythonToUmlShapes) -> PyutClasses:
+
+        cumulativePyutClasses: PyutClasses = PyutClasses({})
+        for directory in self._importPackages:
+            importPackage: Package = cast(Package, directory)
+
+            currentPyutClasses: PyutClasses = pythonToUmlShapes.pass1(directoryName=importPackage.packageName,
+                                                                      files=importPackage.importModules,
+                                                                      progressCallback=self._readProgressCallback)
+
+            cumulativePyutClasses = PyutClasses(cumulativePyutClasses | currentPyutClasses)
+
+        return cumulativePyutClasses
+
+    def _enhancePyutClassesInPass2(self, pythonToUmlShapes: PythonToUmlShapes, pyutClasses: PyutClasses) -> PyutClasses:
+
+        updatedPyutClasses: PyutClasses = PyutClasses({})
+        for directory in self._importPackages:
+            importPackage: Package = cast(Package, directory)
+
+            updatedPyutClasses = pythonToUmlShapes.pass2(directoryName=importPackage.packageName,
+                                                         files=importPackage.importModules,
+                                                         pyutClasses=pyutClasses,
+                                                         progressCallback=self._readProgressCallback)
+
+        return updatedPyutClasses
+
+    def _readProgressCallback(self, currentFileCount: int, msg: str):
+        """
+
+        Args:
+            currentFileCount:   The current file # we are working pm
+            msg:    An updated message
+        """
+
+        self._readProgressDlg.Update(currentFileCount, msg)
+
+    def _layoutUmlClasses(self, umlClasses: List[UmlClass]):
+        """
+        Organize by vertical descending sizes
+
+        Args:
+            umlClasses
+        """
+        # Sort by descending height
+        # noinspection PyProtectedMember
+        sortedUmlClasses = sorted(umlClasses, key=lambda umlClassToSort: umlClassToSort.GetHeight(), reverse=True)
+
+        x: int = 20
+        y: int = 20
+
+        incY: int = 0
+        #
+        # Put up a dialog the start values for all the above
+        #
