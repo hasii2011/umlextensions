@@ -2,6 +2,7 @@
 from abc import ABC
 from abc import abstractmethod
 
+from umlshapes.ShapeTypes import UmlShapeGenre
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umlextensions.ExtensionsTypes import FrameInformation
@@ -28,4 +29,8 @@ class IExtensionsFacade(ABC):
 
     @abstractmethod
     def refreshFrame(self):
+        pass
+
+    @abstractmethod
+    def addShape(self, umlShape: UmlShapeGenre):
         pass

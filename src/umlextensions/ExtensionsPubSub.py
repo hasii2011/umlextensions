@@ -14,6 +14,7 @@ class ExtensionsMessageType(Enum):
     REQUEST_FRAME_INFORMATION  = 'Request Frame Information'
     REFRESH_FRAME              = 'Refresh Frame'
     EXTENSION_MODIFIED_PROJECT = 'Extension Modified Project'
+    ADD_SHAPE                  = 'Add Shape'
 
 
 AdapterId = NewType('AdapterId', str)

@@ -5,6 +5,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.ShapeTypes import UmlShapeGenre
 from wx import EVT_MENU
 from wx import ID_EXIT
 from wx import DEFAULT_FRAME_STYLE
@@ -68,6 +69,7 @@ class ExtensionFrame(SizedFrame):
         pluginPubSub.subscribe(ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT, listener=self._extensionModifiedListener)
 
         pluginPubSub.subscribe(ExtensionsMessageType.REFRESH_FRAME, listener=self._refreshFrameListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.ADD_SHAPE,     listener=self._addShapeListener)
 
     def _createApplicationMenuBar(self):
 
@@ -162,3 +164,10 @@ class ExtensionFrame(SizedFrame):
 
     def _extensionModifiedListener(self):
         self.logger.info('********** Frame Modified ***********')
+
+    def _addShapeListener(self, umlShape: UmlShapeGenre):
+
+        self._diagramFrame.umlDiagram.AddShape(umlShape)
+        umlShape.Show(True)
+
+        self._diagramFrame.refresh()

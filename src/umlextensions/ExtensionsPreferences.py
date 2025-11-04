@@ -22,6 +22,15 @@ SECTION_FEATURES: ValueDescriptions = ValueDescriptions(
     }
 )
 
+SECTION_SHAPE_LAYOUT: ValueDescriptions = ValueDescriptions(
+    {
+        KeyName('startX'):     ValueDescription(defaultValue='20',   deserializer=SecureConversions.secureInteger),
+        KeyName('startY'):     ValueDescription(defaultValue='20',   deserializer=SecureConversions.secureInteger),
+        KeyName('xIncrement'): ValueDescription(defaultValue='20',   deserializer=SecureConversions.secureInteger),
+        KeyName('maximumX'):   ValueDescription(defaultValue='3000', deserializer=SecureConversions.secureInteger),
+    }
+)
+
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
     {
         KeyName('autoSelectAll'): ValueDescription(defaultValue='True', deserializer=SecureConversions.secureBoolean),
@@ -30,8 +39,9 @@ SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
 
 EXTENSION_SECTIONS: Sections = Sections(
     {
-        SectionName('Features'): SECTION_FEATURES,
-        SectionName('Debug'):    SECTION_DEBUG,
+        SectionName('Features'):     SECTION_FEATURES,
+        SectionName('Shape Layout'): SECTION_SHAPE_LAYOUT,
+        SectionName('Debug'):        SECTION_DEBUG,
     }
 )
 

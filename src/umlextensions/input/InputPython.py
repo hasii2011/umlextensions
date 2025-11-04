@@ -4,6 +4,8 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.types.UmlDimensions import UmlDimensions
+from umlshapes.types.UmlPosition import UmlPosition
 from wx import ICON_ERROR
 from wx import OK
 from wx import PD_APP_MODAL
@@ -185,10 +187,29 @@ class InputPython(BaseInputExtension):
         # noinspection PyProtectedMember
         sortedUmlClasses = sorted(umlClasses, key=lambda umlClassToSort: umlClassToSort.GetHeight(), reverse=True)
 
-        x: int = 20
-        y: int = 20
+        #
+        # Put up a dialog the start values for x, y, incY
+        #
+
+        x: int = 20     # startX
+        y: int = 20     # startY
 
         incY: int = 0
-        #
-        # Put up a dialog the start values for all the above
-        #
+        for umlClass in sortedUmlClasses:
+            #  incX, sy = oglClass.GetSize()
+            size: UmlDimensions = umlClass.size
+            incX = size.width
+            sy   = size.height
+            incX += 20                          # xIncrement
+            sy += 20
+            incY = max(incY, int(sy))           # find good coordinates
+            if x + incX >= 3000:                # maximumX
+                x = 20
+                y += incY
+                incY = int(sy)
+
+            # oglClass.SetPosition(x, y)
+            umlClass.position = UmlPosition(x=x, y=y)
+            x += incX
+            # self._pluginAdapter.addShape(shape=oglClass)
+            self._extensionsFacade.addShape(umlShape=umlClass)

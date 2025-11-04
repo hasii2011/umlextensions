@@ -2,6 +2,7 @@
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.ShapeTypes import UmlShapeGenre
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umlextensions.ExtensionsTypes import FrameInformationCallback
@@ -16,7 +17,6 @@ class ExtensionsFacade(IExtensionsFacade):
     """
 
     """
-
     def __init__(self, pubSub: ExtensionsPubSub, umlPubSubEngine: UmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
@@ -36,3 +36,6 @@ class ExtensionsFacade(IExtensionsFacade):
 
     def refreshFrame(self):
         self._pubsub.sendMessage(messageType=ExtensionsMessageType.REFRESH_FRAME)
+
+    def addShape(self, umlShape: UmlShapeGenre):
+        self._pubsub.sendMessage(messageType=ExtensionsMessageType.ADD_SHAPE, umlShape=umlShape)
