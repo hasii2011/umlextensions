@@ -35,7 +35,7 @@ class ShapeLayout:
     maximumX:   int = 0
 
 class DlgShapeLayoutParameters(SizedDialog):
-    def __init__(self, parent: Window):
+    def __init__(self, parent: Window = None):
 
         style: int = STAY_ON_TOP | DEFAULT_DIALOG_STYLE
 
@@ -52,7 +52,7 @@ class DlgShapeLayoutParameters(SizedDialog):
         self._startX:     NamedSlider = cast(NamedSlider, None)
         self._startY:     NamedSlider = cast(NamedSlider, None)
         self._xIncrement: NamedSlider = cast(NamedSlider, None)
-        self._maximumX:    NamedSlider = cast(NamedSlider, None)
+        self._maximumX:   NamedSlider = cast(NamedSlider, None)
 
         self._shapeLayout: ShapeLayout = ShapeLayout(
             startX=self._extensionPrefs.startX,
@@ -66,6 +66,10 @@ class DlgShapeLayoutParameters(SizedDialog):
         self._setControlValues()
         # CallAfter(self._resizeDialog)
         # self._resizeDialog()
+
+    @property
+    def shapeLayout(self) -> ShapeLayout:
+        return self._shapeLayout
 
     def _layoutControls(self, parentPanel: SizedPanel):
         """
@@ -83,10 +87,6 @@ class DlgShapeLayoutParameters(SizedDialog):
         self._startY.value     = self._shapeLayout.startY
         self._xIncrement.value = self._shapeLayout.xIncrement
         self._maximumX.value   = self._shapeLayout.maximumX
-
-    @property
-    def shapeLayout(self) -> ShapeLayout:
-        return self._shapeLayout
 
     def _layoutStandardOkCancelButtonSizer(self):
         """

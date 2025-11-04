@@ -5,7 +5,6 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.ShapeTypes import UmlShapeGenre
 from wx import EVT_MENU
 from wx import ID_EXIT
 from wx import DEFAULT_FRAME_STYLE
@@ -21,6 +20,8 @@ from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
 from umlshapes.ShapeTypes import UmlShapes
+from umlshapes.ShapeTypes import UmlLinkGenre
+from umlshapes.ShapeTypes import UmlShapeGenre
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
@@ -165,9 +166,6 @@ class ExtensionFrame(SizedFrame):
     def _extensionModifiedListener(self):
         self.logger.info('********** Frame Modified ***********')
 
-    def _addShapeListener(self, umlShape: UmlShapeGenre):
-
+    def _addShapeListener(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         self._diagramFrame.umlDiagram.AddShape(umlShape)
         umlShape.Show(True)
-
-        self._diagramFrame.refresh()

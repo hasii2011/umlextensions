@@ -2,6 +2,7 @@
 from abc import ABC
 from abc import abstractmethod
 
+from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.ShapeTypes import UmlShapeGenre
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -32,5 +33,5 @@ class IExtensionsFacade(ABC):
         pass
 
     @abstractmethod
-    def addShape(self, umlShape: UmlShapeGenre):
+    def addShape(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         pass

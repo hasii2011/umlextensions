@@ -326,6 +326,7 @@ class PythonToUmlShapes:
         subClass.addLink(umlLink=umlInheritance, destinationClass=baseClass)
 
         eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInheritance)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
         eventHandler.SetShape(umlInheritance)
         eventHandler.SetPreviousHandler(umlInheritance.GetEventHandler())
         umlInheritance.SetEventHandler(eventHandler)
@@ -358,6 +359,7 @@ class PythonToUmlShapes:
         sourceClass.addLink(umlLink=umlAssociation, destinationClass=destinationClass)
 
         eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
         eventHandler.SetShape(umlAssociation)
         eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
         umlAssociation.SetEventHandler(eventHandler)

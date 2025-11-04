@@ -2,6 +2,7 @@
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.ShapeTypes import UmlShapeGenre
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -37,5 +38,5 @@ class ExtensionsFacade(IExtensionsFacade):
     def refreshFrame(self):
         self._pubsub.sendMessage(messageType=ExtensionsMessageType.REFRESH_FRAME)
 
-    def addShape(self, umlShape: UmlShapeGenre):
+    def addShape(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         self._pubsub.sendMessage(messageType=ExtensionsMessageType.ADD_SHAPE, umlShape=umlShape)
