@@ -5,6 +5,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
 from wx import EVT_MENU
 from wx import ID_EXIT
 from wx import DEFAULT_FRAME_STYLE
@@ -22,6 +23,10 @@ from wx.lib.sized_controls import SizedPanel
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.ShapeTypes import UmlShapeGenre
+
+from umlshapes.types.Common import UmlShapeList
+
+from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
@@ -71,6 +76,7 @@ class ExtensionFrame(SizedFrame):
 
         pluginPubSub.subscribe(ExtensionsMessageType.REFRESH_FRAME, listener=self._refreshFrameListener)
         pluginPubSub.subscribe(ExtensionsMessageType.ADD_SHAPE,     listener=self._addShapeListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES, listener=self._wiggleShapesListener)
 
     def _createApplicationMenuBar(self):
 
@@ -169,3 +175,26 @@ class ExtensionFrame(SizedFrame):
     def _addShapeListener(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         self._diagramFrame.umlDiagram.AddShape(umlShape)
         umlShape.Show(True)
+
+    def _wiggleShapesListener(self):
+        """
+        This is a hack work around to simulate moving the shapes so
+        that the links are visible.
+        I tried refresh, redraw, and .DrawLinks;  None of it worked
+        """
+
+        umlShapes: UmlShapeList = self._diagramFrame.umlShapes
+
+        for shape in umlShapes:
+
+            if isinstance(shape, UmlShapeGenre) is True:
+
+                umlShape: UmlShapeGenre = cast(UmlShapeGenre, shape)
+
+                oldPosition: UmlPosition = umlShape.position
+                newPosition: UmlPosition = UmlPosition(x=oldPosition.x + 10, y=oldPosition.y + 10)
+
+                eventHandler: UmlBaseEventHandler = umlShape.GetEventHandler()
+
+                eventHandler.OnDragLeft(draw=True, x=newPosition.x, y=newPosition.y)
+                eventHandler.OnDragLeft(draw=True, x=oldPosition.x, y=oldPosition.y)

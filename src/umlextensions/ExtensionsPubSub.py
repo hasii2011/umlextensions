@@ -15,6 +15,7 @@ class ExtensionsMessageType(Enum):
     REFRESH_FRAME              = 'Refresh Frame'
     EXTENSION_MODIFIED_PROJECT = 'Extension Modified Project'
     ADD_SHAPE                  = 'Add Shape'
+    WIGGLE_SHAPES              = 'Wiggle Shapes'
 
 
 AdapterId = NewType('AdapterId', str)

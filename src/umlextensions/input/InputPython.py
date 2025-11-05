@@ -144,6 +144,8 @@ class InputPython(BaseInputExtension):
             self._extensionsFacade.refreshFrame()
             wxYield()
 
+        self._extensionsFacade.wiggleShapes()
+
         return status
 
     def _collectPyutClassesInPass1(self, pythonToUmlShapes: PythonToUmlShapes) -> PyutClasses:

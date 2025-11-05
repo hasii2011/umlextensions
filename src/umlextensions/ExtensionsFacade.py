@@ -40,3 +40,6 @@ class ExtensionsFacade(IExtensionsFacade):
 
     def addShape(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         self._pubsub.sendMessage(messageType=ExtensionsMessageType.ADD_SHAPE, umlShape=umlShape)
+
+    def wiggleShapes(self):
+        self._pubsub.sendMessage(messageType=ExtensionsMessageType.WIGGLE_SHAPES)

@@ -35,3 +35,7 @@ class IExtensionsFacade(ABC):
     @abstractmethod
     def addShape(self, umlShape: UmlShapeGenre | UmlLinkGenre):
         pass
+
+    @abstractmethod
+    def wiggleShapes(self):
+        pass
