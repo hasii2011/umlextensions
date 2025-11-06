@@ -14,7 +14,9 @@ class ExtensionsMessageType(Enum):
     REQUEST_FRAME_INFORMATION  = 'Request Frame Information'
     REFRESH_FRAME              = 'Refresh Frame'
     EXTENSION_MODIFIED_PROJECT = 'Extension Modified Project'
+    SELECT_UML_SHAPES          = 'Select UML Shapes'
     ADD_SHAPE                  = 'Add Shape'
+    GET_SELECTED_UML_SHAPES    = 'Get Selected UML Shapes'
     WIGGLE_SHAPES              = 'Wiggle Shapes'
 
 

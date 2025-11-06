@@ -43,6 +43,11 @@
             "level": "ERROR",
             "handlers": ["rotatingFileHandler"],
             "propagate": "true"
+        },
+        "umlextensions.tools.sugiyama": {
+            "level": "INFO",
+            "handlers": ["consoleHandler"],
+            "propagate": "false"
         }
     }
 }

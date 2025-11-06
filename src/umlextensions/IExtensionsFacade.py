@@ -8,6 +8,7 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsTypes import FrameInformationCallback
+from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 
 class IExtensionsFacade(ABC):
@@ -26,6 +27,14 @@ class IExtensionsFacade(ABC):
 
     @abstractmethod
     def extensionModifiedProject(self):
+        pass
+
+    @abstractmethod
+    def selectUmlShapes(self):
+        pass
+
+    @abstractmethod
+    def getSelectedUmlShapes(self, callback: SelectedUmlShapesCallback):
         pass
 
     @abstractmethod

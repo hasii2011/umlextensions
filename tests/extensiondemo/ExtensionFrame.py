@@ -5,7 +5,7 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
+from umlshapes.ShapeTypes import umlShapesFactory
 from wx import EVT_MENU
 from wx import ID_EXIT
 from wx import DEFAULT_FRAME_STYLE
@@ -32,6 +32,9 @@ from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
+from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
+
+from umlextensions.ExtensionsManager import ToolExtensionMap
 from umlextensions.ExtensionsTypes import FrameSize
 from umlextensions.ExtensionsManager import WindowId
 from umlextensions.ExtensionsManager import ExtensionDetails
@@ -40,6 +43,7 @@ from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsManager import ExtensionsManager
 from umlextensions.ExtensionsManager import InputExtensionMap
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 
@@ -78,6 +82,8 @@ class ExtensionFrame(SizedFrame):
         pluginPubSub.subscribe(ExtensionsMessageType.ADD_SHAPE,     listener=self._addShapeListener)
         pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES, listener=self._wiggleShapesListener)
 
+        pluginPubSub.subscribe(ExtensionsMessageType.GET_SELECTED_UML_SHAPES, listener=self._getSelectedUmlShapesListener)
+
     def _createApplicationMenuBar(self):
 
         menuBar:        MenuBar = MenuBar()
@@ -91,9 +97,11 @@ class ExtensionFrame(SizedFrame):
         fileMenu.Append(ID_PREFERENCES, "P&references", "Uml preferences")
 
         inputSubMenu: Menu = self._makeInputSubMenu()
+        toolsSubMenu: Menu = self._makeToolSubMenu()
+
         extensionsMenu.AppendSubMenu(inputSubMenu, 'Input')
         # extensionsMenu.AppendSubMenu(outputSubMenu, 'Output')
-        # extensionsMenu.AppendSubMenu(toolsSubMenu, 'Tools')
+        extensionsMenu.AppendSubMenu(toolsSubMenu, 'Tools')
 
         menuBar.Append(fileMenu, 'File')
         menuBar.Append(editMenu, 'Edit')
@@ -136,10 +144,29 @@ class ExtensionFrame(SizedFrame):
 
         return subMenu
 
+    def _makeToolSubMenu(self) -> Menu:
+        subMenu: Menu = Menu()
+
+        toolExtensionsMap: ToolExtensionMap = self._extensionManager.toolExtensionsMap
+
+        for wxId in toolExtensionsMap.extensionIdMap.keys():
+            clazz:        type = toolExtensionsMap.extensionIdMap[wxId]
+            toolInstance: BaseInputExtension = clazz(None)
+
+            toolName: str = toolInstance.name
+            subMenu = self._makeSubMenuEntry(subMenu=subMenu, wxId=wxId, pluginName=toolName, callback=self._onToolAction)
+
+        return subMenu
+
     def _onImport(self, event: CommandEvent):
         wxId:          int           = event.GetId()
-        pluginDetails: ExtensionDetails = self._extensionManager.doImport(wxId=cast(WindowId, wxId))
-        self.logger.info(f'Import: {pluginDetails=}')
+        extensionsDetails: ExtensionDetails = self._extensionManager.doImport(wxId=cast(WindowId, wxId))
+        self.logger.info(f'Import: {extensionsDetails=}')
+
+    def _onToolAction(self, event: CommandEvent):
+        wxId:          int           = event.GetId()
+        extensionsDetails: ExtensionDetails = self._extensionManager.doToolAction(wxId=cast(WindowId, wxId))
+        self.logger.info(f'Import: {extensionsDetails=}')
 
     def _makeSubMenuEntry(self, subMenu: Menu, wxId: int, pluginName: str, callback: Callable) -> Menu:
         subMenu.Append(wxId, pluginName)
@@ -159,7 +186,7 @@ class ExtensionFrame(SizedFrame):
         frameInfo: FrameInformation = FrameInformation(
             umlFrame=self._diagramFrame,
             frameActive=True,
-            selectedOglObjects=UmlShapes([]),
+            selectedUmlShapes=self._getSelectedUmlShapes(),
             diagramTitle='Demo Class Diagram',
             diagramType='Class Document',
             frameSize=FrameSize(width=size.width, height=size.height)
@@ -198,3 +225,21 @@ class ExtensionFrame(SizedFrame):
 
                 eventHandler.OnDragLeft(draw=True, x=newPosition.x, y=newPosition.y)
                 eventHandler.OnDragLeft(draw=True, x=oldPosition.x, y=oldPosition.y)
+
+    def _getSelectedUmlShapesListener(self, callback: SelectedUmlShapesCallback):
+        selectedShapes: UmlShapes = self._getSelectedUmlShapes()
+        callback(selectedShapes)
+
+    def _getSelectedUmlShapes(self) -> UmlShapes:
+
+        umlShapes:      UmlShapeList = self._diagramFrame.umlShapes
+        selectedShapes: UmlShapes    = umlShapesFactory()
+
+        for s in umlShapes:
+            if isinstance(s, UmlShapeGenre) or isinstance(s, UmlLinkGenre):
+                umlShape: UmlShapeGenre | UmlLinkGenre = cast(UmlShapeGenre | UmlLinkGenre, s)
+
+                if umlShape.selected is True:
+                    selectedShapes.append(umlShape)
+
+        return selectedShapes

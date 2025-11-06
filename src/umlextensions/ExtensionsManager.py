@@ -12,13 +12,14 @@ from enum import Enum
 from dataclasses import field
 from dataclasses import dataclass
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from wx import OK
 from wx import ICON_ERROR
 
 from wx import NewIdRef
 from wx import Window
 from wx import RichMessageDialog
+
+from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umlextensions.ErrorFormatter import ErrorFormatter
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
@@ -30,8 +31,12 @@ from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 from umlextensions.input.InputPython import InputPython
+from umlextensions.tools.BaseToolExtension import BaseToolExtension
+
+from umlextensions.tools.ToolSugiyama import ToolSugiyama
 
 from umlextensions.ExtensionsPubSub import ExtensionsPubSub
+
 
 # Return type from wx.NewIdRef()
 WindowId = NewType('WindowId', int)
@@ -55,12 +60,12 @@ class ExtensionMapType(Enum):
 # Some nice syntactic sugar
 #
 @dataclass
-class BasePluginMap:
+class BaseExtensionMap:
     mapType:        ExtensionMapType = ExtensionMapType.NONE
     extensionIdMap: ExtensionIDMap   = field(default_factory=createExtensionIdMapFactory)
 
 @dataclass
-class InputExtensionMap(BasePluginMap):
+class InputExtensionMap(BaseExtensionMap):
     def __init__(self):
         super().__init__()
         self.mapType = ExtensionMapType.INPUT_MAP
@@ -71,7 +76,16 @@ class InputExtensionMap(BasePluginMap):
     def __repr__(self) -> str:
         return f'{self.mapType} plugin count: {len(self.extensionIdMap)}'
 
+@dataclass
+class ToolExtensionMap(BaseExtensionMap):
+    def __init__(self):
+        super().__init__()
+        self.mapType = ExtensionMapType.TOOL_MAP
 
+
+TOOL_EXTENSIONS: ExtensionList = ExtensionList(
+    [ToolSugiyama]
+)
 INPUT_EXTENSIONS: ExtensionList = ExtensionList(
     [InputPython]
 )
@@ -113,9 +127,10 @@ class ExtensionsManager:
         #
         #
         #
-        self._inputExtensionsMap:  InputExtensionMap   = InputExtensionMap()
+        self._inputExtensionsMap:  InputExtensionMap = InputExtensionMap()
+        self._toolExtensionsMap:   ToolExtensionMap  = ToolExtensionMap()
 
-        self._inputExtensionClasses:  ExtensionList = cast(ExtensionList, None)
+        # self._inputExtensionClasses:  ExtensionList = cast(ExtensionList, None)
 
     @property
     def extensionsPubSub(self) -> ExtensionsPubSub:
@@ -124,20 +139,20 @@ class ExtensionsManager:
     @property
     def inputExtensions(self) -> ExtensionList:
         """
-        Get the input extension types.  Lazy creation
+        Get the input extension types.
 
         Returns:  A copy of the list of input extension classes
         """
+        return ExtensionList(INPUT_EXTENSIONS[:])
 
-        if self._inputExtensionClasses is None:
-            self._inputExtensionClasses = ExtensionList([])
-            for extension in INPUT_EXTENSIONS:
-                extensionClass = cast(type, extension)
-                classInstance = extensionClass(None)
-                if classInstance.inputFormat is not None:
-                    self._inputExtensionClasses.append(extension)
+    @property
+    def toolExtensions(self) -> ExtensionList:
+        """
+        Get the tool Extensions.
 
-        return ExtensionList(self._inputExtensionClasses[:])
+        Returns:    A copy of the list of classes (the Extension classes).
+        """
+        return ExtensionList(TOOL_EXTENSIONS[:])
 
     @property
     def inputExtensionsMap(self) -> InputExtensionMap:
@@ -146,6 +161,14 @@ class ExtensionsManager:
             self._inputExtensionsMap.extensionIdMap = self._mapWxIdsToExtensions(self.inputExtensions)
 
         return self._inputExtensionsMap
+
+    @property
+    def toolExtensionsMap(self) -> ToolExtensionMap:
+
+        if len(self._toolExtensionsMap.extensionIdMap) == 0:
+            self._toolExtensionsMap.extensionIdMap = self._mapWxIdsToExtensions(TOOL_EXTENSIONS)
+
+        return self._toolExtensionsMap
 
     def doImport(self, wxId: WindowId) -> ExtensionDetails:
         """
@@ -175,6 +198,40 @@ class ExtensionsManager:
             booBoo.ShowModal()
 
         return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
+
+    def doToolAction(self, wxId: WindowId) -> ExtensionDetails:
+        """
+        Args:
+            wxId:   The ID ref of the menu item
+        """
+        idMap: ExtensionIDMap = self.toolExtensionsMap.extensionIdMap
+
+        # TODO: Fix this later for mypy
+        clazz: type = idMap[wxId]
+        # Create a plugin instance
+        toolInstance: BaseToolExtension = clazz(extensionsFacade=self._extensionsFacade)
+
+        # Do tool extension functionality
+        try:
+            toolInstance.executeTool()
+            self.logger.debug(f"After tool plugin do action")
+        except (ValueError, Exception):
+            self.logger.error(ErrorFormatter.getFormattedStack())
+
+            errorMessage: str = ErrorFormatter.getErrorMessage()
+            fs:           str = ErrorFormatter.getSimpleStack()
+
+            #
+            # TODO: Build my own dialog so I can set the detailed text font
+            booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),
+                                                          message=errorMessage,
+                                                          caption='Extension Action Error',
+                                                          style=ICON_ERROR | OK
+                                                          )
+            booBoo.ShowDetailedText(fs)
+            booBoo.ShowModal()
+
+        return ExtensionDetails(name=toolInstance.name, version=toolInstance.version, author=toolInstance.version)
 
     def _mapWxIdsToExtensions(self, extensionList: ExtensionList) -> ExtensionIDMap:
         """

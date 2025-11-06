@@ -41,14 +41,15 @@ class FrameInformation:
     """
     umlFrame:           UmlFrame   = cast(UmlFrame, None)
     frameActive:        bool       = False
-    selectedOglObjects: UmlShapes  = field(default_factory=umlShapesFactory)
+    selectedUmlShapes:  UmlShapes  = field(default_factory=umlShapesFactory)
     diagramTitle:       str        = ''
     diagramType:        str        = ''
     frameSize:          FrameSize  = field(default_factory=createFrameSizeFactory)
     clientDC:           ClientDC   = cast(ClientDC, None)
 
 
-FrameInformationCallback = Callable[[FrameInformation], None]
-FrameSizeCallback        = Callable[[FrameSize], None]
+FrameInformationCallback  = Callable[[FrameInformation], None]
+FrameSizeCallback         = Callable[[FrameSize], None]
+SelectedUmlShapesCallback = Callable[[UmlShapes], None]
 
 NO_INTEGER: int = cast(int, None)
