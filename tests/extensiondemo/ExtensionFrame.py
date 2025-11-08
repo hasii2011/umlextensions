@@ -1,21 +1,27 @@
-
+from pathlib import Path
 from typing import Callable
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.ShapeTypes import umlShapesFactory
 from wx import EVT_MENU
+from wx import FD_CHANGE_DIR
+from wx import FD_OPEN
 from wx import ID_EXIT
+from wx import FD_FILE_MUST_EXIST
 from wx import DEFAULT_FRAME_STYLE
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import ID_PREFERENCES
+from wx import ID_SELECTALL
 
 from wx import Menu
 from wx import Size
 from wx import MenuBar
 from wx import CommandEvent
+from wx import FileSelector
+
+from wx import NewIdRef as wxNewIdRef
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
@@ -23,8 +29,23 @@ from wx.lib.sized_controls import SizedPanel
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.ShapeTypes import UmlShapeGenre
+from umlshapes.ShapeTypes import umlShapesFactory
+from umlshapes.UmlDiagram import UmlDiagram
 
-from umlshapes.types.Common import UmlShapeList
+from umlshapes.shapes.UmlClass import UmlClass
+from umlshapes.shapes.UmlNote import UmlNote
+
+from umlshapes.links.UmlAggregation import UmlAggregation
+from umlshapes.links.UmlAssociation import UmlAssociation
+from umlshapes.links.UmlComposition import UmlComposition
+from umlshapes.links.UmlInheritance import UmlInheritance
+from umlshapes.links.UmlNoteLink import UmlNoteLink
+
+from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
+from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
+from umlshapes.links.eventhandlers.UmlNoteLinkEventHandler import UmlNoteLinkEventHandler
+
+from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
 from umlshapes.types.UmlPosition import UmlPosition
 
@@ -33,6 +54,13 @@ from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
+
+from umlio.Reader import Reader
+from umlio.IOTypes import UmlProject
+from umlio.IOTypes import XML_SUFFIX
+from umlio.IOTypes import UmlClasses
+from umlio.IOTypes import UmlDocument
+from umlio.IOTypes import UmlLinks
 
 from umlextensions.ExtensionsManager import ToolExtensionMap
 from umlextensions.ExtensionsTypes import FrameSize
@@ -49,6 +77,10 @@ from umlextensions.input.BaseInputExtension import BaseInputExtension
 
 FRAME_WIDTH:  int = 1024
 FRAME_HEIGHT: int = 720
+
+ID_LOAD_XML_FILE: int = wxNewIdRef()
+
+XML_WILDCARD:     str = f'Extensible Markup Language (*.{XML_SUFFIX})|*{XML_SUFFIX}'
 
 
 class ExtensionFrame(SizedFrame):
@@ -91,10 +123,13 @@ class ExtensionFrame(SizedFrame):
         editMenu:       Menu = Menu()
         extensionsMenu: Menu = Menu()
 
+        fileMenu.Append(ID_LOAD_XML_FILE, '&Load XML File', 'External Diagrammer File')
         fileMenu.AppendSeparator()
-        fileMenu.Append(ID_EXIT, '&Quit', "Quit Application")
+        fileMenu.Append(ID_EXIT, '&Quit', 'Quit Application')
         fileMenu.AppendSeparator()
-        fileMenu.Append(ID_PREFERENCES, "P&references", "Uml preferences")
+        fileMenu.Append(ID_PREFERENCES, "P&references", 'UML preferences')
+
+        editMenu.Append(ID_SELECTALL)
 
         inputSubMenu: Menu = self._makeInputSubMenu()
         toolsSubMenu: Menu = self._makeToolSubMenu()
@@ -107,24 +142,10 @@ class ExtensionFrame(SizedFrame):
         menuBar.Append(editMenu, 'Edit')
         menuBar.Append(extensionsMenu, 'Extensions')
 
-        self.SetMenuBar(menuBar)
+        self.Bind(EVT_MENU, self._onOpenXmlFile, id=ID_LOAD_XML_FILE)
+        self.Bind(EVT_MENU, self._onSelectAll,   id=ID_SELECTALL)
 
-    # def _makeToolsMenu(self, toolsMenu: Menu) -> Menu:
-    #     """
-    #     Make the Tools submenu.
-    #     """
-    #     idMap: PluginIDMap = self._pluginManager.toolPluginsMap.pluginIdMap
-    #
-    #     for wxId in idMap:
-    #
-    #         clazz: type = idMap[wxId]
-    #
-    #         pluginInstance: ToolPluginInterface = clazz(None)
-    #         toolsMenu.Append(wxId, pluginInstance.menuTitle)
-    #
-    #         self.Bind(EVT_MENU, self._onTools, id=wxId)
-    #
-    #     return toolsMenu
+        self.SetMenuBar(menuBar)
 
     def _makeInputSubMenu(self) -> Menu:
         """
@@ -210,7 +231,7 @@ class ExtensionFrame(SizedFrame):
         I tried refresh, redraw, and .DrawLinks;  None of it worked
         """
 
-        umlShapes: UmlShapeList = self._diagramFrame.umlShapes
+        umlShapes: UmlShapes = self._diagramFrame.umlShapes
 
         for shape in umlShapes:
 
@@ -232,8 +253,8 @@ class ExtensionFrame(SizedFrame):
 
     def _getSelectedUmlShapes(self) -> UmlShapes:
 
-        umlShapes:      UmlShapeList = self._diagramFrame.umlShapes
-        selectedShapes: UmlShapes    = umlShapesFactory()
+        umlShapes:      UmlShapes = self._diagramFrame.umlShapes
+        selectedShapes: UmlShapes  = umlShapesFactory()
 
         for s in umlShapes:
             if isinstance(s, UmlShapeGenre) or isinstance(s, UmlLinkGenre):
@@ -243,3 +264,109 @@ class ExtensionFrame(SizedFrame):
                     selectedShapes.append(umlShape)
 
         return selectedShapes
+
+    # noinspection PyUnusedLocal
+    def _onOpenXmlFile(self, event: CommandEvent):
+
+        selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
+        if selectedFile != '':
+            reader: Reader = Reader()
+            umlProject: UmlProject = reader.readXmlFile(fileName=Path(selectedFile))
+            self.logger.debug(f'{umlProject=}')
+            self._loadProject(umlProject)
+
+    # noinspection PyUnusedLocal
+    def _onSelectAll(self, event: CommandEvent):
+        umlShapes: UmlShapes = self._diagramFrame.umlShapes
+
+        for shape in umlShapes:
+            if isinstance(shape, UmlShapeGenre) is True or isinstance(shape, UmlLinkGenre) is True:
+                shape.selected = True
+        self._diagramFrame.refresh()
+
+    def _loadProject(self, umlProject: UmlProject):
+
+        assert len(umlProject.umlDocuments) == 1, 'Currently we only handle single document projects'
+
+        for umlDocumentTitle, umlDocument in umlProject.umlDocuments.items():
+            self._layoutShapes(diagramFrame=self._diagramFrame, umlDocument=umlDocument)
+
+    def _layoutShapes(self, diagramFrame: ClassDiagramFrame, umlDocument: UmlDocument):
+        self._layoutClasses(diagramFrame, umlDocument.umlClasses)
+        self._layoutLinks(diagramFrame, umlDocument.umlLinks)
+
+    def _layoutClasses(self, diagramFrame: ClassDiagramFrame, umlClasses: UmlClasses):
+        for umlClass in umlClasses:
+            self._layoutShape(
+                umlShape=umlClass,
+                diagramFrame=diagramFrame,
+                eventHandlerClass=UmlClassEventHandler
+            )
+
+    def _layoutLinks(self, diagramFrame: ClassDiagramFrame, umlLinks: UmlLinks):
+        for umlLink in umlLinks:
+            umlLink.umlFrame = diagramFrame
+            if isinstance(umlLink, UmlInheritance):
+                umInheritance: UmlInheritance = cast(UmlInheritance, umlLink)
+                subClass  = umInheritance.subClass
+                baseClass = umInheritance.baseClass
+
+                subClass.addLink(umlLink=umInheritance, destinationClass=baseClass)
+
+                diagramFrame.umlDiagram.AddShape(umInheritance)
+                umInheritance.Show(True)
+
+                umlLinkEventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink)
+                umlLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
+                umlLinkEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
+                umlLink.SetEventHandler(umlLinkEventHandler)
+
+            elif isinstance(umlLink, UmlNoteLink):
+                umlNoteLink: UmlNoteLink = cast(UmlNoteLink, umlLink)
+                sourceNote:       UmlNote  = umlNoteLink.sourceNote
+                destinationClass: UmlClass = umlNoteLink.destinationClass
+
+                sourceNote.addLink(umlNoteLink=umlNoteLink, umlClass=destinationClass)
+
+                diagramFrame.umlDiagram.AddShape(umlNoteLink)
+                umlNoteLink.Show(True)
+                eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink)
+                eventHandler.umlPubSubEngine = self._umlPubSubEngine
+                eventHandler.SetPreviousHandler(umlLink.GetEventHandler())
+                umlNoteLink.SetEventHandler(eventHandler)
+            elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
+
+                source      = umlLink.sourceShape
+                destination = umlLink.destinationShape
+                source.addLink(umlLink, destination)  # type: ignore
+
+                diagramFrame.umlDiagram.AddShape(umlLink)
+                umlLink.Show(True)
+
+                umlAssociationEventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlLink)
+                umlAssociationEventHandler.umlPubSubEngine = self._umlPubSubEngine
+                umlAssociationEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
+                umlLink.SetEventHandler(umlAssociationEventHandler)
+
+    def _layoutShape(self, umlShape: UmlShapeGenre, diagramFrame: ClassDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
+        """
+
+        Args:
+            umlShape:
+            diagramFrame:
+            eventHandlerClass:
+        """
+
+        umlShape.umlFrame = diagramFrame
+        diagram: UmlDiagram = diagramFrame.umlDiagram
+
+        eventHandler: UmlBaseEventHandler = eventHandlerClass()
+        eventHandler.SetShape(umlShape)
+        eventHandler.umlPubSubEngine = self._umlPubSubEngine
+        eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
+        umlShape.SetEventHandler(eventHandler)
+
+        diagram.AddShape(umlShape)
+        umlShape.Show(True)
+
+        diagramFrame.refresh()

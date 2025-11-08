@@ -54,8 +54,8 @@ class Sugiyama:
 
         self.logger: Logger = getLogger(__name__)
 
-        self._pluginAdapter: IExtensionsFacade     = extensionsFacade
-        self._preferences:   ExtensionsPreferences = ExtensionsPreferences()
+        self._extensionsFacade: IExtensionsFacade     = extensionsFacade
+        self._preferences:      ExtensionsPreferences = ExtensionsPreferences()
 
         # Sugiyama nodes and links
         self.__realSugiyamaNodesList: List[RealSugiyamaNode] = []   # List of all RealSugiyamaNode's
@@ -732,7 +732,7 @@ class Sugiyama:
             y += maxHeight + V_SPACE
 
         if self._preferences.sugiyamaStepByStep is True:
-            SugiyamaGlobals.waitKey(self._pluginAdapter, optionalMessage=None)
+            SugiyamaGlobals.waitKey(self._extensionsFacade, optionalMessage=None)
         else:
             self.logger.info(f'.__fixNodesPositions() is complete')
 
@@ -747,7 +747,7 @@ class Sugiyama:
                         moved = True
                         msg: str = f'LEVEL - node: {node} {level}'
                         if self._preferences.sugiyamaStepByStep is True:
-                            SugiyamaGlobals.waitKey(self._pluginAdapter, msg)
+                            SugiyamaGlobals.waitKey(self._extensionsFacade, msg)
                         else:
                             self.logger.info(msg)
 

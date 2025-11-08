@@ -16,6 +16,12 @@ from codeallybasic.DynamicConfiguration import DynamicConfiguration
 MODULE_NAME:          str = 'umlextensions'
 PREFERENCES_FILENAME: str = f'{MODULE_NAME}.ini'
 
+SECTION_EXTENSIONS: ValueDescriptions = ValueDescriptions(
+    {
+        KeyName('sugiyamaStepByStep'): ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+    }
+)
+
 SECTION_FEATURES: ValueDescriptions = ValueDescriptions(
     {
         KeyName('startDirectory'):           ValueDescription(defaultValue=''),
@@ -39,6 +45,7 @@ SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
 
 EXTENSION_SECTIONS: Sections = Sections(
     {
+        SectionName('Extensions'):   SECTION_EXTENSIONS,
         SectionName('Features'):     SECTION_FEATURES,
         SectionName('Shape Layout'): SECTION_SHAPE_LAYOUT,
         SectionName('Debug'):        SECTION_DEBUG,

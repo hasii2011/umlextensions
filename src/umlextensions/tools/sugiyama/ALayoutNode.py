@@ -1,3 +1,8 @@
+from typing import cast
+
+from umlshapes.mixins.TopLeftMixin import TopLeftMixin
+from umlshapes.types.UmlDimensions import UmlDimensions
+from umlshapes.types.UmlPosition import UmlPosition
 
 
 class ALayoutNode:
@@ -10,7 +15,7 @@ class ALayoutNode:
         Args:
             umlShape: interfaced ogl object
         """
-        self._oglObject = umlShape
+        self._umlShape = umlShape
 
     def getSize(self):
         """
@@ -18,7 +23,9 @@ class ALayoutNode:
 
         Returns: (int, int): tuple (width, height)
         """
-        return self._oglObject.GetSize()
+        umlDimensions: UmlDimensions = cast(TopLeftMixin, self._umlShape).size
+        # return self._umlShape.GetSize()
+        return umlDimensions.width, umlDimensions.height
 
     def getPosition(self):
         """
@@ -26,7 +33,9 @@ class ALayoutNode:
 
         Returns: (int, int): tuple (x, y) coordinates
         """
-        return self._oglObject.GetPosition()
+        umlPosition: UmlPosition = cast(TopLeftMixin, self._umlShape).position
+        # return self._umlShape.GetPosition()
+        return umlPosition.x, umlPosition.y
 
     def setPosition(self, x: int, y: int):
         """
@@ -36,7 +45,9 @@ class ALayoutNode:
             x: absolute coordinates
             y: absolute coordinates
         """
-        self._oglObject.SetPosition(x, y)
+        umlPosition: UmlPosition = UmlPosition(x=x, y=y)
+        # self._umlShape.SetPosition(x, y)
+        cast(TopLeftMixin, self._umlShape).position = umlPosition
 
     def getName(self) -> str:
         """
@@ -45,4 +56,4 @@ class ALayoutNode:
         Returns: name of the class
         """
         # return self._oglObject.pyutObject.name
-        return self._oglObject.pyutClass.name
+        return self._umlShape.pyutClass.name

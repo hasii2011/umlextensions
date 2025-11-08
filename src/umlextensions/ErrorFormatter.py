@@ -1,14 +1,9 @@
 
 from sys import exc_info
 
-from traceback import StackSummary
-from traceback import extract_stack
-from traceback import format_list
+from traceback import format_exception
 
-import stackprinter
-
-from umlextensions.StackTraceFormatter import StackTraceFormatter
-from umlextensions.StackTraceFormatter import StackTraceList
+MAX_STACK: int = 5
 
 
 class ErrorFormatter:
@@ -19,40 +14,32 @@ class ErrorFormatter:
         pass
 
     @classmethod
-    def getError(cls) -> str:
-        """
-        TODO:
-        This needs to be moved to code ally basic
-
-        Returns:
-            System exception information as a formatted string
-        """
-        error, eMessage, eTraceback = exc_info()
-        return str(error)
-
-    @classmethod
     def getErrorMessage(cls):
         error, eMessage, eTraceback = exc_info()
         return str(eMessage)
 
     @classmethod
-    def getFormattedStack(cls) -> str:
+    def getErrorStack(cls, e, limit: int = MAX_STACK) -> str:
+        """
+        Returns the bottom half of the error stack
+        Args:
+            e:
+            limit:
+
+        Returns:
+
         """
 
-        Returns: Very detailed stack information
-        """
-        return stackprinter.format()
+        errorList = format_exception(e)
+        errorList.reverse()
 
-    @classmethod
-    def getSimpleStack(cls) -> str:
-        """
+        fs:         str = ''
+        stackLimit: int = 0
 
-        Returns:  A simpler homegrown stack print
-        """
-        stackSummary:        StackSummary        = extract_stack()
-        stackTraceList:      StackTraceList      = format_list(stackSummary)
-        stackTraceFormatter: StackTraceFormatter = StackTraceFormatter(stackTraceList=stackTraceList)
+        for e in errorList:
+            fs = f'{fs}{e}'
+            stackLimit += 1
+            if stackLimit == limit:
+                break
 
-        bigString: str = stackTraceFormatter.dumpedStackList()
-
-        return bigString
+        return fs

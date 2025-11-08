@@ -181,21 +181,8 @@ class ExtensionsManager:
 
         try:
             extensionInstance.executeImport()
-        except (ValueError, Exception):
-            self.logger.error(ErrorFormatter.getFormattedStack())
-
-            errorMessage: str = ErrorFormatter.getErrorMessage()
-            fs:           str = ErrorFormatter.getSimpleStack()
-
-            #
-            # TODO: Build my own dialog so I can set the detailed text font
-            booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),
-                                                          message=errorMessage,
-                                                          caption='Extension Action Error',
-                                                          style=ICON_ERROR | OK
-                                                          )
-            booBoo.ShowDetailedText(fs)
-            booBoo.ShowModal()
+        except (ValueError, Exception) as e:
+            self._processError(e, dialogTitle='Input Extension Error')
 
         return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
 
@@ -204,34 +191,36 @@ class ExtensionsManager:
         Args:
             wxId:   The ID ref of the menu item
         """
-        idMap: ExtensionIDMap = self.toolExtensionsMap.extensionIdMap
-
-        # TODO: Fix this later for mypy
-        clazz: type = idMap[wxId]
-        # Create a plugin instance
+        idMap:        ExtensionIDMap    = self.toolExtensionsMap.extensionIdMap
+        clazz:        type              = idMap[wxId]
         toolInstance: BaseToolExtension = clazz(extensionsFacade=self._extensionsFacade)
 
-        # Do tool extension functionality
         try:
             toolInstance.executeTool()
-            self.logger.debug(f"After tool plugin do action")
-        except (ValueError, Exception):
-            self.logger.error(ErrorFormatter.getFormattedStack())
-
-            errorMessage: str = ErrorFormatter.getErrorMessage()
-            fs:           str = ErrorFormatter.getSimpleStack()
-
-            #
-            # TODO: Build my own dialog so I can set the detailed text font
-            booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),
-                                                          message=errorMessage,
-                                                          caption='Extension Action Error',
-                                                          style=ICON_ERROR | OK
-                                                          )
-            booBoo.ShowDetailedText(fs)
-            booBoo.ShowModal()
+        except (ValueError, Exception) as e:
+            self._processError(e, dialogTitle='Tool Extension Error')
 
         return ExtensionDetails(name=toolInstance.name, version=toolInstance.version, author=toolInstance.version)
+
+    def _processError(self, e: Exception, dialogTitle: str):
+        """
+        Common error handler for extensions
+        Args:
+            e:
+            dialogTitle:
+        """
+        errorMessage: str = ErrorFormatter.getErrorMessage()
+        fs:           str = ErrorFormatter.getErrorStack(e)
+        self.logger.error(fs)
+        #
+        # TODO: Build my own dialog so I can set the detailed text font
+        booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),
+                                                      message=errorMessage,
+                                                      caption=dialogTitle,
+                                                      style=ICON_ERROR | OK
+                                                      )
+        booBoo.ShowDetailedText(fs)
+        booBoo.ShowModal()
 
     def _mapWxIdsToExtensions(self, extensionList: ExtensionList) -> ExtensionIDMap:
         """

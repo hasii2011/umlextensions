@@ -24,7 +24,8 @@ dependencies = [
     'codeallybasic>=1.30.0',
     'codeallyadvanced>=2.2.0',
     'pyutmodelv2>=2.2.6',
-    'umlshapes>=0.9.316',
+    'umlshapes>=0.9.317',
+    'umlio>=0.4.8',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.3',
 ]
