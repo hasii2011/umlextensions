@@ -1,9 +1,18 @@
-from umlshapes.lib.ogl import LineControlPoint
+from typing import List
+
+from umlshapes.frames.UmlFrame import UmlFrame
+
+from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
+from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPointType
 
 from umlextensions.tools.sugiyama.ALayoutLink import ALayoutLink
+from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
-
-# from miniogl.ControlPoint import ControlPoint
+#
+# TODO: Figure out how to get that value here
+# This is controlled by a UML Shapes preference
+#
+SUGIYAMA_CONTROL_POINT_SIZE: int = 4
 
 
 class SugiyamaLink(ALayoutLink):
@@ -16,15 +25,17 @@ class SugiyamaLink(ALayoutLink):
     :contact: nicdub@gmx.ch
     :version: $Revision: 1.4 $
     """
-    def __init__(self, oglObject):
+    def __init__(self, umlLink, umlFrame: UmlFrame):
         """
-        Constructor.
 
-        @author Nicolas Dubois
+        Args:
+            umlLink:
+            umlFrame:
         """
-        # Call father's initialization
-        ALayoutLink.__init__(self, oglObject)
-        self.__virtualNodes = []
+        # ALayoutLink.__init__(self, oglObject)
+        self._umlFrame: UmlFrame = umlFrame
+        super().__init__(umlLink)
+        self.__virtualNodes: List[VirtualSugiyamaNode] = []
 
     def fixControlPoints(self):
         """
@@ -59,7 +70,13 @@ class SugiyamaLink(ALayoutLink):
                 # If real node found
                 if neighbor is not None:
                     # ctrlPoint = ControlPoint(xVNode, neighbor.getPosition()[1] + neighbor.getSize()[1])
-                    ctrlPoint = LineControlPoint(x=xVNode, y=neighbor.getPosition()[1] + neighbor.getSize()[1])
+                    ctrlPoint = UmlLineControlPoint(umlFrame=self._umlFrame,
+                                                    umlLink=self._umlLink,
+                                                    controlPointType=UmlLineControlPointType.LINE_POINT,
+                                                    size=SUGIYAMA_CONTROL_POINT_SIZE,
+                                                    x=xVNode,
+                                                    y=neighbor.getPosition()[1] + neighbor.getSize()[1]
+                                                    )
                     self.addControlPoint(ctrlPoint)
 
             else:   # If link goes to up-right
@@ -79,13 +96,25 @@ class SugiyamaLink(ALayoutLink):
                     # def __init__(self, x: int, y: int, parent=None):
 
                     # ctrlPoint = ControlPoint(xVNode, neighbor.getPosition()[1] + neighbor.getSize()[1])
-                    ctrlPoint = LineControlPoint(x=xVNode, y=neighbor.getPosition()[1] + neighbor.getSize()[1])
+                    ctrlPoint = UmlLineControlPoint(umlFrame=self._umlFrame,
+                                                    umlLink=self._umlLink,
+                                                    controlPointType=UmlLineControlPointType.LINE_POINT,
+                                                    size=SUGIYAMA_CONTROL_POINT_SIZE,
+                                                    x=xVNode,
+                                                    y=neighbor.getPosition()[1] + neighbor.getSize()[1]
+                                                    )
                     self.addControlPoint(ctrlPoint)
 
-            ctrlPoint = LineControlPoint(x=xVNode, y=yVNode)
+            ctrlPoint = UmlLineControlPoint(umlFrame=self._umlFrame,
+                                            umlLink=self._umlLink,
+                                            controlPointType=UmlLineControlPointType.LINE_POINT,
+                                            size=SUGIYAMA_CONTROL_POINT_SIZE,
+                                            x=xVNode,
+                                            y=yVNode
+                                            )
             self.addControlPoint(ctrlPoint)
 
-    def addVirtualNode(self, node):
+    def addVirtualNode(self, node: VirtualSugiyamaNode):
         """
         Add a virtual node.
 

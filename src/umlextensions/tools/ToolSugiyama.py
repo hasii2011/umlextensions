@@ -40,7 +40,7 @@ class ToolSugiyama(BaseToolExtension):
 
         selectedUmlShapes: UmlShapes = self._frameInformation.selectedUmlShapes
 
-        sugiyama: Sugiyama = Sugiyama(extensionsFacade=self._extensionsFacade)
+        sugiyama: Sugiyama = Sugiyama(extensionsFacade=self._extensionsFacade, umlFrame=self._frameInformation.umlFrame)
         sugiyama.createInterfaceOglALayout(umlShapes=selectedUmlShapes)
 
         sugiyama.levelFind()

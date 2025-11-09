@@ -4,7 +4,7 @@ from typing import Tuple
 from umlextensions.tools.sugiyama.ALayoutNode import ALayoutNode
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
-from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVEs
+from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
 
 
 class RealSugiyamaNode(SugiyamaNode):
@@ -81,7 +81,7 @@ class RealSugiyamaNode(SugiyamaNode):
 
         # Fix all children anchors position
         # Sort child list to eliminate crossing
-        children: SugiyamaVEs = self.getChildren()
+        children: SugiyamaVertexEdges = self.getChildren()
         children.sort(key=SugiyamaGlobals.cmpIndex)
 
         nChildren: int = len(children)
@@ -93,7 +93,7 @@ class RealSugiyamaNode(SugiyamaNode):
 
         # Parent anchors position
         # Sort parents list to eliminate crossing
-        parents: SugiyamaVEs = self.getParents()
+        parents: SugiyamaVertexEdges = self.getParents()
         parents.sort(key=SugiyamaGlobals.cmpIndex)
         nParents: int = len(parents)
         # For all parents

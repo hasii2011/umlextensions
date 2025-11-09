@@ -12,6 +12,7 @@ from copy import copy
 from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.ShapeTypes import UmlLinkGenre
+from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.links.UmlInterface import UmlInterface
@@ -50,11 +51,12 @@ class Sugiyama:
 
     """
 
-    def __init__(self, extensionsFacade: IExtensionsFacade):
+    def __init__(self, umlFrame: UmlFrame, extensionsFacade: IExtensionsFacade):
 
         self.logger: Logger = getLogger(__name__)
 
         self._extensionsFacade: IExtensionsFacade     = extensionsFacade
+        self._umlFrame:         UmlFrame              = umlFrame
         self._preferences:      ExtensionsPreferences = ExtensionsPreferences()
 
         # Sugiyama nodes and links
@@ -145,7 +147,7 @@ class Sugiyama:
                 createSugiyamaNode(dstOglClass, dictOgl)
 
                 # Fix relations between nodes
-                link = SugiyamaLink(oglObject)
+                link = SugiyamaLink(umlLink=oglObject, umlFrame=self._umlFrame)
                 self._sugiyamaLinksList.append(link)
                 srcSugiyamaNode = dictOgl[srcOglClass]
                 dstSugiyamaNode = dictOgl[dstOglClass]
@@ -340,7 +342,7 @@ class Sugiyama:
         # For all links
         for link in self._sugiyamaLinksList:
             # If hierarchical link
-            if link.getType() == PyutLinkType.INHERITANCE or link.getType() == PyutLinkType.INTERFACE:
+            if link.linkType == PyutLinkType.INHERITANCE or link.linkType == PyutLinkType.INTERFACE:
 
                 # Add virtual nodes
                 addVirtualNodesOnHierarchicalLink(link)

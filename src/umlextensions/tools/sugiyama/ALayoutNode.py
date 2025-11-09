@@ -7,13 +7,13 @@ from umlshapes.types.UmlPosition import UmlPosition
 
 class ALayoutNode:
     """
-    ALayoutNode: Interface between OglObject/PyutObject and ALayout algorithm.
+    ALayoutNode: Interface between UML Shapes and PyutObject and Layout algorithms.
     """
     def __init__(self, umlShape):
         """
 
         Args:
-            umlShape: interfaced ogl object
+            umlShape: interfaced UML Shape
         """
         self._umlShape = umlShape
 

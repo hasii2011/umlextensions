@@ -1,14 +1,17 @@
 
+
 from typing import cast
 from typing import NewType
 from typing import Tuple
 from typing import List
-
+from typing import TYPE_CHECKING
 from umlextensions.tools.sugiyama.SugiyamaConstants import H_SPACE
-from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
 
-SugiyamaVertexEdge = NewType("SugiyamaVertexEdge", Tuple["SugiyamaNode", SugiyamaLink])
-SugiyamaVEs        = NewType("SugiyamaVEs", List[SugiyamaVertexEdge])
+if TYPE_CHECKING:
+    from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
+
+SugiyamaVertexEdge  = NewType("SugiyamaVertexEdge",  Tuple['SugiyamaNode', 'SugiyamaLink'])
+SugiyamaVertexEdges = NewType("SugiyamaVertexEdges", List[SugiyamaVertexEdge])
 
 
 class SugiyamaNode:
@@ -48,15 +51,15 @@ class SugiyamaNode:
         # A child is derived from a parent. There is a hierarchical link,
         # Realization or Inheritance, from source to parent.
         # Each node can have parents and children.
-        self.__parents: SugiyamaVEs = SugiyamaVEs([])
+        self.__parents: SugiyamaVertexEdges = SugiyamaVertexEdges([])
         """
         List of parents
         """
-        self.__children: SugiyamaVEs = SugiyamaVEs([])
+        self.__children: SugiyamaVertexEdges = SugiyamaVertexEdges([])
         """
         List of children : [(SugiyamaNode, SugiyamaLink), ...]
         """
-        self.__links:    SugiyamaVEs = SugiyamaVEs([])
+        self.__links:    SugiyamaVertexEdges = SugiyamaVertexEdges([])
         """
         List of non-hierarchical links : [(SugiyamaNode, SugiyamaLink), ...]
         """
@@ -95,7 +98,7 @@ class SugiyamaNode:
         """
         return 0, 0
 
-    def addParent(self, parent: "SugiyamaNode", link: SugiyamaLink):
+    def addParent(self, parent: "SugiyamaNode", link: 'SugiyamaLink'):
         """
         Update parent list
 
@@ -106,7 +109,7 @@ class SugiyamaNode:
         sugiyamaData: SugiyamaVertexEdge = cast(SugiyamaVertexEdge, (parent, link))
         self.__parents.append(sugiyamaData)
 
-    def getParents(self) -> SugiyamaVEs:
+    def getParents(self) -> SugiyamaVertexEdges:
         """
         Return list of parents
 
@@ -126,7 +129,7 @@ class SugiyamaNode:
         sugiyamaData: SugiyamaVertexEdge = cast(SugiyamaVertexEdge, (child, link))
         self.__children.append(sugiyamaData)
 
-    def getChildren(self) -> SugiyamaVEs:
+    def getChildren(self) -> SugiyamaVertexEdges:
         """
         Get list of children.
 
@@ -134,7 +137,7 @@ class SugiyamaNode:
         """
         return self.__children
 
-    def addNonHierarchicalLink(self, node: "SugiyamaNode", link: SugiyamaLink):
+    def addNonHierarchicalLink(self, node: "SugiyamaNode", link: 'SugiyamaLink'):
         """
         Add a non-hierarchical link, ie not a parent or child relation.
 
@@ -145,7 +148,7 @@ class SugiyamaNode:
         vertexEdge: SugiyamaVertexEdge = SugiyamaVertexEdge((node, link))
         self.__links.append(vertexEdge)
 
-    def getNonHierarchicalLink(self) -> SugiyamaVEs:
+    def getNonHierarchicalLink(self) -> SugiyamaVertexEdges:
         """
         Get non-hierarchical links, ie not parent or child relationship
 
@@ -307,7 +310,7 @@ class SugiyamaNode:
             # ~ print self.__index, float(sum) / len(nodeList)
             self.__barycenter = summation // len(nodeList)
 
-    def __getAverageX(self, nodeList: SugiyamaVEs) -> int:
+    def __getAverageX(self, nodeList: SugiyamaVertexEdges) -> int:
         """
         Compute the average of x coordinates on all the given nodes.
 
@@ -347,7 +350,7 @@ class SugiyamaNode:
 
         For reading this value, use getBarycenter()
         """
-        parentsAndChildren: SugiyamaVEs = cast(SugiyamaVEs, self.__parents + self.__children)
+        parentsAndChildren: SugiyamaVertexEdges = cast(SugiyamaVertexEdges, self.__parents + self.__children)
         self.__barycenter = self.__getAverageX(parentsAndChildren)
 
     def getBarycenter(self) -> int:

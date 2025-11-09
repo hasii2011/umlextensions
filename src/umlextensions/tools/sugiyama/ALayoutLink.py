@@ -1,16 +1,19 @@
+
 from typing import List
+from typing import Tuple
 
 from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.links.UmlLink import UmlLink
+
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
 
 
 class ALayoutLink:
     """
-    ALayoutLink : Interface between Uml Link and ALayout algorithms.
+    ALayoutLink : Interface between Uml Links and Layout algorithms.
 
-    ALayout algorithms can use this interface to access the links of the
+    Layout algorithms can use this interface to access the links on the
     diagram. The first reason is that the interface protects the structure
     of the diagram. The second is that pyut structure and methods could
     be changed. In a such case, the only files to update is the interface, not
@@ -19,11 +22,11 @@ class ALayoutLink:
     """
     def __init__(self, umlLink: UmlLink):
         """
-        Constructor.
 
-        @author Nicolas Dubois
+        Args:
+            umlLink:
         """
-        self._umlLink = umlLink
+        self._umlLink: UmlLink = umlLink
         self.__srcNode = None
         self.__dstNode = None
 
@@ -115,20 +118,25 @@ class ALayoutLink:
 
         return x2, y2
 
-    def addControlPoint(self, control, last=None):
+    # noinspection PyUnusedLocal
+    def addControlPoint(self, control: UmlLineControlPoint, last=None):
         """
         Add a control point. If the parameter last present, add a point right after last.
+        TODO: the 'last' parameter is used by no one
 
         Args:
             control:  control point to add
             last:     add control right after last
         """
         # self._oglLink.AddControl(control, last)
-        self._umlLink.InsertLineControlPoint(point=last)
+        pt: Tuple[int, int] = control.position.x, control.position.y
+        self._umlLink.InsertLineControlPoint(point=pt)
 
     def removeControlPoint(self, controlPoint):
         """
         Remove a control point.
+
+        TODO:  This is not used by the Sugiyama algorithm
 
         Args:
             controlPoint: control point to remove
@@ -148,7 +156,8 @@ class ALayoutLink:
         self._umlLink.DeleteControlPoints()
         # self._umlLink.RemoveAllControlPoints()
 
-    def getType(self) -> PyutLinkType:
+    @property
+    def linkType(self) -> PyutLinkType:
         """
         Return the link type
 
