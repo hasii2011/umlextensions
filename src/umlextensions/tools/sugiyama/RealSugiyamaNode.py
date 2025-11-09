@@ -37,7 +37,7 @@ class RealSugiyamaNode(SugiyamaNode):
 
         Returns: (int, int) : tuple (width, height)
         """
-        return self.__aLayoutNode.getSize()
+        return self.__aLayoutNode.size
 
     def setPosition(self, xCoord: int, yCoord: int):
         """

@@ -1,3 +1,5 @@
+
+from typing import Tuple
 from typing import cast
 
 from umlshapes.mixins.TopLeftMixin import TopLeftMixin
@@ -26,7 +28,8 @@ class LayoutInterfaceNode:
         """
         return self._umlShape.pyutClass.name
 
-    def getSize(self):
+    @property
+    def size(self) -> Tuple[int, int]:
         """
         Return the class size.
 
@@ -46,7 +49,7 @@ class LayoutInterfaceNode:
         # return self._umlShape.GetPosition()
         return umlPosition.x, umlPosition.y
 
-    def setPosition(self, x: int, y: int):
+    def SetPosition(self, x: int, y: int):
         """
         Set the class position.
 
