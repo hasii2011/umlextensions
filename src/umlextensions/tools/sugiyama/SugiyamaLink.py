@@ -5,7 +5,7 @@ from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPointType
 
-from umlextensions.tools.sugiyama.ALayoutLink import ALayoutLink
+from umlextensions.tools.sugiyama.LayoutInterfaceLink import LayoutInterfaceLink
 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
 #
@@ -15,7 +15,7 @@ from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 SUGIYAMA_CONTROL_POINT_SIZE: int = 4
 
 
-class SugiyamaLink(ALayoutLink):
+class SugiyamaLink(LayoutInterfaceLink):
     """
     SugiyamaLink: link of the Sugiyama graph.
 

@@ -1,7 +1,7 @@
 
 from typing import Tuple
 
-from umlextensions.tools.sugiyama.ALayoutNode import ALayoutNode
+from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
@@ -29,7 +29,7 @@ class RealSugiyamaNode(SugiyamaNode):
         """
         super().__init__()
 
-        self.__aLayoutNode = ALayoutNode(oglObject)
+        self.__aLayoutNode = LayoutInterfaceNode(oglObject)
 
     def getSize(self) -> Tuple[int, int]:
         """

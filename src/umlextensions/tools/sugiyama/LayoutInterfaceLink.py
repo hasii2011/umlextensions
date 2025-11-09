@@ -9,16 +9,21 @@ from umlshapes.links.UmlLink import UmlLink
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
 
 
-class ALayoutLink:
+class LayoutInterfaceLink:
     """
-    ALayoutLink : Interface between Uml Links and Layout algorithms.
+    Interface between Uml Links and Layout algorithms.
 
-    Layout algorithms can use this interface to access the links on the
-    diagram. The first reason is that the interface protects the structure
-    of the diagram. The second is that pyut structure and methods could
-    be changed. In a such case, the only files to update is the interface, not
-    your automatic layout algorithm.
+    Layout algorithms use this interface to access the links on the
+    diagram.
 
+    * The interface protects the structure of the diagram.
+    * The diagram structure and diagram m methods can be changed.
+
+    Thus, we only need to update is this interface, not the automatic layout algorithm.
+
+    Note:
+        This happened in 2025, when Humberto did away with the miniogl home grown code and
+        instead used wxPython's wx.lib.ogl code
     """
     def __init__(self, umlLink: UmlLink):
         """

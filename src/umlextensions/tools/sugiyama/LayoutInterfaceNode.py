@@ -5,9 +5,9 @@ from umlshapes.types.UmlDimensions import UmlDimensions
 from umlshapes.types.UmlPosition import UmlPosition
 
 
-class ALayoutNode:
+class LayoutInterfaceNode:
     """
-    ALayoutNode: Interface between UML Shapes and PyutObject and Layout algorithms.
+    Interface between UML Shapes and Layout algorithms.
     """
     def __init__(self, umlShape):
         """
