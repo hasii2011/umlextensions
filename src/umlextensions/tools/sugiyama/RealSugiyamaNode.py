@@ -2,6 +2,7 @@
 from typing import Tuple
 
 from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
+from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutPosition
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
@@ -47,7 +48,7 @@ class RealSugiyamaNode(SugiyamaNode):
             xCoord:  x position in absolute coordinates
             yCoord:  y position in absolute coordinates
         """
-        self.__aLayoutNode.setPosition(xCoord, yCoord)
+        self.__aLayoutNode.position = LayoutPosition(x=xCoord, y=yCoord)
 
     def getPosition(self) -> Tuple[int, int]:
         """
@@ -55,14 +56,13 @@ class RealSugiyamaNode(SugiyamaNode):
 
         Returns: (int, int) : tuple (x, y) in absolute coordinates
         """
-        return self.__aLayoutNode.getPosition()
+        return self.__aLayoutNode.position.x, self.__aLayoutNode.position.y
 
     def getName(self) -> str:
         """
-        Get the name of the OglObject.
+        The name of the OglObject.
 
-        @return str : name of OglObject
-        @author Nicolas Dubois
+        Returns:  Name of the UML Shape
         """
         return self.__aLayoutNode.name
 

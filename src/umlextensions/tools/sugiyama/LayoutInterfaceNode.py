@@ -2,9 +2,16 @@
 from typing import Tuple
 from typing import cast
 
+from dataclasses import dataclass
+
 from umlshapes.mixins.TopLeftMixin import TopLeftMixin
 from umlshapes.types.UmlDimensions import UmlDimensions
 from umlshapes.types.UmlPosition import UmlPosition
+
+@dataclass
+class LayoutPosition:
+    x: int
+    y: int
 
 
 class LayoutInterfaceNode:
@@ -39,24 +46,25 @@ class LayoutInterfaceNode:
         # return self._umlShape.GetSize()
         return umlDimensions.width, umlDimensions.height
 
-    def getPosition(self):
+    @property
+    def position(self) -> LayoutPosition:
         """
         Get class position.
 
-        Returns: (int, int): tuple (x, y) coordinates
+        Returns: The layout position
         """
         umlPosition: UmlPosition = cast(TopLeftMixin, self._umlShape).position
         # return self._umlShape.GetPosition()
-        return umlPosition.x, umlPosition.y
+        return LayoutPosition(x=umlPosition.x, y=umlPosition.y)
 
-    def SetPosition(self, x: int, y: int):
+    @position.setter
+    def position(self, layoutPosition: LayoutPosition):
         """
         Set the class position.
 
         Args:
-            x: absolute coordinates
-            y: absolute coordinates
+            layoutPosition
         """
-        umlPosition: UmlPosition = UmlPosition(x=x, y=y)
+        umlPosition: UmlPosition = UmlPosition(x=layoutPosition.x, y=layoutPosition.y)
         # self._umlShape.SetPosition(x, y)
         cast(TopLeftMixin, self._umlShape).position = umlPosition
