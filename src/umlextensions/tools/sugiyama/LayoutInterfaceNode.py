@@ -17,6 +17,15 @@ class LayoutInterfaceNode:
         """
         self._umlShape = umlShape
 
+    @property
+    def name(self) -> str:
+        """
+        The class name
+
+        Returns: name of the class
+        """
+        return self._umlShape.pyutClass.name
+
     def getSize(self):
         """
         Return the class size.
@@ -48,12 +57,3 @@ class LayoutInterfaceNode:
         umlPosition: UmlPosition = UmlPosition(x=x, y=y)
         # self._umlShape.SetPosition(x, y)
         cast(TopLeftMixin, self._umlShape).position = umlPosition
-
-    def getName(self) -> str:
-        """
-        Get the name of the class.
-
-        Returns: name of the class
-        """
-        # return self._oglObject.pyutObject.name
-        return self._umlShape.pyutClass.name

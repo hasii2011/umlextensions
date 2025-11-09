@@ -64,7 +64,7 @@ class RealSugiyamaNode(SugiyamaNode):
         @return str : name of OglObject
         @author Nicolas Dubois
         """
-        return self.__aLayoutNode.getName()
+        return self.__aLayoutNode.name
 
     def fixAnchorPos(self):
         """
