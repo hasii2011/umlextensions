@@ -1,12 +1,18 @@
 
 from typing import List
 from typing import Tuple
+from typing import cast
 
 from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
 
 from umlshapes.links.UmlLink import UmlLink
 
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
+
+from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
+from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
+
+SyntheticNode = RealSugiyamaNode | VirtualSugiyamaNode
 
 
 class LayoutInterfaceLink:
@@ -32,44 +38,53 @@ class LayoutInterfaceLink:
             umlLink:
         """
         self._umlLink: UmlLink = umlLink
-        self.__srcNode = None
-        self.__dstNode = None
+        self._srcNode: SyntheticNode = cast(SyntheticNode, None)
+        self._dstNode: SyntheticNode = cast(SyntheticNode, None)
 
-    def setSource(self, node):
+    @property
+    def linkType(self) -> PyutLinkType:
+        """
+        Return the link type
+
+        Returns: Link type
+        """
+        return self._umlLink.pyutLink.linkType
+
+    @property
+    def source(self) -> SyntheticNode:
+        """
+
+        Returns:  the source node.
+        """
+        return self._srcNode
+
+    @source.setter
+    def source(self, node: SyntheticNode):
         """
         Set the source node.
 
-        @param InterfaceSugiyamaNode node: source node of the link
-        @author Nicolas Dubois
+        Args:
+            node:  The link source node
         """
-        self.__srcNode = node
+        self._srcNode = node
 
-    def getSource(self):
+    @property
+    def destination(self) -> SyntheticNode:
         """
-        Return the source node.
 
-        @return InterfaceSugiyamaNode: source node of the link
-        @author Nicolas Dubois
+        Returns: The destination node
         """
-        return self.__srcNode
+        return self._dstNode
 
-    def setDestination(self, node):
+    @destination.setter
+    def destination(self, node: SyntheticNode):
         """
         Set the destination node.
 
-        @param InterfaceSugiyamaNode node: destination node of the link
-        @author Nicolas Dubois
+        Args:
+            node: The new link destination
         """
-        self.__dstNode = node
-
-    def getDestination(self):
-        """
-        Return the destination node.
-
-        @return InterfaceSugiyamaNode: destination node of the link
-        @author Nicolas Dubois
-        """
-        return self.__dstNode
+        self._dstNode = node
 
     def setSrcAnchorPos(self, x: int, y: int):
         """
@@ -160,12 +175,3 @@ class LayoutInterfaceLink:
         # self._umlLink.ResetControlPoints()
         self._umlLink.DeleteControlPoints()
         # self._umlLink.RemoveAllControlPoints()
-
-    @property
-    def linkType(self) -> PyutLinkType:
-        """
-        Return the link type
-
-        Returns: Link type
-        """
-        return self._umlLink.pyutLink.linkType

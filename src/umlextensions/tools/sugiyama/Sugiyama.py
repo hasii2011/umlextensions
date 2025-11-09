@@ -151,8 +151,9 @@ class Sugiyama:
                 self._sugiyamaLinksList.append(link)
                 srcSugiyamaNode = dictOgl[srcOglClass]
                 dstSugiyamaNode = dictOgl[dstOglClass]
-                link.setSource(srcSugiyamaNode)
-                link.setDestination(dstSugiyamaNode)
+
+                link.source      = srcSugiyamaNode
+                link.destination = dstSugiyamaNode
 
                 # If hierarchical link
                 if isinstance(oglObject, UmlInheritance) or isinstance(oglObject, UmlInterface):
@@ -296,8 +297,8 @@ class Sugiyama:
         # Add virtual nodes between a father and one of his sons
         def addVirtualNodesOnHierarchicalLink(zLink):
 
-            srcNode = zLink.getSource()
-            dstNode = zLink.getDestination()
+            srcNode = zLink.source
+            dstNode = zLink.destination
             dstNodeLevel = dstNode.getLevel()
 
             # List of level index between dstNode and srcNode

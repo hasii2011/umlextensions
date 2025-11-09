@@ -1,8 +1,9 @@
 
 from typing import Tuple
 
-from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
 from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutPosition
+from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
+
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges

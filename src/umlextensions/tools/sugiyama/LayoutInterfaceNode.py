@@ -43,7 +43,6 @@ class LayoutInterfaceNode:
         Returns: (int, int): tuple (width, height)
         """
         umlDimensions: UmlDimensions = cast(TopLeftMixin, self._umlShape).size
-        # return self._umlShape.GetSize()
         return umlDimensions.width, umlDimensions.height
 
     @property
@@ -54,7 +53,6 @@ class LayoutInterfaceNode:
         Returns: The layout position
         """
         umlPosition: UmlPosition = cast(TopLeftMixin, self._umlShape).position
-        # return self._umlShape.GetPosition()
         return LayoutPosition(x=umlPosition.x, y=umlPosition.y)
 
     @position.setter
@@ -66,5 +64,4 @@ class LayoutInterfaceNode:
             layoutPosition
         """
         umlPosition: UmlPosition = UmlPosition(x=layoutPosition.x, y=layoutPosition.y)
-        # self._umlShape.SetPosition(x, y)
         cast(TopLeftMixin, self._umlShape).position = umlPosition

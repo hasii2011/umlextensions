@@ -75,7 +75,7 @@ from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 
-FRAME_WIDTH:  int = 1024
+FRAME_WIDTH:  int = 1280
 FRAME_HEIGHT: int = 720
 
 ID_LOAD_XML_FILE: int = wxNewIdRef()
