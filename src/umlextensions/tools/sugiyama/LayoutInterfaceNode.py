@@ -33,7 +33,7 @@ class LayoutInterfaceNode:
 
         Returns: name of the class
         """
-        return self._umlShape.pyutClass.name
+        return self._umlShape.modelClass.name
 
     @property
     def size(self) -> Tuple[int, int]:

@@ -16,21 +16,21 @@ from antlr4 import CommonTokenStream
 from antlr4.error.ErrorListener import ConsoleErrorListener
 
 from codeallybasic.UnitTestBase import UnitTestBase
+from umlmodel.Class import Class
+from umlmodel.Field import Field
+from umlmodel.Field import Fields
+from umlmodel.FieldType import FieldType
+from umlmodel.Method import Method
+from umlmodel.Method import Methods
+from umlmodel.enumerations.Visibility import Visibility
 
-from pyutmodelv2.PyutType import PyutType
-from pyutmodelv2.PyutClass import PyutClass
-from pyutmodelv2.PyutField import PyutField
-from pyutmodelv2.PyutField import PyutFields
-from pyutmodelv2.PyutMethod import PyutMethod
-from pyutmodelv2.PyutMethod import PyutMethods
-from pyutmodelv2.enumerations.PyutVisibility import PyutVisibility
-
-from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import PyutFieldHashIndex
+from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import ModelFieldHashIndex
 
 from umlextensions.input.python.visitor.ParserTypes import Associations
 from umlextensions.input.python.visitor.ParserTypes import ParentName
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
+
 from umlextensions.input.python.visitor.PythonPegParserVisitor import METHOD_FIND_PATTERN
 from umlextensions.input.python.visitor.PythonPegParserVisitor import PythonPegParserVisitor
 from umlextensions.input.python.visitor.PythonPegParserClassVisitor import PythonPegParserClassVisitor
@@ -40,9 +40,9 @@ from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
 
 from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
 
-SIMPLE_DATA_CLASS_NAME: PyutClassName = PyutClassName('SimpleDataClass')
+SIMPLE_DATA_CLASS_NAME: ModelClassName = ModelClassName('SimpleDataClass')
 
-PyutMethodHashIndex = NewType('PyutMethodHashIndex', Dict[str, PyutMethod])
+MethodHashIndex = NewType('MethodHashIndex', Dict[str, Method])
 
 class PythonErrorListener(ConsoleErrorListener):
     pass
@@ -70,7 +70,7 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('Opie.py')
         visitor: PythonPegParserVisitor         = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('Opie.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('Opie.py')
         visitor.visit(tree)
 
         expectedParentName: str = 'Cat'
@@ -87,7 +87,7 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('MultipleInheritance.py')
         visitor: PythonPegParserVisitor         = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('MultipleInheritance.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('MultipleInheritance.py')
         visitor.visit(tree)
 
         self.logger.info(f'{visitor.parents=}')
@@ -103,7 +103,7 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('MultipleInheritanceWithMetaClass.py')
         visitor: PythonPegParserVisitor         = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('MultipleInheritanceWithMetaClass.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('MultipleInheritanceWithMetaClass.py')
         visitor.visit(tree)
 
         expectedParentName1: str = 'BaseWxCommand'
@@ -116,15 +116,15 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
 
         visitor: PythonPegParserVisitor = self._setupSimpleClassVisitor()
 
-        className:   PyutClassName = PyutClassName('SimpleClass')
-        pyutClasses: PyutClasses = visitor.pyutClasses
+        className:   ModelClassName = ModelClassName('SimpleClass')
+        modelClasses: ModelClasses = visitor.modelClasses
 
-        pyutClass:   PyutClass   = pyutClasses[className]
-        pyutMethods: PyutMethods = pyutClass.methods
+        modelClass: Class   = modelClasses[className]
+        methods:    Methods = modelClass.methods
 
         methodNames: List[str] = []
 
-        for method in pyutMethods:
+        for method in methods:
             methodNames.append(method.name)
 
         self.assertIn('simpleMethod', methodNames, 'Missing known method')
@@ -134,22 +134,22 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
 
         visitor: PythonPegParserVisitor = self._setupSimpleClassVisitor()
 
-        className:   PyutClassName = PyutClassName('SimpleClass')
-        pyutClasses: PyutClasses = visitor.pyutClasses
+        className:    ModelClassName = ModelClassName('SimpleClass')
+        modelClasses: ModelClasses   = visitor.modelClasses
 
-        pyutClass:   PyutClass   = pyutClasses[className]
-        pyutMethods: PyutMethods = pyutClass.methods
+        modelClass: Class   = modelClasses[className]
+        methods:    Methods = modelClass.methods
 
-        self.assertEqual(10, len(pyutMethods), 'Mismatch in number of methods parsed')
+        self.assertEqual(10, len(methods), 'Mismatch in number of methods parsed')
 
     def testProtectedMethodVisibility(self):
-        self._runVisibilityTest('_protectedMethod', PyutVisibility.PROTECTED)
+        self._runVisibilityTest('_protectedMethod', Visibility.PROTECTED)
 
     def testPrivateMethodVisibility(self):
-        self._runVisibilityTest('__privateMethod', PyutVisibility.PRIVATE)
+        self._runVisibilityTest('__privateMethod', Visibility.PRIVATE)
 
     def testDunderMethodVisibility(self):
-        self._runVisibilityTest('__str__', PyutVisibility.PUBLIC)
+        self._runVisibilityTest('__str__', Visibility.PUBLIC)
 
     def testMethodFindRegEx(self):
 
@@ -182,20 +182,20 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('ClassWithProperties.py')
         visitor: PythonPegParserVisitor = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('ClassWithProperties.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('ClassWithProperties.py')
         visitor.visit(tree)
 
-        className: PyutClassName = PyutClassName('ClassWithProperties')
-        pyutClass: PyutClass = visitor.pyutClasses[className]
+        className:  ModelClassName = ModelClassName('ClassWithProperties')
+        modelClass: Class          = visitor.modelClasses[className]
 
-        self.assertEqual(2, len(pyutClass.fields), 'Not enough properties converted to fields')
+        self.assertEqual(2, len(modelClass.fields), 'Not enough properties converted to fields')
 
     def testAssociationsGenerated(self):
 
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('AssociationClasses.py')
         visitor: PythonPegParserVisitor = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('AssociationClasses.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('AssociationClasses.py')
 
         visitor.visit(tree)
 
@@ -205,39 +205,39 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
 
     def testSimpleDataClass(self):
 
-        fields: PyutFields = self._getSimpleDataClassFields()
+        fields: Fields = self._getSimpleDataClassFields()
 
         self.assertEqual(4, len(fields), 'Did not parse expected number of fields for this class')
 
     def testFullField(self):
 
-        fields: PyutFields         = self._getSimpleDataClassFields()
-        index:  PyutFieldHashIndex = self._makeFieldIndex(pyutFields=fields)
+        fields: Fields              = self._getSimpleDataClassFields()
+        index:  ModelFieldHashIndex = self._makeFieldIndex(modelFields=fields)
 
-        fullField: PyutField = index['y']
+        fullField: Field = index['y']
 
         self.assertIsNotNone(fullField, 'Where did it go?')
-        self.assertEqual(PyutType('float'), fullField.type, 'Incorrect type')
+        self.assertEqual(FieldType('float'), fullField.type, 'Incorrect type')
         self.assertEqual('42.0', fullField.defaultValue, 'Incorrect default value')
 
     def testNoTypeField(self):
-        fields: PyutFields         = self._getSimpleDataClassFields()
-        index:  PyutFieldHashIndex = self._makeFieldIndex(pyutFields=fields)
+        fields: Fields              = self._getSimpleDataClassFields()
+        index:  ModelFieldHashIndex = self._makeFieldIndex(modelFields=fields)
 
-        noAssignmentField: PyutField = index['w']
+        noAssignmentField: Field = index['w']
 
         self.assertIsNotNone(noAssignmentField, 'Where did it go?')
-        self.assertEqual(PyutType(''), noAssignmentField.type, 'Incorrect type')
+        self.assertEqual(FieldType(''), noAssignmentField.type, 'Incorrect type')
         self.assertEqual('"A string"', noAssignmentField.defaultValue, 'Incorrect default value')
 
     def testNoDefaultValueField(self):
-        fields: PyutFields         = self._getSimpleDataClassFields()
-        index:  PyutFieldHashIndex = self._makeFieldIndex(pyutFields=fields)
+        fields: Fields              = self._getSimpleDataClassFields()
+        index:  ModelFieldHashIndex = self._makeFieldIndex(modelFields=fields)
 
-        noAssignmentField: PyutField = index['z']
+        noAssignmentField: Field = index['z']
 
         self.assertIsNotNone(noAssignmentField, 'Where did it go?')
-        self.assertEqual(PyutType('int'), noAssignmentField.type, 'Incorrect type')
+        self.assertEqual(FieldType('int'), noAssignmentField.type, 'Incorrect type')
         self.assertEqual('', noAssignmentField.defaultValue, 'Should not have a value')
 
     def testExtractMethodCode(self):
@@ -249,62 +249,61 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('SimpleClassWithCode.py')
         visitor: PythonPegParserVisitor = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('SimpleClassWithCode.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('SimpleClassWithCode.py')
 
         visitor.visit(tree)
 
-        className:   PyutClassName = PyutClassName('SimpleClassWithCode')
+        className:   ModelClassName = ModelClassName('SimpleClassWithCode')
 
-        pyutClasses: PyutClasses = visitor.pyutClasses
+        modelClasses: ModelClasses = visitor.modelClasses
 
-        pyutClass:   PyutClass   = pyutClasses[className]
-        pyutMethods: PyutMethods = pyutClass.methods
+        modelClass: Class   = modelClasses[className]
+        methods:    Methods = modelClass.methods
 
-        pyutMethodInit: PyutMethod = pyutMethods[0]
-        self.assertEqual(7, len(pyutMethodInit.sourceCode), 'Mismatch of source code on __init__')
+        methodInit: Method = methods[0]
+        self.assertEqual(7, len(methodInit.sourceCode), 'Mismatch of source code on __init__')
 
-        pyutMethodPublicMethod: PyutMethod = pyutMethods[1]
+        methodPublicMethod: Method = methods[1]
 
-        self.assertEqual(7, len(pyutMethodPublicMethod.sourceCode), 'Mismatch of source code on publicMethod')
+        self.assertEqual(7, len(methodPublicMethod.sourceCode), 'Mismatch of source code on publicMethod')
 
-    def _runVisibilityTest(self, methodName, visibility: PyutVisibility):
+    def _runVisibilityTest(self, methodName, visibility: Visibility):
 
         visitor: PythonPegParserVisitor = self._setupSimpleClassVisitor()
 
-        className:   PyutClassName  = PyutClassName('SimpleClass')
-        pyutClasses: PyutClasses = visitor.pyutClasses
+        className:    ModelClassName = ModelClassName('SimpleClass')
+        modelClasses: ModelClasses   = visitor.modelClasses
+        modelClass:   Class          = modelClasses[className]
 
-        pyutClass:   PyutClass   = pyutClasses[className]
-
-        methodDict: PyutMethodHashIndex = self._buildMethodHashIndex(pyutMethods=pyutClass.methods)
-        testMethod: PyutMethod          = methodDict[methodName]
+        methodDict: MethodHashIndex = self._buildMethodHashIndex(methods=modelClass.methods)
+        testMethod: Method          = methodDict[methodName]
 
         self.assertEqual(visibility, testMethod.visibility, 'Method visibility is incorrect')
 
-    def _buildMethodHashIndex(self, pyutMethods: PyutMethods) -> PyutMethodHashIndex:
+    def _buildMethodHashIndex(self, methods: Methods) -> MethodHashIndex:
 
-        methodDict: PyutMethodHashIndex = PyutMethodHashIndex({})
-        for method in pyutMethods:
+        methodDict: MethodHashIndex = MethodHashIndex({})
+        for method in methods:
             methodDict[method.name] = method
 
         return methodDict
 
-    def _getSimpleDataClassFields(self) -> PyutFields:
+    def _getSimpleDataClassFields(self) -> Fields:
 
         visitor:     PythonPegParserVisitor = self._setupSimpleDataClassVisitor()
-        pyutClasses: PyutClasses            = visitor.pyutClasses
-        pyutClass:   PyutClass              = pyutClasses[SIMPLE_DATA_CLASS_NAME]
+        modelClasses: ModelClasses          = visitor.modelClasses
+        modelClass:   Class                 = modelClasses[SIMPLE_DATA_CLASS_NAME]
 
-        return pyutClass.fields
+        return modelClass.fields
 
     def _setupSimpleClassVisitor(self) -> PythonPegParserVisitor:
 
-        pyutClasses: PyutClasses = self._do1stPassPegBasedParser('SimpleClass.py')
+        modelClasses: ModelClasses = self._do1stPassPegBasedParser('SimpleClass.py')
 
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('SimpleClass.py')
         visitor: PythonPegParserVisitor           = PythonPegParserVisitor()
 
-        visitor.pyutClasses = pyutClasses
+        visitor.modelClasses = modelClasses
 
         visitor.visit(tree)
 
@@ -315,7 +314,7 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('SimpleDataClass.py')
         visitor: PythonPegParserVisitor         = PythonPegParserVisitor()
 
-        visitor.pyutClasses = self._do1stPassPegBasedParser('SimpleDataClass.py')
+        visitor.modelClasses = self._do1stPassPegBasedParser('SimpleDataClass.py')
 
         visitor.visit(tree)
 
@@ -341,14 +340,14 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
 
         return tree
 
-    def _do1stPassPegBasedParser(self, fileName: str) -> PyutClasses:
+    def _do1stPassPegBasedParser(self, fileName: str) -> ModelClasses:
 
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser(fileName=fileName)
         visitor: PythonPegParserClassVisitor    = PythonPegParserClassVisitor()
 
         visitor.visit(tree)
 
-        return visitor.pyutClasses
+        return visitor.modelClasses
 
 
 def suite() -> TestSuite:

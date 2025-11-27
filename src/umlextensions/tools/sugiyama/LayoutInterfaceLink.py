@@ -3,8 +3,7 @@ from typing import List
 from typing import Tuple
 from typing import cast
 
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
-
+from umlmodel.enumerations.LinkType import LinkType
 from umlshapes.links.UmlLink import UmlLink
 
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
@@ -42,13 +41,13 @@ class LayoutInterfaceLink:
         self._dstNode: SyntheticNode = cast(SyntheticNode, None)
 
     @property
-    def linkType(self) -> PyutLinkType:
+    def linkType(self) -> LinkType:
         """
         Return the link type
 
         Returns: Link type
         """
-        return self._umlLink.pyutLink.linkType
+        return self._umlLink.modelLink.linkType
 
     @property
     def source(self) -> SyntheticNode:

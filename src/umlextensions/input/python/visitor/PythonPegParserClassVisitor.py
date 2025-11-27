@@ -8,17 +8,17 @@ from logging import getLogger
 from os import linesep as osLineSep
 
 from antlr4 import ParserRuleContext
-from pyutmodelv2.PyutClass import PyutClass
-from pyutmodelv2.enumerations.PyutStereotype import PyutStereotype
+from umlmodel.Class import Class
+from umlmodel.enumerations.Stereotype import Stereotype
 
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
 
 from umlextensions.input.python.visitor.BaseVisitor import BaseVisitor
 from umlextensions.input.python.visitor.BaseVisitor import NO_CLASS_DEF_CONTEXT
 from umlextensions.input.python.visitor.ParserTypes import ParentName
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
 
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 from umlextensions.input.python.visitor.ParserTypes import VERSION
 
 ENUMERATION_SUPER_CLASS: str = 'Enum'
@@ -37,12 +37,12 @@ class PythonPegParserClassVisitor(BaseVisitor):
         self.logger: Logger = getLogger(__name__)
 
     @property
-    def pyutClasses(self) -> PyutClasses:
-        return self._pyutClasses
+    def modelClasses(self) -> ModelClasses:
+        return self._modelClasses
 
-    @pyutClasses.setter
-    def pyutClasses(self, pyutClasses: PyutClasses):
-        self._pyutClasses = pyutClasses
+    @modelClasses.setter
+    def modelClasses(self, modelClasses: ModelClasses):
+        self._modelClasses = modelClasses
 
     def visitClass_def(self, ctx: PythonParser.Class_defContext):
         """
@@ -54,10 +54,10 @@ class PythonPegParserClassVisitor(BaseVisitor):
         #
         # Check if we are an enumeration
         #
-        className: PyutClassName = self._extractClassName(ctx=ctx)
+        className: ModelClassName = self._extractClassName(ctx=ctx)
 
-        pyutClass: PyutClass = PyutClass(name=className)
-        pyutClass.description = self._generateMyCredits()
+        modelClass: Class = Class(name=className)
+        modelClass.description = self._generateMyCredits()
 
         argumentsCtx: PythonParser.ArgumentsContext = self._findArgListContext(ctx)
 
@@ -68,10 +68,10 @@ class PythonPegParserClassVisitor(BaseVisitor):
             parents: List[str] = parentName.split(',')
             for parent in parents:
                 if parent == ENUMERATION_SUPER_CLASS:
-                    pyutClass.stereotype = PyutStereotype.ENUMERATION
+                    modelClass.stereotype = Stereotype.ENUMERATION
                     break
 
-        self._pyutClasses[className] = pyutClass
+        self._modelClasses[className] = modelClass
 
         return self.visitChildren(ctx)
 
@@ -88,9 +88,10 @@ class PythonPegParserClassVisitor(BaseVisitor):
             if classCtx == NO_CLASS_DEF_CONTEXT:
                 pass
             else:
-                className: PyutClassName                 = self._extractClassName(ctx=classCtx)
-                pyutClass: PyutClass                     = self._pyutClasses[className]
-                if pyutClass.stereotype == PyutStereotype.ENUMERATION:
+                className: ModelClassName = self._extractClassName(ctx=classCtx)
+                modelClass: Class         = self._modelClasses[className]
+
+                if modelClass.stereotype == Stereotype.ENUMERATION:
                     if len(ctx.children) >= 2:
                         enumName:     str = ctx.children[0].getText()
                         defaultValue: str = ctx.children[2].getText()
@@ -117,12 +118,12 @@ class PythonPegParserClassVisitor(BaseVisitor):
                 className = typeValueList[0].strip("'").strip('"')
                 self.logger.debug(f'{className}')
 
-                pyutClass: PyutClass = PyutClass(name=className)
+                modelClass: Class = Class(name=className)
 
-                pyutClass.description = self._generateMyCredits()
-                pyutClass.stereotype  = PyutStereotype.TYPE
+                modelClass.description = self._generateMyCredits()
+                modelClass.stereotype  = Stereotype.TYPE
 
-                self._pyutClasses[className] = pyutClass
+                self._modelClasses[className] = modelClass
 
         return self.visitChildren(ctx)
 

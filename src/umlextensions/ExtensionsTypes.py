@@ -1,5 +1,5 @@
 #
-#  These types are visible to the extension adapter the
+#  These types are visible to the extension adapter and the
 #  implementor of the adapter
 #
 from typing import cast
@@ -8,8 +8,9 @@ from typing import Callable
 from dataclasses import dataclass
 from dataclasses import field
 
-from umlshapes.frames.UmlFrame import UmlFrame
 from wx import ClientDC
+
+from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.ShapeTypes import umlShapesFactory
@@ -18,7 +19,7 @@ from umlshapes.ShapeTypes import umlShapesFactory
 @dataclass
 class FrameSize:
     """
-    The strategy is to provide minimal information to the pyutplugins
+    The strategy is to provide minimal information to the extensions
     we do not want them to not abuse it.
     """
     width:  int = -1

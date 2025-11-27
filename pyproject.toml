@@ -20,12 +20,12 @@ classifiers = [
 ]
 
 dependencies = [
-    'wxPython~=4.2.3',
+    'wxPython~=4.2.4',
     'codeallybasic>=1.30.0',
     'codeallyadvanced>=2.2.0',
-    'pyutmodelv2>=2.2.6',
-    'umlshapes>=0.9.317',
-    'umlio>=0.4.8',
+    'umlmodel>=3.4.0',
+    'umlshapes>=1.1.0',
+    'umlio>=0.5.0',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.3',
 ]

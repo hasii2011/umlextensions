@@ -1,3 +1,5 @@
+
+
 from typing import Union
 from typing import cast
 
@@ -6,15 +8,17 @@ from logging import getLogger
 
 from antlr4 import ParserRuleContext
 from antlr4.tree.Tree import TerminalNodeImpl
+
 from codeallybasic.ConfigurationProperties import PropertyName
-from pyutmodelv2.PyutClass import PyutClass
-from pyutmodelv2.PyutField import PyutField
-from pyutmodelv2.PyutType import PyutType
-from pyutmodelv2.enumerations.PyutVisibility import PyutVisibility
+
+from umlmodel.Class import Class
+from umlmodel.Field import Field
+from umlmodel.FieldType import FieldType
+from umlmodel.enumerations.Visibility import Visibility
 
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 
 from umlextensions.input.python.pythonpegparser.PythonParserVisitor import PythonParserVisitor
 
@@ -26,7 +30,7 @@ class BaseVisitor(PythonParserVisitor):
         super().__init__()
         self.baseLogger: Logger = getLogger(__name__)
 
-        self._pyutClasses:  PyutClasses = PyutClasses({})
+        self._modelClasses:  ModelClasses = ModelClasses({})
 
     def _isThisAssignmentInsideAMethod(self, ctx: PythonParser.AssignmentContext) -> bool:
 
@@ -38,7 +42,7 @@ class BaseVisitor(PythonParserVisitor):
 
         return ans
 
-    def _makeFieldForClass(self, className: PyutClassName, propertyName: Union[PropertyName, str], typeStr: str, defaultValue: str):
+    def _makeFieldForClass(self, className: ModelClassName, propertyName: Union[PropertyName, str], typeStr: str, defaultValue: str):
         """
 
         Args:
@@ -47,12 +51,12 @@ class BaseVisitor(PythonParserVisitor):
             typeStr:
             defaultValue:
         """
-        pyutField: PyutField = PyutField(name=propertyName, type=PyutType(typeStr), visibility=PyutVisibility.PUBLIC, defaultValue=defaultValue)
-        pyutClass: PyutClass = self._pyutClasses[className]
+        field:      Field = Field(name=propertyName, type=FieldType(typeStr), visibility=Visibility.PUBLIC, defaultValue=defaultValue)
+        modelClass: Class = self._modelClasses[className]
 
-        pyutClass.fields.append(pyutField)
+        modelClass.fields.append(field)
 
-    def _extractClassName(self, ctx: PythonParser.Class_defContext) -> PyutClassName:
+    def _extractClassName(self, ctx: PythonParser.Class_defContext) -> ModelClassName:
         """
         Get a class name from a Class_defContext
         Args:
@@ -64,7 +68,7 @@ class BaseVisitor(PythonParserVisitor):
         child:     PythonParser.Class_def_rawContext = ctx.class_def_raw()
         # name:      TerminalNodeImpl                  = child.NAME()
         name:      TerminalNodeImpl = child.name()
-        className: PyutClassName    = name.getText()
+        className: ModelClassName    = name.getText()
 
         return className
 

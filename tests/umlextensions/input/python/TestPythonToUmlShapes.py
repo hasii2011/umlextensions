@@ -7,7 +7,8 @@ from importlib.resources import files
 from importlib.resources.abc import Traversable
 
 from codeallyadvanced.ui.UnitTestBaseW import UnitTestBaseW
-from pyutmodelv2.PyutClass import PyutClass
+from umlmodel.Class import Class
+
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.lib.ogl import OGLInitialize
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
@@ -15,14 +16,10 @@ from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
 from umlextensions.input.python.PythonToUmlShapes import PythonToUmlShapes
 from umlextensions.input.python.PythonToUmlShapes import UmlClassesDict
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 
 EXPECTED_PASS1_CLASSES: int = 2
-
-
-# import the class you want to test here
-# from org.pyut.template import template
 
 
 class TestPythonToUmlShapes(UnitTestBaseW):
@@ -50,17 +47,17 @@ class TestPythonToUmlShapes(UnitTestBaseW):
         fileList:    List[str]   = ['SimpleClass.py', 'SimpleDataClass.py']
 
         pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=self._classDiagramFrame, umlPubSubEngine=self._umlPubSubEngine)
-        pyutClasses:       PyutClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
-                                                                       files=fileList,
-                                                                       progressCallback=self._progressCallback,
-                                                                       )
+        modelClasses:      ModelClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
+                                                                        files=fileList,
+                                                                        progressCallback=self._progressCallback,
+                                                                        )
 
-        self.assertEqual(EXPECTED_PASS1_CLASSES, len(pyutClasses), 'Not enough data model classes')
+        self.assertEqual(EXPECTED_PASS1_CLASSES, len(modelClasses), 'Not enough data model classes')
 
-        simpleClass: PyutClass = pyutClasses[PyutClassName('SimpleClass')]
+        simpleClass: Class = modelClasses[ModelClassName('SimpleClass')]
         self.assertEqual('SimpleClass', simpleClass.name, 'Name mismatch')
 
-        simpleClass = pyutClasses[PyutClassName('SimpleDataClass')]
+        simpleClass = modelClasses[ModelClassName('SimpleDataClass')]
         self.assertEqual('SimpleDataClass', simpleClass.name, 'Name mismatch')
 
     def testPass2DeepInheritance(self):
@@ -69,20 +66,20 @@ class TestPythonToUmlShapes(UnitTestBaseW):
         fileList:    List[str]   = ['DeepInheritance.py']
 
         pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=self._classDiagramFrame, umlPubSubEngine=self._umlPubSubEngine)
-        pyutClasses:       PyutClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
-                                                                       files=fileList,
-                                                                       progressCallback=self._progressCallback,
-                                                                       )
-        self.logger.info(f'{len(pyutClasses)=}')
+        modelClasses:      ModelClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
+                                                                        files=fileList,
+                                                                        progressCallback=self._progressCallback,
+                                                                        )
+        self.logger.info(f'{len(modelClasses)=}')
 
-        updatedPyutClasses: PyutClasses = pythonToUmlShapes.pass2(directoryName=str(traversable),
-                                                                  files=fileList,
-                                                                  pyutClasses=pyutClasses,
-                                                                  progressCallback=self._progressCallback
-                                                                  )
-        self.logger.info(f'{len(updatedPyutClasses)=}')
+        updatedModelClasses: ModelClasses = pythonToUmlShapes.pass2(directoryName=str(traversable),
+                                                                    files=fileList,
+                                                                    modelClasses=modelClasses,
+                                                                    progressCallback=self._progressCallback
+                                                                    )
+        self.logger.info(f'{len(updatedModelClasses)=}')
 
-        umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(updatedPyutClasses)
+        umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(updatedModelClasses)
 
         self.logger.info(f'{umlClassesDict=}')
 
@@ -95,20 +92,20 @@ class TestPythonToUmlShapes(UnitTestBaseW):
         fileList:    List[str]   = ['AssociationClasses.py']
 
         pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=self._classDiagramFrame, umlPubSubEngine=self._umlPubSubEngine)
-        pyutClasses:       PyutClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
-                                                                       files=fileList,
-                                                                       progressCallback=self._progressCallback,
-                                                                       )
-        self.logger.info(f'{len(pyutClasses)=}')
+        modelClasses:      ModelClasses       = pythonToUmlShapes.pass1(directoryName=str(traversable),
+                                                                        files=fileList,
+                                                                        progressCallback=self._progressCallback,
+                                                                        )
+        self.logger.info(f'{len(modelClasses)=}')
 
-        updatedPyutClasses: PyutClasses = pythonToUmlShapes.pass2(directoryName=str(traversable),
-                                                                  files=fileList,
-                                                                  pyutClasses=pyutClasses,
-                                                                  progressCallback=self._progressCallback
-                                                                  )
-        self.logger.info(f'{len(updatedPyutClasses)=}')
+        updatedModelClasses: ModelClasses = pythonToUmlShapes.pass2(directoryName=str(traversable),
+                                                                    files=fileList,
+                                                                    modelClasses=modelClasses,
+                                                                    progressCallback=self._progressCallback
+                                                                    )
+        self.logger.info(f'{len(updatedModelClasses)=}')
 
-        umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(updatedPyutClasses)
+        umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(updatedModelClasses)
 
         self.logger.info(f'{umlClassesDict=}')
         pythonToUmlShapes.generateLinks(umlClassesDict=umlClassesDict)

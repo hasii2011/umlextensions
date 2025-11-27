@@ -11,7 +11,7 @@ from umlextensions.input.python.visitor.ParserTypes import ChildName
 from umlextensions.input.python.visitor.ParserTypes import Children
 from umlextensions.input.python.visitor.ParserTypes import ParentName
 from umlextensions.input.python.visitor.ParserTypes import Parents
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
 
 
 class ParentsDictionaryHandler:
@@ -30,7 +30,7 @@ class ParentsDictionaryHandler:
     def parents(self, newValue: Parents):
         self._parents = newValue
 
-    def createParentChildEntry(self, argumentsCtx: PythonParser.ArgumentsContext, childName: Union[PyutClassName, ChildName]):
+    def createParentChildEntry(self, argumentsCtx: PythonParser.ArgumentsContext, childName: Union[ModelClassName, ChildName]):
 
         args:       PythonParser.ArgsContext = argumentsCtx.args()
         parentName: ParentName               = ParentName(args.getText())
@@ -42,7 +42,7 @@ class ParentsDictionaryHandler:
         else:
             self._updateParentsDictionary(parentName=parentName, childName=childName)
 
-    def _handleMultiParentChild(self, multiParents: List[str], childName: Union[PyutClassName, ChildName]):
+    def _handleMultiParentChild(self, multiParents: List[str], childName: Union[ModelClassName, ChildName]):
         """
 
         Args:
@@ -61,7 +61,7 @@ class ParentsDictionaryHandler:
                 parentName = ParentName(parent)
                 self._updateParentsDictionary(parentName=parentName, childName=childName)
 
-    def _updateParentsDictionary(self, parentName: ParentName, childName: Union[PyutClassName, ChildName]):
+    def _updateParentsDictionary(self, parentName: ParentName, childName: Union[ModelClassName, ChildName]):
         """
         Update our dictionary of parents. If the parent dictionary
         does not have an entry, create one with the single child.

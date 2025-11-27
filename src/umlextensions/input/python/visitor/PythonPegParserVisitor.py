@@ -13,13 +13,14 @@ from dataclasses import dataclass
 
 from antlr4.tree.Tree import TerminalNodeImpl
 
-from pyutmodelv2.PyutType import PyutType
-from pyutmodelv2.PyutClass import PyutClass
-from pyutmodelv2.PyutMethod import PyutMethods
-from pyutmodelv2.PyutMethod import PyutMethod
-from pyutmodelv2.PyutMethod import SourceCode
-from pyutmodelv2.PyutParameter import PyutParameter
-from pyutmodelv2.enumerations.PyutVisibility import PyutVisibility
+from umlmodel.Class import Class
+from umlmodel.Method import Method
+from umlmodel.Method import Methods
+from umlmodel.Method import SourceCode
+from umlmodel.Parameter import Parameter
+from umlmodel.ParameterType import ParameterType
+from umlmodel.ReturnType import ReturnType
+from umlmodel.enumerations.Visibility import Visibility
 
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
 
@@ -35,8 +36,8 @@ from umlextensions.input.python.visitor.ParserTypes import Parents
 from umlextensions.input.python.visitor.ParserTypes import PropertyMap
 from umlextensions.input.python.visitor.ParserTypes import PropertyName
 from umlextensions.input.python.visitor.ParserTypes import PropertyNames
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 from umlextensions.input.python.visitor.ParentsDictionaryHandler import ParentsDictionaryHandler
 
 MethodName    = NewType('MethodName', str)
@@ -96,19 +97,19 @@ class PythonPegParserVisitor(BaseVisitor):
         self._parentsDictionaryHandler: ParentsDictionaryHandler = ParentsDictionaryHandler()
 
     @property
-    def pyutClasses(self) -> PyutClasses:
-        return self._pyutClasses
+    def modelClasses(self) -> ModelClasses:
+        return self._modelClasses
 
-    @pyutClasses.setter
-    def pyutClasses(self, pyutClasses: PyutClasses):
+    @modelClasses.setter
+    def modelClasses(self, modelClasses: ModelClasses):
 
-        classNames = pyutClasses.keys()
+        classNames = modelClasses.keys()
         #
         # Create property map for each class
         #
         for className in classNames:
             self._propertyMap[className] = PropertyNames([])
-        self._pyutClasses = pyutClasses
+        self._modelClasses = modelClasses
 
     @property
     def parents(self) -> Parents:
@@ -134,7 +135,7 @@ class PythonPegParserVisitor(BaseVisitor):
             ctx:
 
         """
-        className: PyutClassName = self._extractClassName(ctx=ctx)
+        className: ModelClassName = self._extractClassName(ctx=ctx)
 
         self.logger.debug(f'{className=}')
 
@@ -155,32 +156,32 @@ class PythonPegParserVisitor(BaseVisitor):
 
         if classCtx != NO_CLASS_DEF_CONTEXT:
 
-            className:     PyutClassName = self._extractClassName(ctx=classCtx)
+            className:     ModelClassName = self._extractClassName(ctx=classCtx)
             methodName:    MethodName    = self._extractMethodName(ctx=ctx.function_def_raw())
             returnTypeStr: str           = self._extractReturnType(ctx=ctx)
 
-            pyutVisibility: PyutVisibility = PyutVisibility.PUBLIC
+            visibility: Visibility = Visibility.PUBLIC
             if methodName in MAGIC_DUNDER_METHODS:
                 pass
             elif methodName.startswith(PRIVATE_INDICATOR):
-                pyutVisibility = PyutVisibility.PRIVATE
+                visibility = Visibility.PRIVATE
             elif methodName.startswith(PROTECTED_INDICATOR):
-                pyutVisibility = PyutVisibility.PROTECTED
+                visibility = Visibility.PROTECTED
 
             if self._isProperty(ctx) is True:
                 self._makePropertyEntry(className=className, methodName=methodName)
                 self._handleField(ctx=ctx)
             else:
                 self.logger.debug(f'{methodName=}')
-                if className not in self._pyutClasses:
+                if className not in self._modelClasses:
                     assert False, f'This should not happen missing class name for: {methodName}'
                 else:
-                    pyutClass:  PyutClass  = self._pyutClasses[className]
-                    pyutMethod: PyutMethod = PyutMethod(name=methodName, returnType=PyutType(returnTypeStr), visibility=pyutVisibility)
+                    modelClass: Class  = self._modelClasses[className]
+                    method:     Method = Method(name=methodName, returnType=ReturnType(returnTypeStr), visibility=visibility)
 
                     try:
-                        pyutMethod.sourceCode = self._currentCode
-                        pyutClass.methods.append(pyutMethod)
+                        method.sourceCode = self._currentCode
+                        modelClass.methods.append(method)
                     except Exception as e:
                         self.logger.error(f'{e=}')
                         self.logger.error(f'Missing source code for {className}.{methodName}')
@@ -209,7 +210,7 @@ class PythonPegParserVisitor(BaseVisitor):
         else:
             methodCtx: PythonParser.Function_defContext = self._extractMethodContext(ctx)
 
-            className:    PyutClassName    = self._extractClassName(ctx=classCtx)
+            className:    ModelClassName    = self._extractClassName(ctx=classCtx)
             propertyName: PropertyName = self._extractPropertyName(ctx=methodCtx.function_def_raw())
             if self._isThisAParameterListForAProperty(className=className, propertyName=propertyName) is True:
                 pass
@@ -249,7 +250,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
             if self._isThisAnAssignmentForADataClass(ctx=classDefContext) is True and self._isThisAssignmentInsideAMethod(ctx=ctx) is False:
 
-                className: PyutClassName = self._extractClassName(ctx=classDefContext)
+                className: ModelClassName = self._extractClassName(ctx=classDefContext)
                 self.logger.debug(f'{className} is a data class')
                 if len(ctx.children) == 5:
                     self._handleFullField(className, ctx)
@@ -336,7 +337,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
         return returnTypeStr
 
-    def _makePropertyEntry(self, className: PyutClassName, methodName: MethodName):
+    def _makePropertyEntry(self, className: ModelClassName, methodName: MethodName):
         """
         Make an entry into the property map.  This ensures that we do not try to create
         arguments for an annotated method when we visit the method parameters
@@ -359,7 +360,7 @@ class PythonPegParserVisitor(BaseVisitor):
         classCtx:  PythonParser.Class_defContext    = self._extractClassDefContext(ctx)
         methodCtx: PythonParser.Function_defContext = self._extractMethodContext(ctx)
 
-        className:    PyutClassName  = self._extractClassName(ctx=classCtx)
+        className:    ModelClassName  = self._extractClassName(ctx=classCtx)
         propertyName: PropertyName   = self._extractPropertyName(ctx=methodCtx.function_def_raw())
         self.logger.debug(f'{className} property name: {propertyName}')
         #
@@ -386,7 +387,7 @@ class PythonPegParserVisitor(BaseVisitor):
             typeStr:
 
         """
-        if typeStr in self._pyutClasses:
+        if typeStr in self._modelClasses:
 
             associateName: AssociateName = AssociateName(typeStr)
             associate:     Associate     = Associate(associateName=associateName, associationType=AssociationType.ASSOCIATION)
@@ -409,7 +410,7 @@ class PythonPegParserVisitor(BaseVisitor):
                     break
         return ans
 
-    def _handleFullField(self, className: PyutClassName, ctx: PythonParser.AssignmentContext):
+    def _handleFullField(self, className: ModelClassName, ctx: PythonParser.AssignmentContext):
         """
         From within a data class
         Full annotated and with default value
@@ -424,7 +425,7 @@ class PythonPegParserVisitor(BaseVisitor):
         self._makeFieldForClass(className=className, propertyName=fieldName, typeStr=typeStr, defaultValue=fieldValue)
         self._makeAssociationEntry(className=className, typeStr=typeStr)
 
-    def _handleNoDefaultValueField(self, className: PyutClassName, ctx: PythonParser.AssignmentContext):
+    def _handleNoDefaultValueField(self, className: ModelClassName, ctx: PythonParser.AssignmentContext):
         """
         From inside a data class
         no default value
@@ -439,7 +440,7 @@ class PythonPegParserVisitor(BaseVisitor):
         self._makeFieldForClass(className=className, propertyName=fieldName, typeStr=typeStr, defaultValue='')
         self._makeAssociationEntry(className=className, typeStr=typeStr)
 
-    def _handleNoTypeSpecifiedField(self, className: PyutClassName, ctx: PythonParser.AssignmentContext):
+    def _handleNoTypeSpecifiedField(self, className: ModelClassName, ctx: PythonParser.AssignmentContext):
         """
         From inside a data class
 
@@ -452,7 +453,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
         self._makeFieldForClass(className=className, propertyName=fieldName, typeStr='', defaultValue=defaultValue)
 
-    def _isThisAParameterListForAProperty(self, className: PyutClassName, propertyName: PropertyName):
+    def _isThisAParameterListForAProperty(self, className: ModelClassName, propertyName: PropertyName):
         ans: bool = False
 
         propertyNames: PropertyNames = self._propertyMap[className]
@@ -461,7 +462,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
         return ans
 
-    def _handleFullParameters(self, className: PyutClassName, methodName: MethodName, defaultContexts: List[PythonParser.Param_with_defaultContext]):
+    def _handleFullParameters(self, className: ModelClassName, methodName: MethodName, defaultContexts: List[PythonParser.Param_with_defaultContext]):
         """
         Handles these type:
             fullScale(self, intParameter: int = 0, floatParameter: float = 42.0, stringParameter: str = ''):
@@ -474,10 +475,10 @@ class PythonPegParserVisitor(BaseVisitor):
             defaultAssignment: PythonParser.Default_assignmentContext = withDefaultCtx.default_assignment()
             expr:               str                                   = defaultAssignment.children[1].getText()
 
-            pyutParameter: PyutParameter = PyutParameter(name=nameAndType.name, type=PyutType(nameAndType.typeName), defaultValue=expr)
-            self._updateModelMethodParameter(className=className, methodName=methodName, pyutParameter=pyutParameter)
+            parameter: Parameter = Parameter(name=nameAndType.name, type=ParameterType(nameAndType.typeName), defaultValue=expr)
+            self._updateModelMethodParameter(className=className, methodName=methodName, parameter=parameter)
 
-    def _handleTypeAnnotated(self, className: PyutClassName, methodName: MethodName, noDefaultContexts: List[PythonParser.Param_no_defaultContext]):
+    def _handleTypeAnnotated(self, className: ModelClassName, methodName: MethodName, noDefaultContexts: List[PythonParser.Param_no_defaultContext]):
 
         for noDefaultCtx in noDefaultContexts:
             paramCtx:    PythonParser.ParamContext = noDefaultCtx.param()
@@ -486,9 +487,9 @@ class PythonPegParserVisitor(BaseVisitor):
             if nameAndType.name == PARAMETER_SELF:
                 continue
 
-            pyutParameter: PyutParameter = PyutParameter(name=nameAndType.name, type=PyutType(nameAndType.typeName))
+            parameter: Parameter = Parameter(name=nameAndType.name, type=ParameterType(nameAndType.typeName))
 
-            self._updateModelMethodParameter(className=className, methodName=methodName, pyutParameter=pyutParameter)
+            self._updateModelMethodParameter(className=className, methodName=methodName, parameter=parameter)
 
     def _extractParameterNameAndType(self, paramCtx: PythonParser.ParamContext) -> ParameterNameAndType:
 
@@ -504,24 +505,24 @@ class PythonPegParserVisitor(BaseVisitor):
 
         return ParameterNameAndType(name=paramName, typeName=typeStr)
 
-    def _updateModelMethodParameter(self, className: PyutClassName, methodName: MethodName, pyutParameter: PyutParameter):
+    def _updateModelMethodParameter(self, className: ModelClassName, methodName: MethodName, parameter: Parameter):
 
-        self.logger.debug(f'{pyutParameter=}')
+        self.logger.debug(f'{parameter=}')
 
-        pyutClass:  PyutClass  = self._pyutClasses[className]
-        pyutMethod: PyutMethod = self._findModelMethod(methodName=methodName, pyutClass=pyutClass)
+        modelClass: Class  = self._modelClasses[className]
+        method:     Method = self._findModelMethod(methodName=methodName, modelClass=modelClass)
 
-        pyutMethod.addParameter(parameter=pyutParameter)
+        method.addParameter(parameter=parameter)
 
-    def _findModelMethod(self, pyutClass: PyutClass, methodName: MethodName) -> PyutMethod:
+    def _findModelMethod(self, modelClass: Class, methodName: MethodName) -> Method:
 
-        foundMethod: PyutMethod = cast(PyutMethod, None)
+        foundMethod: Method = cast(Method, None)
 
-        pyutMethods: PyutMethods = pyutClass.methods
-        for method in pyutMethods:
-            pyutMethod: PyutMethod = cast(PyutMethod, method)
-            if pyutMethod.name == methodName:
-                foundMethod = pyutMethod
+        methods: Methods = modelClass.methods
+        for m in methods:
+            method: Method = cast(Method, m)
+            if method.name == methodName:
+                foundMethod = method
                 break
 
         return foundMethod

@@ -9,8 +9,7 @@ from logging import getLogger
 
 from copy import copy
 
-from pyutmodelv2.enumerations.PyutLinkType import PyutLinkType
-
+from umlmodel.enumerations.LinkType import LinkType
 from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.shapes.UmlNote import UmlNote
@@ -343,7 +342,7 @@ class Sugiyama:
         # For all links
         for link in self._sugiyamaLinksList:
             # If hierarchical link
-            if link.linkType == PyutLinkType.INHERITANCE or link.linkType == PyutLinkType.INTERFACE:
+            if link.linkType == LinkType.INHERITANCE or link.linkType == LinkType.INTERFACE:
 
                 # Add virtual nodes
                 addVirtualNodesOnHierarchicalLink(link)

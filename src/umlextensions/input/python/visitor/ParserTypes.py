@@ -8,23 +8,23 @@ from enum import Enum
 
 from dataclasses import dataclass
 
-from pyutmodelv2.PyutClass import PyutClass
+from umlmodel.Class import Class
 
 VERSION: str = '3.0'
 
-PyutClassName = NewType('PyutClassName', str)
-ParentName    = NewType('ParentName',    str)
-PropertyName  = NewType('PropertyName',  str)
-ChildName     = NewType('ChildName',     str)
+ModelClassName = NewType('ModelClassName', str)
+ParentName     = NewType('ParentName',     str)
+PropertyName   = NewType('PropertyName',   str)
+ChildName      = NewType('ChildName',      str)
 
 PropertyNames = NewType('PropertyNames', List[PropertyName])
-PyutClasses   = NewType('PyutClasses',   Dict[PyutClassName, PyutClass])
+ModelClasses  = NewType('ModelClasses',  Dict[ModelClassName, Class])
 
-PropertyMap   = NewType('PropertyMap',    Dict[PyutClassName, PropertyNames])
-Children      = List[Union[PyutClassName, ChildName]]
+PropertyMap   = NewType('PropertyMap', Dict[ModelClassName, PropertyNames])
+Children      = List[Union[ModelClassName, ChildName]]
 Parents       = NewType('Parents',        Dict[ParentName,    Children])
 
-AssociateName = PyutClassName
+AssociateName = ModelClassName
 
 class AssociationType(Enum):
 
@@ -47,12 +47,12 @@ Associates = NewType('Associates', List[Associate])
 #     @property
 #     def pages(self) -> Pages:
 #         return self._pages
-# In the above "Pages" is the AssociateName and goes in the List for the method containing PyutClassName
+# In the above "Pages" is the AssociateName and goes in the List for the method containing ModelClassName
 #
 # e.g.
 #  self.pages: Pages = Pages({})
 #
-#  Pages is the AssociateName and the enclosing class for the __init__ method is the PyutClassName
+#  Pages is the AssociateName and the enclosing class for the __init__ method is the ModelClassName
 #
 #
-Associations = NewType('Associations', Dict[PyutClassName, Associates])
+Associations = NewType('Associations', Dict[ModelClassName, Associates])

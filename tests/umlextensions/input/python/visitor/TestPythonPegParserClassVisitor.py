@@ -2,27 +2,27 @@
 from unittest import TestSuite
 from unittest import main as unitTestMain
 
-from antlr4 import CommonTokenStream
 from antlr4 import FileStream
+from antlr4 import CommonTokenStream
 from antlr4.error.ErrorListener import ConsoleErrorListener
 
 from codeallybasic.UnitTestBase import UnitTestBase
 
-from pyutmodelv2.PyutClass import PyutClass
-from pyutmodelv2.PyutField import PyutField
-from pyutmodelv2.PyutField import PyutFields
-from pyutmodelv2.PyutType import PyutType
-from pyutmodelv2.enumerations.PyutStereotype import PyutStereotype
+from umlmodel.Class import Class
+from umlmodel.Field import Field
+from umlmodel.Field import Fields
+from umlmodel.FieldType import FieldType
+from umlmodel.enumerations.Stereotype import Stereotype
 
-from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import PyutFieldHashIndex
 from umlextensions.input.python.pythonpegparser.PythonLexer import PythonLexer
 from umlextensions.input.python.pythonpegparser.PythonParser import PythonParser
-from umlextensions.input.python.visitor.ParserTypes import PyutClassName
+from umlextensions.input.python.visitor.ParserTypes import ModelClassName
 
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 from umlextensions.input.python.visitor.PythonPegParserClassVisitor import PythonPegParserClassVisitor
 
 from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor
+from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import ModelFieldHashIndex
 
 class PythonErrorListener(ConsoleErrorListener):
     pass
@@ -47,29 +47,29 @@ class TestPythonPegParserClassVisitor(BaseTestPythonPegVisitor):
 
     def testParseEnumeration(self):
 
-        pyutClasses: PyutClasses = self._parseSimpleEnumeration()
-        classNames = pyutClasses.keys()
+        modelClasses: ModelClasses = self._parseSimpleEnumeration()
+        classNames = modelClasses.keys()
         self.assertIn('SimpleEnumeration', classNames, 'Missing enumeration')
 
     def testParseEnumerationFields(self):
-        pyutClasses: PyutClasses = self._parseSimpleEnumeration()
-        pyutClass:   PyutClass   = pyutClasses[PyutClassName('SimpleEnumeration')]
+        modelClasses: ModelClasses = self._parseSimpleEnumeration()
+        modelClass:   Class        = modelClasses[ModelClassName('SimpleEnumeration')]
 
-        self.assertEqual(PyutStereotype.ENUMERATION, pyutClass.stereotype, 'Enumerations need to be stereotyped correctly')
+        self.assertEqual(Stereotype.ENUMERATION, modelClass.stereotype, 'Enumerations need to be stereotyped correctly')
 
-        self.assertEqual(5, len(pyutClass.fields), 'Number of enumeration fields does not match')
+        self.assertEqual(5, len(modelClass.fields), 'Number of enumeration fields does not match')
 
     def testEnumerationFieldValues(self):
 
-        pyutClasses: PyutClasses = self._parseSimpleEnumeration()
-        pyutClass:   PyutClass   = pyutClasses[PyutClassName('SimpleEnumeration')]
+        modelClasses: ModelClasses = self._parseSimpleEnumeration()
+        modelClass:   Class        = modelClasses[ModelClassName('SimpleEnumeration')]
 
-        fields: PyutFields         = pyutClass.fields
-        index:  PyutFieldHashIndex = self._makeFieldIndex(pyutFields=fields)
+        fields: Fields         = modelClass.fields
+        index:  ModelFieldHashIndex = self._makeFieldIndex(modelFields=fields)
 
-        enumField: PyutField = index['Fks']
+        enumField: Field = index['Fks']
         self.assertEqual("'Frances K. Sanchez'", enumField.defaultValue, 'Did not parse value correctly')
-        self.assertEqual(PyutType(''),           enumField.type,         'Should have an empty type')
+        self.assertEqual(FieldType(''),           enumField.type,        'Should have an empty field type')
 
     def testClassParsed(self):
 
@@ -78,11 +78,11 @@ class TestPythonPegParserClassVisitor(BaseTestPythonPegVisitor):
 
         visitor.visit(tree)
 
-        pyutClasses: PyutClasses = visitor.pyutClasses
-        classNames = pyutClasses.keys()
+        modelClasses: ModelClasses = visitor.modelClasses
+        classNames = modelClasses.keys()
         self.assertIn('SimpleClass', classNames, 'Missing class name')
-        pyutClass: PyutClass = pyutClasses[PyutClassName('SimpleClass')]
-        self.logger.debug(f'{pyutClass=}')
+        modelClass: Class = modelClasses[ModelClassName('SimpleClass')]
+        self.logger.debug(f'{modelClass=}')
 
     def testRetrieveClassNames(self):
 
@@ -93,7 +93,7 @@ class TestPythonPegParserClassVisitor(BaseTestPythonPegVisitor):
         #
         # 3 regular and 2 synthetic classes
         #
-        self.assertEqual(5, len(visitor.pyutClasses), 'Oops class names parsed, mismatch')
+        self.assertEqual(5, len(visitor.modelClasses), 'Oops class names parsed, mismatch')
 
     def testSynthesizedTypes(self):
 
@@ -102,9 +102,9 @@ class TestPythonPegParserClassVisitor(BaseTestPythonPegVisitor):
 
         visitor.visit(tree)
 
-        pyutClasses: PyutClasses = visitor.pyutClasses
+        modelClasses: ModelClasses = visitor.modelClasses
 
-        classNames = pyutClasses.keys()
+        classNames = modelClasses.keys()
         self.assertIn('Pages',    classNames, 'Missing `Pages` class name')
         self.assertIn('Chapters', classNames, 'Missing `Chapters` class name')
 
@@ -114,17 +114,17 @@ class TestPythonPegParserClassVisitor(BaseTestPythonPegVisitor):
         visitor: PythonPegParserClassVisitor    = PythonPegParserClassVisitor()
 
         visitor.visit(tree)
-        pyutClasses: PyutClasses = visitor.pyutClasses
+        modelClasses: ModelClasses = visitor.modelClasses
 
-        syntheticNames = pyutClasses.keys()
+        syntheticNames = modelClasses.keys()
         self.assertIn('SyntheticType', syntheticNames, 'Missing class name')
 
-    def _parseSimpleEnumeration(self) -> PyutClasses:
+    def _parseSimpleEnumeration(self) -> ModelClasses:
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('SimpleEnumeration.py')
         visitor: PythonPegParserClassVisitor      = PythonPegParserClassVisitor()
 
         visitor.visit(tree)
-        return visitor.pyutClasses
+        return visitor.modelClasses
 
     def _setupPegBasedParser(self, fileName: str) -> PythonParser.File_inputContext:
 

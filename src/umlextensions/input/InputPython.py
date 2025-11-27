@@ -50,7 +50,7 @@ from umlextensions.input.python.PythonParseException import PythonParseException
 from umlextensions.input.python.PythonToUmlShapes import PythonToUmlShapes
 from umlextensions.input.python.PythonToUmlShapes import UmlClassesDict
 
-from umlextensions.input.python.visitor.ParserTypes import PyutClasses
+from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 
 FORMAT_NAME:           FormatName           = FormatName("Python File(s)")
 FILE_SUFFIX:           FileSuffix           = FileSuffix('py')
@@ -123,10 +123,10 @@ class InputPython(BaseInputExtension):
             classDiagramFrame: ClassDiagramFrame = cast(ClassDiagramFrame, self._frameInformation.umlFrame)
             pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=classDiagramFrame, umlPubSubEngine=self._extensionsFacade.umlPubSubEngine)
 
-            pyutClasses: PyutClasses = self._collectPyutClassesInPass1(pythonToUmlShapes=pythonToUmlShapes)
-            pyutClasses              = self._enhancePyutClassesInPass2(pythonToUmlShapes=pythonToUmlShapes, pyutClasses=pyutClasses)
+            modelClasses: ModelClasses = self._collectModelClassesInPass1(pythonToUmlShapes=pythonToUmlShapes)
+            modelClasses              = self._enhanceModelClassesInPass2(pythonToUmlShapes=pythonToUmlShapes, modelClasses=modelClasses)
 
-            umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(pyutClasses)
+            umlClassesDict: UmlClassesDict = pythonToUmlShapes.generateUmlClasses(modelClasses)
             pythonToUmlShapes.generateLinks(umlClassesDict)
 
             self._readProgressDlg.Destroy()
@@ -148,32 +148,33 @@ class InputPython(BaseInputExtension):
 
         return status
 
-    def _collectPyutClassesInPass1(self, pythonToUmlShapes: PythonToUmlShapes) -> PyutClasses:
+    def _collectModelClassesInPass1(self, pythonToUmlShapes: PythonToUmlShapes) -> ModelClasses:
 
-        cumulativePyutClasses: PyutClasses = PyutClasses({})
+        cumulativeModelClasses: ModelClasses = ModelClasses({})
         for directory in self._importPackages:
             importPackage: Package = cast(Package, directory)
 
-            currentPyutClasses: PyutClasses = pythonToUmlShapes.pass1(directoryName=importPackage.packageName,
-                                                                      files=importPackage.importModules,
-                                                                      progressCallback=self._readProgressCallback)
+            currentModelClasses: ModelClasses = pythonToUmlShapes.pass1(directoryName=importPackage.packageName,
+                                                                        files=importPackage.importModules,
+                                                                        progressCallback=self._readProgressCallback)
 
-            cumulativePyutClasses = PyutClasses(cumulativePyutClasses | currentPyutClasses)
+            cumulativeModelClasses = ModelClasses(cumulativeModelClasses | currentModelClasses)
 
-        return cumulativePyutClasses
+        return cumulativeModelClasses
 
-    def _enhancePyutClassesInPass2(self, pythonToUmlShapes: PythonToUmlShapes, pyutClasses: PyutClasses) -> PyutClasses:
+    def _enhanceModelClassesInPass2(self, pythonToUmlShapes: PythonToUmlShapes, modelClasses: ModelClasses) -> ModelClasses:
 
-        updatedPyutClasses: PyutClasses = PyutClasses({})
+        updatedModelClasses: ModelClasses = ModelClasses({})
         for directory in self._importPackages:
             importPackage: Package = cast(Package, directory)
 
-            updatedPyutClasses = pythonToUmlShapes.pass2(directoryName=importPackage.packageName,
-                                                         files=importPackage.importModules,
-                                                         pyutClasses=pyutClasses,
-                                                         progressCallback=self._readProgressCallback)
+            updatedModelClasses = pythonToUmlShapes.pass2(directoryName=importPackage.packageName,
+                                                          files=importPackage.importModules,
+                                                          modelClasses=modelClasses,
+                                                          progressCallback=self._readProgressCallback
+                                                          )
 
-        return updatedPyutClasses
+        return updatedModelClasses
 
     def _readProgressCallback(self, currentFileCount: int, msg: str):
         """

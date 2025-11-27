@@ -10,7 +10,7 @@ from wx import Command
 
 class BaseWxCommand(Command):
     """
-    This is a stubbed out class from Pyut to test multiple inheritance
+    This is a stubbed out class from the UML Diagrammer to test multiple inheritance
     with a metaclass
     """
     clsLogger: Logger = getLogger(__name__)
@@ -47,7 +47,7 @@ class MyMetaBaseWxCommand(ABCMeta, BaseWxCommandMeta):
 
 class BaseWxCreateCommand(BaseWxCommand, metaclass=MyMetaBaseWxCommand):
     """
-    Stubbed out class from Pyut
+    Stubbed out class from the UML Diagrammer
     """
     clsLogger: Logger = getLogger(__name__)
 

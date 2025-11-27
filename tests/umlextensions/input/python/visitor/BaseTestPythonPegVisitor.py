@@ -4,15 +4,14 @@ from typing import NewType
 
 from codeallybasic.UnitTestBase import UnitTestBase
 
-from pyutmodelv2.PyutField import PyutField
-from pyutmodelv2.PyutField import PyutFields
+from umlmodel.Field import Field
+from umlmodel.Field import Fields
 
-PyutFieldHashIndex  = NewType('PyutFieldHashIndex',  Dict[str, PyutField])
+ModelFieldHashIndex  = NewType('ModelFieldHashIndex', Dict[str, Field])
 
 
 class BaseTestPythonPegVisitor(UnitTestBase):
     """
-    Copied and modified from the pyutplugins project
     """
 
     RESOURCES_TEST_CLASSES_PACKAGE_NAME: str = f'{UnitTestBase.RESOURCES_PACKAGE_NAME}.testclasses.python'
@@ -27,10 +26,10 @@ class BaseTestPythonPegVisitor(UnitTestBase):
     def tearDown(self):
         super().tearDown()
 
-    def _makeFieldIndex(self, pyutFields: PyutFields) -> PyutFieldHashIndex:
+    def _makeFieldIndex(self, modelFields: Fields) -> ModelFieldHashIndex:
 
-        fieldIndex: PyutFieldHashIndex = PyutFieldHashIndex({})
-        for field in pyutFields:
+        fieldIndex: ModelFieldHashIndex = ModelFieldHashIndex({})
+        for field in modelFields:
             fieldIndex[field.name] = field
 
         return fieldIndex

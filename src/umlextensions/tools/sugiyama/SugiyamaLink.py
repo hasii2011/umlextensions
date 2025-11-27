@@ -1,3 +1,4 @@
+
 from typing import List
 
 from umlshapes.frames.UmlFrame import UmlFrame
@@ -59,7 +60,6 @@ class SugiyamaLink(LayoutInterfaceLink):
                 neighbor = virtualNode.getRightNode()
                 #
                 # Don't like embedded imports, but need to avoid cyclical dependency
-                # from pyutplugins.toolplugins.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
                 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
                 while isinstance(neighbor, VirtualSugiyamaNode) and neighbor is not None:
@@ -81,7 +81,6 @@ class SugiyamaLink(LayoutInterfaceLink):
 
             else:   # If link goes to up-right
                 # Don't like embedded imports, but need to avoid cyclical dependency
-                # from pyutplugins.toolplugins.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
                 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
                 # Find the first real node on the left of the virtual node
