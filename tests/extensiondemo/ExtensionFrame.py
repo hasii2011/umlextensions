@@ -62,6 +62,7 @@ from umlio.IOTypes import UmlClasses
 from umlio.IOTypes import UmlDocument
 from umlio.IOTypes import UmlLinks
 
+from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
 from umlextensions.ExtensionsManager import ToolExtensionMap
 from umlextensions.ExtensionsTypes import FrameSize
 from umlextensions.ExtensionsManager import WindowId
@@ -72,6 +73,7 @@ from umlextensions.ExtensionsManager import ExtensionsManager
 from umlextensions.ExtensionsManager import InputExtensionMap
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
+from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 
@@ -91,9 +93,10 @@ class ExtensionFrame(SizedFrame):
         sizedPanel: SizedPanel = self.GetContentsPane()
         sizedPanel.SetSizerProps(expand=True, proportion=1)
 
-        self._umlPubSubEngine:  UmlPubSubEngine  = UmlPubSubEngine()
+        self._umlPubSubEngine:  UmlPubSubEngine   = UmlPubSubEngine()
+        self._extensionsFacade: IExtensionsFacade = ExtensionsFacade()
         self._editMenu:         Menu             = cast(Menu, None)
-        self._extensionManager: ExtensionsManager = ExtensionsManager(umlPubSubEngine=self._umlPubSubEngine)
+        self._extensionManager: ExtensionsManager = ExtensionsManager(umlPubSubEngine=self._umlPubSubEngine, extensionsFacade=self._extensionsFacade)
 
         self._createApplicationMenuBar()
 

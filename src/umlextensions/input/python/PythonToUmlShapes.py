@@ -31,7 +31,7 @@ from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
 from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
@@ -90,10 +90,10 @@ class PythonToUmlShapes:
     for me to inject the UI frames and the pub sub engines into all the created shapes.
 
     """
-    def __init__(self, classDiagramFrame: ClassDiagramFrame, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, classDiagramFrame: ClassDiagramFrame, umlPubSubEngine: IUmlPubSubEngine):
 
         self._classDiagramFrame: ClassDiagramFrame = classDiagramFrame
-        self._umlPubSubEngine:   UmlPubSubEngine   = umlPubSubEngine
+        self._umlPubSubEngine:   IUmlPubSubEngine  = umlPubSubEngine
 
         self.logger: Logger = getLogger(__name__)
 
