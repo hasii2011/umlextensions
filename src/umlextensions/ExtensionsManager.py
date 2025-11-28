@@ -19,7 +19,7 @@ from wx import NewIdRef
 from wx import Window
 from wx import RichMessageDialog
 
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlextensions.ErrorFormatter import ErrorFormatter
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
@@ -117,7 +117,7 @@ class ExtensionsManager:
     By convention prefix the plugin output module name with 'Output'
 
     """
-    def __init__(self, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, umlPubSubEngine: IUmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
 

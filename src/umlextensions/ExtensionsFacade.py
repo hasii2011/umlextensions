@@ -4,7 +4,8 @@ from logging import getLogger
 
 from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.ShapeTypes import UmlShapeGenre
-from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
+
+from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
 from umlextensions.ExtensionsTypes import FrameInformationCallback
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
@@ -21,15 +22,15 @@ class ExtensionsFacade(IExtensionsFacade):
     and the UML Diagrammer
     """
 
-    def __init__(self, pubSub: ExtensionsPubSub, umlPubSubEngine: UmlPubSubEngine):
+    def __init__(self, pubSub: ExtensionsPubSub, umlPubSubEngine: IUmlPubSubEngine):
 
         self.logger: Logger = getLogger(__name__)
 
         self._pubsub:    ExtensionsPubSub = pubSub
-        self._umlPubSub: UmlPubSubEngine  = umlPubSubEngine
+        self._umlPubSub: IUmlPubSubEngine = umlPubSubEngine
 
     @property
-    def umlPubSubEngine(self) -> UmlPubSubEngine:
+    def umlPubSubEngine(self) -> IUmlPubSubEngine:
         return self._umlPubSub
 
     def requestCurrentFrameInformation(self, callback: FrameInformationCallback):
