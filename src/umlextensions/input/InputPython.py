@@ -121,7 +121,7 @@ class InputPython(BaseInputExtension):
             self._readProgressDlg.SetRange(self._moduleCount)
 
             classDiagramFrame: ClassDiagramFrame = cast(ClassDiagramFrame, self._frameInformation.umlFrame)
-            pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=classDiagramFrame, umlPubSubEngine=self._extensionsFacade.umlPubSubEngine)
+            pythonToUmlShapes: PythonToUmlShapes = PythonToUmlShapes(classDiagramFrame=classDiagramFrame, umlPubSubEngine=self._extensionsFacade.umlPubSub)
 
             modelClasses: ModelClasses = self._collectModelClassesInPass1(pythonToUmlShapes=pythonToUmlShapes)
             modelClasses              = self._enhanceModelClassesInPass2(pythonToUmlShapes=pythonToUmlShapes, modelClasses=modelClasses)
