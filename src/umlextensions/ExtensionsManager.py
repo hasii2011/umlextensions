@@ -24,7 +24,7 @@ from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 from umlextensions.ErrorFormatter import ErrorFormatter
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
-from umlextensions.ExtensionsFacade import ExtensionsFacade
+from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
