@@ -15,6 +15,8 @@ from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.ShapeTypes import umlShapesFactory
 
+from umlio.IOTypes import UmlDocumentType
+
 
 @dataclass
 class FrameSize:
@@ -43,10 +45,10 @@ class FrameInformation:
     umlFrame:           UmlFrame   = cast(UmlFrame, None)
     frameActive:        bool       = False
     selectedUmlShapes:  UmlShapes  = field(default_factory=umlShapesFactory)
-    diagramTitle:       str        = ''
-    diagramType:        str        = ''
     frameSize:          FrameSize  = field(default_factory=createFrameSizeFactory)
     clientDC:           ClientDC   = cast(ClientDC, None)
+    diagramTitle:       str        = ''
+    diagramType:        UmlDocumentType = UmlDocumentType.NOT_SET
 
 
 FrameInformationCallback  = Callable[[FrameInformation], None]

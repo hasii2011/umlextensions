@@ -62,7 +62,8 @@ from umlio.IOTypes import UmlClasses
 from umlio.IOTypes import UmlDocument
 from umlio.IOTypes import UmlLinks
 
-from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
+from umlio.IOTypes import UmlDocumentType
+
 from umlextensions.ExtensionsManager import ToolExtensionMap
 from umlextensions.ExtensionsTypes import FrameSize
 from umlextensions.ExtensionsManager import WindowId
@@ -76,6 +77,8 @@ from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
+
+from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
 
 FRAME_WIDTH:  int = 1280
 FRAME_HEIGHT: int = 720
@@ -212,7 +215,7 @@ class ExtensionFrame(SizedFrame):
             frameActive=True,
             selectedUmlShapes=self._getSelectedUmlShapes(),
             diagramTitle='Demo Class Diagram',
-            diagramType='Class Document',
+            diagramType=UmlDocumentType.CLASS_DOCUMENT,
             frameSize=FrameSize(width=size.width, height=size.height)
         )
         callback(frameInfo)
