@@ -20,7 +20,7 @@
     "handlers": {
         "consoleHandler": {
             "class": "logging.StreamHandler",
-            "formatter": "testSimple",
+            "formatter": "functionNames",
             "stream": "ext://sys.stdout"
         },
         "rotatingFileHandler": {
@@ -28,26 +28,41 @@
             "formatter": "bestFormat",
             "filename": "/tmp/uml-extensions.log",
             "mode": "a",
-            "maxBytes": 81920,
+            "maxBytes": 163840,
             "backupCount": 5,
             "encoding": "utf-8"
         }
 
     },
     "loggers": {
+        "tests.extensiondemo": {
+            "level": "INFO",
+            "handlers": ["consoleHandler"],
+            "propagate": false
+        },
+        "umlextensions": {
+            "level": "WARNING",
+            "handlers": ["consoleHandler"],
+            "propagate": true
+        },
+        "umlextensions.tools": {
+            "level": "WARNING",
+            "handlers": ["consoleHandler"],
+            "propagate": true
+        },
         "codeallybasic.UnitTestBase": {
             "level": "WARNING",
-            "propagate": "false"
+            "propagate": false
         },
         "umlextensions.ExtensionsManager": {
             "level": "ERROR",
             "handlers": ["rotatingFileHandler"],
-            "propagate": "true"
+            "propagate": false
         },
         "umlextensions.tools.sugiyama": {
             "level": "INFO",
             "handlers": ["consoleHandler"],
-            "propagate": "false"
+            "propagate": false
         }
     }
 }

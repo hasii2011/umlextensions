@@ -18,6 +18,9 @@ class ExtensionsMessageType(Enum):
     ADD_SHAPE                  = 'Add Shape'
     GET_SELECTED_UML_SHAPES    = 'Get Selected UML Shapes'
     WIGGLE_SHAPES              = 'Wiggle Shapes'
+    GET_SHAPE_BOUNDARIES       = 'Get Shape Boundaries'
+    DeleteLink                 = 'DeleteLink'
+    CreateLink                 = 'CreateLink'
 
 
 AdapterId = NewType('AdapterId', str)
@@ -35,10 +38,8 @@ class ExtensionsPubSub(BasePubSubEngine):
         super().__init__()
         self.logger: Logger = getLogger(__name__)
 
-    # def subscribe(self, messageType: ExtensionsMessageType, adapterId: AdapterId, listener: Callable):
     def subscribe(self, messageType: ExtensionsMessageType, listener: Callable):
         self._subscribe(topic=Topic(messageType.value), listener=listener)
 
-    # def sendMessage(self, messageType: ExtensionsMessageType, adapterId: AdapterId, **kwargs):
     def sendMessage(self, messageType: ExtensionsMessageType, **kwargs):
         self._sendMessage(topic=Topic(messageType.value), **kwargs)

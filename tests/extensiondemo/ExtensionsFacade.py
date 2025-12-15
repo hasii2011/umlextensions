@@ -9,7 +9,14 @@ from umlshapes.ShapeTypes import UmlShapeGenre
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
+from umlextensions.ExtensionsTypes import CreatedLinkCallback
 from umlextensions.ExtensionsTypes import FrameInformationCallback
+from umlextensions.ExtensionsTypes import IntegerList
+from umlextensions.ExtensionsTypes import LinkInformation
+from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
+from umlextensions.ExtensionsTypes import Points
+from umlextensions.ExtensionsTypes import Rectangle
+from umlextensions.ExtensionsTypes import Rectangles
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
@@ -61,3 +68,28 @@ class ExtensionsFacade(IExtensionsFacade):
 
     def wiggleShapes(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.WIGGLE_SHAPES)
+
+    def getShapeBoundaries(self, callback: ObjectBoundaryCallback):
+        """
+        Request the boundaries around all the UML objects
+        on the current frame
+
+        Args:
+            callback:  The callback that receives the boundaries
+        """
+        self._extensionsPubSub.sendMessage(ExtensionsMessageType.GET_SHAPE_BOUNDARIES, callback=callback)
+
+    def deleteLink(self, umlLink: UmlLinkGenre):
+        self._extensionsPubSub.sendMessage(ExtensionsMessageType.DeleteLink, umlLink=umlLink)
+
+    def createLink(self, linkInformation: LinkInformation, callback: CreatedLinkCallback):
+        self._extensionsPubSub.sendMessage(ExtensionsMessageType.CreateLink, linkInformation=linkInformation, callback=callback)
+
+    def showOrthogonalRoutingPoints(self, show: bool, spots: Points):
+        pass
+
+    def showRulers(self, show: bool, horizontalRulers: IntegerList, verticalRulers: IntegerList, diagramBounds: Rectangle):
+        pass
+
+    def showRouteGrid(self, show: bool, routeGrid: Rectangles):
+        pass

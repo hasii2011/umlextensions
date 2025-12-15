@@ -154,7 +154,7 @@ class PythonToUmlShapes:
                     self.logger.error(f'Error in {directoryName}/{fileName}')
                     raise e
 
-            if len(modelClasses) == 0:
+            if len(modelClasses) == 0:      # noqa
                 MessageBox('No classes processed', 'Warning', OK | ICON_WARNING)
 
         return modelClasses
@@ -218,9 +218,9 @@ class PythonToUmlShapes:
                 modelClass: Class    = modelClasses[modelClassName]
                 umlClass:   UmlClass = UmlClass(modelClass=modelClass)
 
-                eventHandler: UmlClassEventHandler = UmlClassEventHandler()
+                eventHandler: UmlClassEventHandler = UmlClassEventHandler(previousEventHandler=umlClass.GetEventHandler())
                 eventHandler.SetShape(umlClass)
-                eventHandler.SetPreviousHandler(umlClass.GetEventHandler())
+                # eventHandler.SetPreviousHandler(umlClass.GetEventHandler())
 
                 umlClass.SetEventHandler(eventHandler)
                 umlClass.umlFrame = self._classDiagramFrame
@@ -325,10 +325,10 @@ class PythonToUmlShapes:
         # REMEMBER:   from subclass to base class
         subClass.addLink(umlLink=umlInheritance, destinationClass=baseClass)
 
-        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInheritance)
+        eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInheritance, previousEventHandler=umlInheritance.GetEventHandler())
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
         eventHandler.SetShape(umlInheritance)
-        eventHandler.SetPreviousHandler(umlInheritance.GetEventHandler())
+        # eventHandler.SetPreviousHandler(umlInheritance.GetEventHandler())
         umlInheritance.SetEventHandler(eventHandler)
 
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
@@ -358,8 +358,8 @@ class PythonToUmlShapes:
 
         sourceClass.addLink(umlLink=umlAssociation, destinationClass=destinationClass)
 
-        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation)
-        eventHandler.umlPubSubEngine = self._umlPubSubEngine
+        eventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlAssociation, umlPubSubEngine=self._umlPubSubEngine)
+        # eventHandler.umlPubSubEngine = self._umlPubSubEngine
         eventHandler.SetShape(umlAssociation)
         eventHandler.SetPreviousHandler(umlAssociation.GetEventHandler())
         umlAssociation.SetEventHandler(eventHandler)

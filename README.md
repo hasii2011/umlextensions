@@ -8,14 +8,70 @@
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
 # Introduction
+This project is a library for generating UML diagrams from Python source code, and it includes a demonstration application.
 
 # Overview
+The `umlextensions` package provides a flexible way to reverse-engineer Python code into UML class diagrams. It is designed to be extensible, allowing for different input and output formats. The core of the project is a parser that analyzes Python source code and a layout engine that arranges the UML shapes for visualization. A demonstration application built with `wxPython` is included to showcase the library's capabilities.
 
 # Installation
 
-```
+You can install the project using pip. It is recommended to do this in a virtual environment.
+
+```bash
 pip install umlextensions
 ```
+
+### Dependencies
+
+This project relies on several other packages. `pip` will handle the installation of these dependencies. They are listed here for your reference:
+
+*   wxPython
+*   codeallybasic
+*   codeallyadvanced
+*   umlmodel
+*   umlshapes
+*   umlio
+*   antlr4-python3-runtime
+*   PyPubSub
+
+# Usage
+
+The primary way to use this project is as a library within a larger application. However, a demonstration application is included to showcase the functionality.
+
+### Running the Demo Application
+
+To run the demo application, follow these steps:
+
+1.  **Clone the repository (if you haven't already):**
+    ```bash
+    git clone https://github.com/hasii2011/umlextensions.git
+    cd umlextensions
+    ```
+
+2.  **Install dependencies (it is recommended to use a virtual environment):**
+    ```bash
+    pip install -e .
+    ```
+
+3.  **Run the demo application:**
+    ```bash
+    python tests/extensiondemo/ExtensionDemoApp.py
+    ```
+    This will open a window titled "Demo UML Extensions".
+
+### Generating a UML Diagram
+
+1.  In the "Demo UML Extensions" window, navigate to the menu bar and click **Extensions -> Input -> Python File(s)**.
+
+2.  A file dialog will appear, allowing you to select one or more Python files. Select the files you want to include in your UML diagram and click **Open**.
+
+3.  After parsing the files, a dialog titled "Shape Layout Parameters" may appear, allowing you to adjust the layout of the UML shapes. You can accept the defaults or modify them as needed and click **OK**.
+
+4.  The application will then generate and display the UML class diagram based on the Python code in the selected files.
+
+### As a Library
+
+The project is designed to be used as a library. The `umlextensions` package can be imported into your own `wxPython` application. The `ExtensionsManager` class is the main entry point for discovering and running extensions. You can integrate it into your application by providing an implementation of the `IExtensionsFacade`.
 ___
 Written by Humberto A. Sanchez II <mailto@Humberto.A.Sanchez.II@gmail.com>, (C) 2025
 

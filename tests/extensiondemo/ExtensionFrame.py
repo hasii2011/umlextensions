@@ -1,10 +1,15 @@
-from pathlib import Path
+
 from typing import Callable
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
+from pathlib import Path
+
+from umlmodel.Link import Link
+from umlmodel.enumerations.LinkType import LinkType
+from umlshapes.types.UmlPosition import UmlPositions
 from wx import EVT_MENU
 from wx import FD_CHANGE_DIR
 from wx import FD_OPEN
@@ -25,6 +30,8 @@ from wx import NewIdRef as wxNewIdRef
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
+
+from umlshapes.commands.DeleteLinkCommand import DeleteLinkCommand
 
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.ShapeTypes import UmlLinkGenre
@@ -50,6 +57,7 @@ from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHan
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
+from umlshapes.frames.UmlFrame import Ltrb
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -73,6 +81,9 @@ from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsManager import ExtensionsManager
 from umlextensions.ExtensionsManager import InputExtensionMap
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+from umlextensions.ExtensionsTypes import LinkInformation
+from umlextensions.ExtensionsTypes import ShapeBoundaries
+from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -121,6 +132,9 @@ class ExtensionFrame(SizedFrame):
         pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES, listener=self._wiggleShapesListener)
 
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SELECTED_UML_SHAPES, listener=self._getSelectedUmlShapesListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.GET_SHAPE_BOUNDARIES,    listener=self._getShapBoundariesListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.DeleteLink,              listener=self._deleteLinkListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.CreateLink,              listener=self._createLinkListener)
 
     def _createApplicationMenuBar(self):
 
@@ -271,6 +285,79 @@ class ExtensionFrame(SizedFrame):
 
         return selectedShapes
 
+    def _getShapBoundariesListener(self, callback: ObjectBoundaryCallback):
+
+        ltrb:   Ltrb       = self._diagramFrame.shapeBoundaries
+        bounds: ShapeBoundaries = ShapeBoundaries(
+            minX=ltrb.left,
+            minY=ltrb.top,
+            maxX=ltrb.right,
+            maxY=ltrb.bottom
+        )
+        # callback: ObjectBoundaryCallback = callback
+
+        callback(bounds)
+
+    def _deleteLinkListener(self, umlLink):
+
+        partialName: str = f'{type(umlLink)}'
+        deleteLinkCommand: DeleteLinkCommand = DeleteLinkCommand(
+            partialName=partialName,
+            umlLink=umlLink,
+            umlPubSubEngine=self._umlPubSubEngine
+        )
+        status = self._diagramFrame.commandProcessor.Submit(deleteLinkCommand, storeIt=True)
+        self.logger.info(f'Delete Link {partialName=} {status=}')
+
+    def _createLinkListener(self, linkInformation: LinkInformation, callback):
+
+        if linkInformation.linkType == LinkType.INHERITANCE:
+
+            baseUmlClass:     UmlClass = cast(UmlClass, linkInformation.destinationShape)   # noqa
+            subClassUmlClass: UmlClass = cast(UmlClass, linkInformation.sourceShape)        # noqa
+
+            modelInheritance: Link = self._createInheritanceModelLink(
+                baseUmlClass=baseUmlClass,
+                subUmlClass=subClassUmlClass
+            )
+
+            umlInheritance: UmlInheritance = UmlInheritance(
+                link=modelInheritance,
+                baseClass=baseUmlClass,
+                subClass=subClassUmlClass
+            )
+            umlInheritance.umlFrame = self._diagramFrame
+            umlInheritance.MakeLineControlPoints(n=2)  # Make this configurable
+            # REMEMBER:   from subclass to base class
+            subClassUmlClass.addLink(umlLink=umlInheritance, destinationClass=baseUmlClass)
+            path:         UmlPositions = linkInformation.path
+
+            lastIdx:      int         = len(path) - 1      # noqa
+            fromPosition: UmlPosition = path[0]
+            toPosition:   UmlPosition = path[lastIdx]
+            umlInheritance.setLinkEnds(
+                fromPosition=fromPosition,
+                toPosition=toPosition
+            )
+            path.remove(fromPosition)
+            path.remove(toPosition)
+
+            for cp in path:
+                controlPoint: UmlPosition = cp
+                umlInheritance.addLineControlPoint(umlPosition=UmlPosition(x=controlPoint.x, y=controlPoint.y))
+
+            # Caller must place on Frame
+            # self._diagramFrame.umlDiagram.AddShape(umlInheritance)
+            # umlInheritance.Show(True)
+
+            eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInheritance, previousEventHandler=umlInheritance.GetEventHandler())
+            eventHandler.umlPubSubEngine = self._umlPubSubEngine
+            umlInheritance.SetEventHandler(eventHandler)
+
+            callback(umlInheritance)
+        else:
+            self.logger.warning(f'Do not know how to create link: {linkInformation.linkType}')
+
     # noinspection PyUnusedLocal
     def _onOpenXmlFile(self, event: CommandEvent):
 
@@ -292,7 +379,7 @@ class ExtensionFrame(SizedFrame):
 
     def _loadProject(self, umlProject: UmlProject):
 
-        assert len(umlProject.umlDocuments) == 1, 'Currently we only handle single document projects'
+        assert len(umlProject.umlDocuments) == 1, 'Currently we only handle single document projects'   # noqa
 
         for umlDocumentTitle, umlDocument in umlProject.umlDocuments.items():
             self._layoutShapes(diagramFrame=self._diagramFrame, umlDocument=umlDocument)
@@ -313,7 +400,7 @@ class ExtensionFrame(SizedFrame):
         for umlLink in umlLinks:
             umlLink.umlFrame = diagramFrame
             if isinstance(umlLink, UmlInheritance):
-                umInheritance: UmlInheritance = cast(UmlInheritance, umlLink)
+                umInheritance: UmlInheritance = umlLink
                 subClass  = umInheritance.subClass
                 baseClass = umInheritance.baseClass
 
@@ -322,13 +409,13 @@ class ExtensionFrame(SizedFrame):
                 diagramFrame.umlDiagram.AddShape(umInheritance)
                 umInheritance.Show(True)
 
-                umlLinkEventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink)
+                umlLinkEventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink, previousEventHandler=umlLink.GetEventHandler())
                 umlLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
-                umlLinkEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
+                # umlLinkEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
                 umlLink.SetEventHandler(umlLinkEventHandler)
 
             elif isinstance(umlLink, UmlNoteLink):
-                umlNoteLink: UmlNoteLink = cast(UmlNoteLink, umlLink)
+                umlNoteLink: UmlNoteLink = umlLink
                 sourceNote:       UmlNote  = umlNoteLink.sourceNote
                 destinationClass: UmlClass = umlNoteLink.destinationClass
 
@@ -336,9 +423,9 @@ class ExtensionFrame(SizedFrame):
 
                 diagramFrame.umlDiagram.AddShape(umlNoteLink)
                 umlNoteLink.Show(True)
-                eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink)
+                eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink, previousEventHandler=umlNoteLink.GetEventHandler())
                 eventHandler.umlPubSubEngine = self._umlPubSubEngine
-                eventHandler.SetPreviousHandler(umlLink.GetEventHandler())
+                # eventHandler.SetPreviousHandler(umlLink.GetEventHandler())
                 umlNoteLink.SetEventHandler(eventHandler)
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 
@@ -349,8 +436,8 @@ class ExtensionFrame(SizedFrame):
                 diagramFrame.umlDiagram.AddShape(umlLink)
                 umlLink.Show(True)
 
-                umlAssociationEventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlLink)
-                umlAssociationEventHandler.umlPubSubEngine = self._umlPubSubEngine
+                umlAssociationEventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlLink, umlPubSubEngine=self._umlPubSubEngine)
+                # umlAssociationEventHandler.umlPubSubEngine = self._umlPubSubEngine
                 umlAssociationEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
                 umlLink.SetEventHandler(umlAssociationEventHandler)
 
@@ -366,13 +453,24 @@ class ExtensionFrame(SizedFrame):
         umlShape.umlFrame = diagramFrame
         diagram: UmlDiagram = diagramFrame.umlDiagram
 
-        eventHandler: UmlBaseEventHandler = eventHandlerClass()
+        eventHandler: UmlBaseEventHandler = eventHandlerClass(previousEventHandler=umlShape.GetEventHandler())
         eventHandler.SetShape(umlShape)
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
+        # eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
         umlShape.SetEventHandler(eventHandler)
 
         diagram.AddShape(umlShape)
         umlShape.Show(True)
 
         diagramFrame.refresh()
+
+    def _createInheritanceModelLink(self, baseUmlClass: UmlClass, subUmlClass: UmlClass) -> Link:
+
+        name: str = f''
+
+        modelInheritance: Link = Link(name=name, linkType=LinkType.INHERITANCE)
+
+        modelInheritance.destination  = baseUmlClass.modelClass
+        modelInheritance.source       = subUmlClass.modelClass
+
+        return modelInheritance
