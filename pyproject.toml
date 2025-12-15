@@ -24,10 +24,11 @@ dependencies = [
     'codeallybasic>=1.30.0',
     'codeallyadvanced>=2.3.0',
     'umlmodel>=3.4.0',
-    'umlshapes>=1.2.0',
+    'umlshapes>=1.3.0',
     'umlio>=0.5.1',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.3',
+    'pyorthogonalrouting==2.0.0',
 ]
 
 [project.optional-dependencies]

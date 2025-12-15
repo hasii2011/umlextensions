@@ -31,6 +31,7 @@ from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 from umlextensions.input.InputPython import InputPython
 from umlextensions.tools.BaseToolExtension import BaseToolExtension
+from umlextensions.tools.ToolOrthogonalRouting import ToolOrthogonalRouting
 
 from umlextensions.tools.ToolSugiyama import ToolSugiyama
 
@@ -83,7 +84,7 @@ class ToolExtensionMap(BaseExtensionMap):
 
 
 TOOL_EXTENSIONS: ExtensionList = ExtensionList(
-    [ToolSugiyama]
+    [ToolSugiyama, ToolOrthogonalRouting]
 )
 INPUT_EXTENSIONS: ExtensionList = ExtensionList(
     [InputPython]

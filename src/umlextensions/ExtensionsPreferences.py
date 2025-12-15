@@ -25,6 +25,7 @@ SECTION_EXTENSIONS: ValueDescriptions = ValueDescriptions(
 SECTION_FEATURES: ValueDescriptions = ValueDescriptions(
     {
         KeyName('startDirectory'):           ValueDescription(defaultValue=''),
+        KeyName('diagnoseOrthogonalRouter'): ValueDescription(defaultValue='True', deserializer=SecureConversions.secureBoolean),
     }
 )
 

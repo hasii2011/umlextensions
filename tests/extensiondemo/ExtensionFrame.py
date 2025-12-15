@@ -1,9 +1,11 @@
-from pathlib import Path
+
 from typing import Callable
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
+
+from pathlib import Path
 
 from wx import EVT_MENU
 from wx import FD_CHANGE_DIR
@@ -50,6 +52,7 @@ from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHan
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
+from umlshapes.frames.UmlFrame import Ltrb
 
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
@@ -73,6 +76,8 @@ from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsManager import ExtensionsManager
 from umlextensions.ExtensionsManager import InputExtensionMap
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+from umlextensions.ExtensionsTypes import ShapeBoundaries
+from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
 from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -121,6 +126,7 @@ class ExtensionFrame(SizedFrame):
         pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES, listener=self._wiggleShapesListener)
 
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SELECTED_UML_SHAPES, listener=self._getSelectedUmlShapesListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.GET_SHAPE_BOUNDARIES,    listener=self._getShapBoundariesListener)
 
     def _createApplicationMenuBar(self):
 
@@ -270,6 +276,19 @@ class ExtensionFrame(SizedFrame):
                     selectedShapes.append(umlShape)
 
         return selectedShapes
+
+    def _getShapBoundariesListener(self, callback: ObjectBoundaryCallback):
+
+        ltrb:   Ltrb       = self._diagramFrame.shapeBoundaries
+        bounds: ShapeBoundaries = ShapeBoundaries(
+            minX=ltrb.left,
+            minY=ltrb.top,
+            maxX=ltrb.right,
+            maxY=ltrb.bottom
+        )
+        # callback: ObjectBoundaryCallback = callback
+
+        callback(bounds)
 
     # noinspection PyUnusedLocal
     def _onOpenXmlFile(self, event: CommandEvent):
