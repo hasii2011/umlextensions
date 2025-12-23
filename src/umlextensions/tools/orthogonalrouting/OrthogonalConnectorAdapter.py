@@ -8,9 +8,13 @@ from logging import getLogger
 from codeallybasic.Position import Position
 
 from umlmodel.enumerations.LinkType import LinkType
+
 from umlshapes.ShapeTypes import LinkableUmlShape
 from umlshapes.ShapeTypes import UmlLinkGenre
 from umlshapes.ShapeTypes import UmlShapeGenre
+
+from umlshapes.links.UmlInheritance import UmlInheritance
+
 from umlshapes.types.Common import EndPoints
 from umlshapes.types.UmlDimensions import UmlDimensions
 
@@ -124,7 +128,7 @@ class OrthogonalConnectorAdapter:
 
         self.logger.info(f'{path}')
 
-        if len(path) == 0:
+        if len(path) == 0:      # noqa
             return False
         else:
             self._deleteTheOldLink(umlLink=oglLink)
@@ -186,15 +190,20 @@ class OrthogonalConnectorAdapter:
 
     def _createOrthogonalLink(self, oldLink: UmlLinkGenre, path: Points):
 
-        linkType:         LinkType   = oldLink.modelLink.linkType
-        sourceShape:      LinkableUmlShape  = oldLink.sourceShape
-        destinationShape: LinkableUmlShape  = oldLink.destinationShape
+        linkType: LinkType = oldLink.modelLink.linkType
+        if linkType == LinkType.INHERITANCE:
+            umlInheritance:   UmlInheritance   = cast(UmlInheritance, oldLink)  # noqa
+            sourceShape:      LinkableUmlShape = umlInheritance.subClass
+            destinationShape: LinkableUmlShape = umlInheritance.baseClass
+        else:
+            sourceShape      = oldLink.sourceShape
+            destinationShape = oldLink.destinationShape
 
-        oglPositions: UmlPositions = self._toOglPositions(path=path)
+        umlPositions: UmlPositions = self._toUmlPositions(path=path)
 
         linkInformation: LinkInformation = LinkInformation()
         linkInformation.linkType         = linkType
-        linkInformation.path             = oglPositions
+        linkInformation.path             = umlPositions
         linkInformation.sourceShape      = sourceShape
         linkInformation.destinationShape = destinationShape
 
@@ -214,7 +223,7 @@ class OrthogonalConnectorAdapter:
         self._extensionsFacade.addShape(newLink)
         self._extensionsFacade.refreshFrame()
 
-    def _toOglPositions(self, path: Points) -> UmlPositions:
+    def _toUmlPositions(self, path: Points) -> UmlPositions:
 
         oglPositions: UmlPositions = UmlPositions([])
 
