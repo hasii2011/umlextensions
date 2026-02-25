@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [{name = 'Humberto A. Sanchez II', email = 'Humberto.A.Sanchez.II@gmail.com'}]
 maintainers = [{name = 'Humberto A. Sanchez II', email = 'Humberto.A.Sanchez.II@gmail.com'}]
 keywords = ['umldiagrammer,graphical,uml shapes,python']
-license     = 'AGPL-1.0-or-later'
+license  = 'AGPL-1.0-or-later'
 
 classifiers = [
   "Programming Language :: Python",
@@ -24,7 +24,7 @@ dependencies = [
     'codeallybasic>=1.30.0',
     'codeallyadvanced>=2.3.0',
     'umlmodel>=3.4.0',
-    'umlshapes>=1.5.0',
+    'umlshapes>=1.7.5',
     'umlio>=0.5.3',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.3',

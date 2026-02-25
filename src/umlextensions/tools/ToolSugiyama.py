@@ -41,7 +41,7 @@ class ToolSugiyama(BaseToolExtension):
         selectedUmlShapes: UmlShapes = self._frameInformation.selectedUmlShapes
 
         sugiyama: Sugiyama = Sugiyama(extensionsFacade=self._extensionsFacade, umlFrame=self._frameInformation.umlFrame)
-        sugiyama.createInterfaceOglALayout(umlShapes=selectedUmlShapes)
+        sugiyama.createInterfaceUmlShapeLayout(umlShapes=selectedUmlShapes)
 
         sugiyama.levelFind()
         sugiyama.addVirtualNodes()

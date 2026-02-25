@@ -14,17 +14,12 @@ from wx import DD_NEW_DIR_BUTTON
 from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 from umlextensions.extensiontypes.BaseExtension import BaseExtension
+from umlextensions.extensiontypes.ExtensionDataTypes import UNSPECIFIED_DESCRIPTION
+from umlextensions.extensiontypes.ExtensionDataTypes import UNSPECIFIED_FILE_SUFFIX
+from umlextensions.extensiontypes.ExtensionDataTypes import UNSPECIFIED_NAME
 from umlextensions.input.ImportDirectoryResponse import ImportDirectoryResponse
 
 from umlextensions.input.InputFormat import InputFormat
-
-from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionDescription
-from umlextensions.extensiontypes.ExtensionDataTypes import FileSuffix
-from umlextensions.extensiontypes.ExtensionDataTypes import FormatName
-
-UNSPECIFIED_NAME:        FormatName           = FormatName('Unspecified Plugin Name')
-UNSPECIFIED_FILE_SUFFIX: FileSuffix           = FileSuffix('*')
-UNSPECIFIED_DESCRIPTION: ExtensionDescription = ExtensionDescription('Unspecified Extension Description')
 
 
 class BaseInputExtension(BaseExtension, ABC):
@@ -57,7 +52,7 @@ class BaseInputExtension(BaseExtension, ABC):
 
     def askForImportDirectoryName(self) -> ImportDirectoryResponse:
         """
-        Called by plugin to ask which directory must be imported
+        Called by extension to ask which directory must be imported
 
         Returns:  The appropriate response object;  The directory name is valid only if
         response.cancelled is True
@@ -95,7 +90,9 @@ class BaseInputExtension(BaseExtension, ABC):
         Args:
             frameInformation:
         """
-        assert self.inputFormat is not None, 'Developer error. We cannot import w/o an import format'
+        assert self._inputFormat.formatName != UNSPECIFIED_NAME,         'Developer error. We cannot export w/o an import format name'
+        assert self._inputFormat.fileSuffix != UNSPECIFIED_FILE_SUFFIX,  'Developer error. We cannot export w/o an import file suffix'
+        assert self._inputFormat.description != UNSPECIFIED_DESCRIPTION, 'Developer error. We cannot import w/o an import description'
 
         self._frameInformation = frameInformation
 

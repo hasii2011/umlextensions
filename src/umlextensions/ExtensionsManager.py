@@ -30,6 +30,10 @@ from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 from umlextensions.input.InputPython import InputPython
+from umlextensions.output.BaseOutputExtension import BaseOutputExtension
+
+from umlextensions.output.OutputGML import OutputGML
+
 from umlextensions.tools.BaseToolExtension import BaseToolExtension
 from umlextensions.tools.ToolOrthogonalRouting import ToolOrthogonalRouting
 
@@ -74,7 +78,13 @@ class InputExtensionMap(BaseExtensionMap):
         return self.__repr__()
 
     def __repr__(self) -> str:
-        return f'{self.mapType} plugin count: {len(self.extensionIdMap)}'
+        return f'{self.mapType} extension count: {len(self.extensionIdMap)}'    # noqa
+
+@dataclass
+class OutputExtensionMap(BaseExtensionMap):
+    def __init__(self):
+        super().__init__()
+        self.mapType = ExtensionMapType.OUTPUT_MAP
 
 @dataclass
 class ToolExtensionMap(BaseExtensionMap):
@@ -88,6 +98,9 @@ TOOL_EXTENSIONS: ExtensionList = ExtensionList(
 )
 INPUT_EXTENSIONS: ExtensionList = ExtensionList(
     [InputPython]
+)
+OUTPUT_EXTENSIONS: ExtensionList = ExtensionList(
+    [OutputGML]
 )
 
 @dataclass
@@ -128,10 +141,9 @@ class ExtensionsManager:
         #
         #
         #
-        self._inputExtensionsMap:  InputExtensionMap = InputExtensionMap()
-        self._toolExtensionsMap:   ToolExtensionMap  = ToolExtensionMap()
-
-        # self._inputExtensionClasses:  ExtensionList = cast(ExtensionList, None)
+        self._inputExtensionsMap:  InputExtensionMap  = InputExtensionMap()
+        self._toolExtensionsMap:   ToolExtensionMap   = ToolExtensionMap()
+        self._outputExtensionsMap: OutputExtensionMap = OutputExtensionMap()
 
     @property
     def extensionsPubSub(self) -> ExtensionsPubSub:
@@ -147,6 +159,10 @@ class ExtensionsManager:
         return ExtensionList(INPUT_EXTENSIONS[:])
 
     @property
+    def outputExtensions(self) -> ExtensionList:
+        return ExtensionList(OUTPUT_EXTENSIONS[:])
+
+    @property
     def toolExtensions(self) -> ExtensionList:
         """
         Get the tool Extensions.
@@ -158,15 +174,22 @@ class ExtensionsManager:
     @property
     def inputExtensionsMap(self) -> InputExtensionMap:
 
-        if len(self._inputExtensionsMap.extensionIdMap) == 0:
+        if len(self._inputExtensionsMap.extensionIdMap) == 0:       # noqa
             self._inputExtensionsMap.extensionIdMap = self._mapWxIdsToExtensions(self.inputExtensions)
 
         return self._inputExtensionsMap
 
     @property
+    def outputExtensionsMap(self) -> OutputExtensionMap:
+        if len(self._outputExtensionsMap.extensionIdMap) == 0:  # noqa
+            self._outputExtensionsMap.extensionIdMap = self._mapWxIdsToExtensions(self.outputExtensions)
+
+        return self._outputExtensionsMap
+
+    @property
     def toolExtensionsMap(self) -> ToolExtensionMap:
 
-        if len(self._toolExtensionsMap.extensionIdMap) == 0:
+        if len(self._toolExtensionsMap.extensionIdMap) == 0:        # noqa
             self._toolExtensionsMap.extensionIdMap = self._mapWxIdsToExtensions(TOOL_EXTENSIONS)
 
         return self._toolExtensionsMap
@@ -184,6 +207,17 @@ class ExtensionsManager:
             extensionInstance.executeImport()
         except (ValueError, Exception) as e:
             self._processError(e, dialogTitle='Input Extension Error')
+
+        return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
+
+    def doExport(self, wxId: WindowId) -> ExtensionDetails:
+        idMap:             ExtensionIDMap      = self.outputExtensionsMap.extensionIdMap
+        clazz:             type                = idMap[wxId]
+        extensionInstance: BaseOutputExtension = clazz(extensionsFacade=self._extensionsFacade)
+        try:
+            extensionInstance.executeExport()
+        except (ValueError, Exception) as e:
+            self._processError(e, dialogTitle='Output Extension Error')
 
         return ExtensionDetails(name=extensionInstance.name, version=extensionInstance.version, author=extensionInstance.author)
 
@@ -234,7 +268,7 @@ class ExtensionsManager:
 
         pluginMap: ExtensionIDMap = ExtensionIDMap({})
 
-        nb: int = len(extensionList)
+        nb: int = len(extensionList)    # noqa
 
         for x in range(nb):
             wxId: WindowId = NewIdRef()

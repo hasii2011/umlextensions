@@ -85,7 +85,7 @@ class Sugiyama:
         levels: Levels = copy(self._levels)
         return levels
 
-    def createInterfaceOglALayout(self, umlShapes):
+    def createInterfaceUmlShapeLayout(self, umlShapes):
         """
         Create the interface between oglObjects and Automatic Layout
         structure. A RealSugiyamaNode is created for each class, and a

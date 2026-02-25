@@ -15,7 +15,7 @@ from umlshapes.ShapeTypes import UmlShapeGenre
 
 from umlshapes.links.UmlInheritance import UmlInheritance
 
-from umlshapes.types.Common import EndPoints
+from umlshapes.types.Common import EndPositions
 from umlshapes.types.UmlDimensions import UmlDimensions
 
 from umlshapes.types.UmlPosition import UmlPosition
@@ -165,9 +165,9 @@ class OrthogonalConnectorAdapter:
         sourceShape      = umlLink.sourceShape
         destinationShape = umlLink.destinationShape
 
-        endPoints:           EndPoints = umlLink.endPoints
-        sourcePosition:      UmlPosition = endPoints.fromPosition
-        destinationPosition: UmlPosition = endPoints.toPosition
+        endPoints:           EndPositions = umlLink.endPositions
+        sourcePosition:      UmlPosition  = endPoints.fromPosition
+        destinationPosition: UmlPosition  = endPoints.toPosition
 
         self.logger.info(f'{sourcePosition=} {destinationPosition=}')
 

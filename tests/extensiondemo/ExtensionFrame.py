@@ -72,6 +72,7 @@ from umlio.IOTypes import UmlLinks
 
 from umlio.IOTypes import UmlDocumentType
 
+from umlextensions.ExtensionsManager import OutputExtensionMap
 from umlextensions.ExtensionsManager import ToolExtensionMap
 from umlextensions.ExtensionsTypes import FrameSize
 from umlextensions.ExtensionsManager import WindowId
@@ -90,6 +91,7 @@ from umlextensions.IExtensionsFacade import IExtensionsFacade
 from umlextensions.input.BaseInputExtension import BaseInputExtension
 
 from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
+from umlextensions.output.BaseOutputExtension import BaseOutputExtension
 
 FRAME_WIDTH:  int = 1280
 FRAME_HEIGHT: int = 720
@@ -151,11 +153,12 @@ class ExtensionFrame(SizedFrame):
 
         editMenu.Append(ID_SELECTALL)
 
-        inputSubMenu: Menu = self._makeInputSubMenu()
-        toolsSubMenu: Menu = self._makeToolSubMenu()
+        inputSubMenu: Menu  = self._makeInputSubMenu()
+        outputSubMenu: Menu = self._makeOutputSubMenu()
+        toolsSubMenu: Menu  = self._makeToolSubMenu()
 
         extensionsMenu.AppendSubMenu(inputSubMenu, 'Input')
-        # extensionsMenu.AppendSubMenu(outputSubMenu, 'Output')
+        extensionsMenu.AppendSubMenu(outputSubMenu, 'Output')
         extensionsMenu.AppendSubMenu(toolsSubMenu, 'Tools')
 
         menuBar.Append(fileMenu, 'File')
@@ -176,12 +179,27 @@ class ExtensionFrame(SizedFrame):
         inputExtensionsMap: InputExtensionMap = self._extensionManager.inputExtensionsMap
 
         for wxId in inputExtensionsMap.extensionIdMap.keys():
-            clazz:          type = inputExtensionsMap.extensionIdMap[wxId]
+            clazz:             type               = inputExtensionsMap.extensionIdMap[wxId]
             extensionInstance: BaseInputExtension = clazz(None)
+            extensionName:     str                = extensionInstance.inputFormat.formatName
 
-            pluginName: str = extensionInstance.inputFormat.formatName
+            subMenu = self._makeSubMenuEntry(subMenu=subMenu, wxId=wxId, pluginName=extensionName, callback=self._onImport)
 
-            subMenu = self._makeSubMenuEntry(subMenu=subMenu, wxId=wxId, pluginName=pluginName, callback=self._onImport)
+        return subMenu
+
+    def _makeOutputSubMenu(self) -> Menu:
+        """
+        Returns:  The export submenu
+        """
+        subMenu: Menu = Menu()
+
+        outputExtensionsMap: OutputExtensionMap = self._extensionManager.outputExtensionsMap
+        for wxId in outputExtensionsMap.extensionIdMap.keys():
+            clazz:             type                = outputExtensionsMap.extensionIdMap[wxId]
+            extensionInstance: BaseOutputExtension = clazz(None)
+            extensionName:     str                 = extensionInstance.outputFormat.formatName
+
+            subMenu = self._makeSubMenuEntry(subMenu=subMenu, wxId=wxId, pluginName=extensionName, callback=self._onExport)
 
         return subMenu
 
@@ -204,6 +222,11 @@ class ExtensionFrame(SizedFrame):
         extensionsDetails: ExtensionDetails = self._extensionManager.doImport(wxId=cast(WindowId, wxId))
         self.logger.info(f'Import: {extensionsDetails=}')
 
+    def _onExport(self, event: CommandEvent):
+        wxId:              int              = event.GetId()
+        extensionsDetails: ExtensionDetails = self._extensionManager.doExport(wxId=cast(WindowId, wxId))
+        self.logger.info(f'Export: {extensionsDetails=}')
+
     def _onToolAction(self, event: CommandEvent):
         wxId:          int           = event.GetId()
         extensionsDetails: ExtensionDetails = self._extensionManager.doToolAction(wxId=cast(WindowId, wxId))
@@ -215,13 +238,6 @@ class ExtensionFrame(SizedFrame):
 
         return subMenu
 
-    # def _makeOutputSubMenu(self) -> Menu:
-    #     """
-    #     Returns:  The export submenu
-    #     """
-    #     pluginMap: OutputPluginMap = self._pluginManager.outputPluginsMap
-    #
-    #     return self._makeIOSubMenu(pluginMap=pluginMap)
     def _requestFrameInformationListener(self, callback: Callable):
         size: Size = self.GetSize()
         frameInfo: FrameInformation = FrameInformation(
