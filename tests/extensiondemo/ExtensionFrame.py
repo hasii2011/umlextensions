@@ -7,8 +7,16 @@ from logging import getLogger
 
 from pathlib import Path
 
+from umlio.IOTypes import UmlActors
+from umlio.IOTypes import UmlNotes
+from umlio.IOTypes import UmlTexts
+from umlio.IOTypes import UmlUseCases
 from umlmodel.Link import Link
 from umlmodel.enumerations.LinkType import LinkType
+from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
+from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
+from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
+from umlshapes.shapes.eventhandlers.UmlUseCaseEventHandler import UmlUseCaseEventHandler
 from umlshapes.types.UmlPosition import UmlPositions
 from wx import EVT_MENU
 from wx import FD_CHANGE_DIR
@@ -153,9 +161,9 @@ class ExtensionFrame(SizedFrame):
 
         editMenu.Append(ID_SELECTALL)
 
-        inputSubMenu: Menu  = self._makeInputSubMenu()
+        inputSubMenu:  Menu = self._makeInputSubMenu()
         outputSubMenu: Menu = self._makeOutputSubMenu()
-        toolsSubMenu: Menu  = self._makeToolSubMenu()
+        toolsSubMenu:  Menu = self._makeToolSubMenu()
 
         extensionsMenu.AppendSubMenu(inputSubMenu, 'Input')
         extensionsMenu.AppendSubMenu(outputSubMenu, 'Output')
@@ -230,7 +238,7 @@ class ExtensionFrame(SizedFrame):
     def _onToolAction(self, event: CommandEvent):
         wxId:          int           = event.GetId()
         extensionsDetails: ExtensionDetails = self._extensionManager.doToolAction(wxId=cast(WindowId, wxId))
-        self.logger.info(f'Import: {extensionsDetails=}')
+        self.logger.info(f'Tool: {extensionsDetails=}')
 
     def _makeSubMenuEntry(self, subMenu: Menu, wxId: int, pluginName: str, callback: Callable) -> Menu:
         subMenu.Append(wxId, pluginName)
@@ -401,7 +409,18 @@ class ExtensionFrame(SizedFrame):
             self._layoutShapes(diagramFrame=self._diagramFrame, umlDocument=umlDocument)
 
     def _layoutShapes(self, diagramFrame: ClassDiagramFrame, umlDocument: UmlDocument):
+        """
+
+        Args:
+            diagramFrame:
+            umlDocument:
+
+        """
         self._layoutClasses(diagramFrame, umlDocument.umlClasses)
+        self._layoutNotes(diagramFrame, umlDocument.umlNotes)
+        self._layoutTexts(diagramFrame, umlDocument.umlTexts)
+        self._layoutActors(diagramFrame, umlDocument.umlActors)
+        self._layoutUseCases(diagramFrame, umlDocument.umlUseCases)
         self._layoutLinks(diagramFrame, umlDocument.umlLinks)
 
     def _layoutClasses(self, diagramFrame: ClassDiagramFrame, umlClasses: UmlClasses):
@@ -410,6 +429,38 @@ class ExtensionFrame(SizedFrame):
                 umlShape=umlClass,
                 diagramFrame=diagramFrame,
                 eventHandlerClass=UmlClassEventHandler
+            )
+
+    def _layoutNotes(self, diagramFrame: ClassDiagramFrame, umlNotes: UmlNotes):
+        for umlNote in umlNotes:
+            self._layoutShape(
+                umlShape=umlNote,
+                diagramFrame=diagramFrame,
+                eventHandlerClass=UmlNoteEventHandler
+            )
+
+    def _layoutTexts(self, diagramFrame: ClassDiagramFrame, umlTexts: UmlTexts):
+        for umlText in umlTexts:
+            self._layoutShape(
+                umlShape=umlText,
+                diagramFrame=diagramFrame,
+                eventHandlerClass=UmlTextEventHandler
+            )
+
+    def _layoutActors(self, diagramFrame: ClassDiagramFrame, umlActors: UmlActors):
+        for umlActor in umlActors:
+            self._layoutShape(
+                umlShape=umlActor,
+                diagramFrame=diagramFrame,
+                eventHandlerClass=UmlActorEventHandler
+            )
+
+    def _layoutUseCases(self, diagramFrame: ClassDiagramFrame, umlUseCases: UmlUseCases):
+        for umlUseCase in umlUseCases:
+            self._layoutShape(
+                umlShape=umlUseCase,
+                diagramFrame=diagramFrame,
+                eventHandlerClass=UmlUseCaseEventHandler
             )
 
     def _layoutLinks(self, diagramFrame: ClassDiagramFrame, umlLinks: UmlLinks):
@@ -427,7 +478,6 @@ class ExtensionFrame(SizedFrame):
 
                 umlLinkEventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlLink, previousEventHandler=umlLink.GetEventHandler())
                 umlLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
-                # umlLinkEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
                 umlLink.SetEventHandler(umlLinkEventHandler)
 
             elif isinstance(umlLink, UmlNoteLink):
@@ -441,7 +491,6 @@ class ExtensionFrame(SizedFrame):
                 umlNoteLink.Show(True)
                 eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink, previousEventHandler=umlNoteLink.GetEventHandler())
                 eventHandler.umlPubSubEngine = self._umlPubSubEngine
-                # eventHandler.SetPreviousHandler(umlLink.GetEventHandler())
                 umlNoteLink.SetEventHandler(eventHandler)
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 
@@ -452,10 +501,8 @@ class ExtensionFrame(SizedFrame):
                 diagramFrame.umlDiagram.AddShape(umlLink)
                 umlLink.Show(True)
 
+                # noinspection PyUnusedLocal
                 umlAssociationEventHandler: UmlAssociationEventHandler = UmlAssociationEventHandler(umlAssociation=umlLink, umlPubSubEngine=self._umlPubSubEngine)
-                # umlAssociationEventHandler.umlPubSubEngine = self._umlPubSubEngine
-                umlAssociationEventHandler.SetPreviousHandler(umlLink.GetEventHandler())
-                umlLink.SetEventHandler(umlAssociationEventHandler)
 
     def _layoutShape(self, umlShape: UmlShapeGenre, diagramFrame: ClassDiagramFrame, eventHandlerClass: type[UmlBaseEventHandler]):
         """
@@ -472,7 +519,6 @@ class ExtensionFrame(SizedFrame):
         eventHandler: UmlBaseEventHandler = eventHandlerClass(previousEventHandler=umlShape.GetEventHandler())
         eventHandler.SetShape(umlShape)
         eventHandler.umlPubSubEngine = self._umlPubSubEngine
-        # eventHandler.SetPreviousHandler(umlShape.GetEventHandler())
         umlShape.SetEventHandler(eventHandler)
 
         diagram.AddShape(umlShape)

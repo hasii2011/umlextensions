@@ -7,6 +7,13 @@ from logging import getLogger
 from abc import ABC
 from abc import abstractmethod
 
+from wx import FD_CHANGE_DIR
+from wx import FD_OVERWRITE_PROMPT
+from wx import FD_SAVE
+from wx import FileSelector
+
+from wx import Yield as wxYield
+
 from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -14,6 +21,7 @@ from umlextensions.extensiontypes.BaseExtension import BaseExtension
 from umlextensions.extensiontypes.ExtensionDataTypes import UNSPECIFIED_DESCRIPTION
 from umlextensions.extensiontypes.ExtensionDataTypes import UNSPECIFIED_FILE_SUFFIX
 from umlextensions.extensiontypes.ExtensionDataTypes import UNSPECIFIED_NAME
+from umlextensions.extensiontypes.SingleFileRequestResponse import SingleFileRequestResponse
 
 from umlextensions.output.OutputFormat import OutputFormat
 
@@ -40,6 +48,12 @@ class BaseOutputExtension(BaseExtension, ABC):
 
     @property
     def outputFormat(self) -> OutputFormat:
+        """
+        Implementations set the protected variable at class construction
+
+        Returns: The output format type;  Plugins should return `None` if they do
+        not support output operations
+        """
         return self._outputFormat
 
     def executeExport(self):
@@ -68,6 +82,32 @@ class BaseOutputExtension(BaseExtension, ABC):
                 return
         if self.setExportOptions() is True:
             self.write()
+
+    def askForFileToExport(self, defaultFileName: str = '', defaultPath: str = '') -> SingleFileRequestResponse:
+        """
+        Called by a plugin to ask for the export filename
+
+        Returns: The appropriate response object
+        """
+        wxYield()
+
+        outputFormat: OutputFormat = self.outputFormat
+        wildCard:    str = f'{outputFormat.formatName} (*.{outputFormat.fileSuffix}) |*.{outputFormat.fileSuffix}'
+        fileName:    str = FileSelector("Choose export file name",
+                                        default_path=defaultPath,
+                                        default_filename=defaultFileName,
+                                        wildcard=wildCard,
+                                        flags=FD_SAVE | FD_OVERWRITE_PROMPT | FD_CHANGE_DIR)
+
+        response: SingleFileRequestResponse = SingleFileRequestResponse(cancelled=False)
+
+        if fileName == '':
+            response.fileName  = ''
+            response.cancelled = True
+        else:
+            response.fileName = fileName
+
+        return response
 
     @abstractmethod
     def setExportOptions(self) -> bool:

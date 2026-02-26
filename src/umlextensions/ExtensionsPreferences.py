@@ -19,6 +19,7 @@ PREFERENCES_FILENAME: str = f'{MODULE_NAME}.ini'
 SECTION_EXTENSIONS: ValueDescriptions = ValueDescriptions(
     {
         KeyName('sugiyamaStepByStep'): ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+        KeyName('defaultGMLFilename'): ValueDescription(defaultValue='GmlDump.gml'),
     }
 )
 

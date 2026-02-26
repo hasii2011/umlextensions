@@ -235,7 +235,7 @@ class ExtensionsManager:
         except (ValueError, Exception) as e:
             self._processError(e, dialogTitle='Tool Extension Error')
 
-        return ExtensionDetails(name=toolInstance.name, version=toolInstance.version, author=toolInstance.version)
+        return ExtensionDetails(name=toolInstance.name, version=toolInstance.version, author=toolInstance.author)
 
     def _processError(self, e: Exception, dialogTitle: str):
         """

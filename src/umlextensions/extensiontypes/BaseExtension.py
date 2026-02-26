@@ -9,6 +9,7 @@ from wx import MessageDialog
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.IExtensionsFacade import IExtensionsFacade
+
 from umlextensions.extensiontypes.ExtensionDataTypes import Author
 from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
 from umlextensions.extensiontypes.ExtensionDataTypes import Version
