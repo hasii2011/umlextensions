@@ -16,7 +16,7 @@ from umlextensions.extensiontypes.SingleFileRequestResponse import SingleFileReq
 
 from umlextensions.output.OutputFormat import OutputFormat
 from umlextensions.output.BaseOutputExtension import BaseOutputExtension
-
+from umlextensions.output.gml.GMLExporter import GMLExporter
 
 FORMAT_NAME:           FormatName           = FormatName('GML')
 FILE_SUFFIX:           FileSuffix           = FileSuffix('gml')
@@ -49,4 +49,12 @@ class OutputGML(BaseOutputExtension):
             return True
 
     def write(self) -> bool:
+
+        gmlExporter: GMLExporter = GMLExporter()
+
+        selectedUmlShapes = self._frameInformation.selectedUmlShapes
+        gmlExporter.translate(umlShapes=selectedUmlShapes)
+
+        gmlExporter.write(self._exportResponse.fileName)
+
         return True

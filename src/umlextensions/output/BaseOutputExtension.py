@@ -39,7 +39,6 @@ class BaseOutputExtension(BaseExtension, ABC):
 
     """
     def __init__(self, extensionsFacade: IExtensionsFacade):
-
         super().__init__(extensionsFacade)
         self.logger: Logger = getLogger(__name__)
 
