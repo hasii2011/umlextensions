@@ -79,7 +79,7 @@ class MockGenerator:
             parentClass: MagicMock = umlShapes[currentIdx]
             childClass:  MagicMock = umlShapes[currentIdx + 1]
 
-            self.logger.info(f'parentID: {parentClass.id} childID: {childClass.id}')
+            self.logger.debug(f'parentID: {parentClass.id} childID: {childClass.id}')
             self._createMockLink(parentClass, childClass)
             currentIdx += 2
             if currentIdx >= len(umlShapes):

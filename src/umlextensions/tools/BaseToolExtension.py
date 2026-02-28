@@ -1,4 +1,5 @@
 
+from typing import Sized
 from typing import cast
 
 from logging import Logger
@@ -51,9 +52,9 @@ class BaseToolExtension(BaseExtension, ABC):
         if frameInformation.frameActive is False:
             self.showNoUmlFrameDialog()
         else:
-            self._selectedOglObjects = frameInformation.selectedUmlShapes  # syntactic sugar
+            selectedUmlShapes = frameInformation.selectedUmlShapes  # syntactic sugar
 
-            if len(self._selectedOglObjects) == 0 and self._requireSelection is True:
+            if len(cast(Sized, selectedUmlShapes)) == 0 and self._requireSelection is True:
                 self.showNoSelectedUmlShapesDialog()
             else:
                 BeginBusyCursor()
