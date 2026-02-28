@@ -271,25 +271,26 @@ class ExtensionFrame(SizedFrame):
     def _wiggleShapesListener(self):
         """
         This is a hack work around to simulate moving the shapes so
-        that the links are visible.
+        that the links are visible and at the correct positions when the
+        shapes move.
         I tried refresh, redraw, and .DrawLinks;  None of it worked
         """
-
-        umlShapes: UmlShapes = self._diagramFrame.umlShapes
+        umlShapes: UmlShapes = self._diagramFrame.selectedShapes
 
         for shape in umlShapes:
 
             if isinstance(shape, UmlShapeGenre) is True:
-
                 umlShape: UmlShapeGenre = cast(UmlShapeGenre, shape)
 
-                oldPosition: UmlPosition = umlShape.position
-                newPosition: UmlPosition = UmlPosition(x=oldPosition.x + 10, y=oldPosition.y + 10)
-
+                oldX: int = umlShape.GetX()
+                oldY: int = umlShape.GetY()
+                newX: int = oldX + 10
+                newY: int = oldY + 10
+                from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
                 eventHandler: UmlBaseEventHandler = umlShape.GetEventHandler()
 
-                eventHandler.OnDragLeft(draw=True, x=newPosition.x, y=newPosition.y)
-                eventHandler.OnDragLeft(draw=True, x=oldPosition.x, y=oldPosition.y)
+                eventHandler.OnDragLeft(draw=True, x=newX, y=newY)
+                eventHandler.OnDragLeft(draw=True, x=oldX, y=oldY)
 
     def _getSelectedUmlShapesListener(self, callback: SelectedUmlShapesCallback):
         selectedShapes: UmlShapes = self._getSelectedUmlShapes()

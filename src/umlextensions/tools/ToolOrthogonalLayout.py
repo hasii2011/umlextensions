@@ -82,6 +82,7 @@ class ToolOrthogonalLayout(BaseToolExtension):
         if orthogonalAdapter is not None:
             self._reLayoutNodes(selectedUmlShapes, orthogonalAdapter.umlShapeCoordinates)
             self._reLayoutLinks(selectedUmlShapes)
+            self._extensionsFacade.wiggleShapes()
             self._extensionsFacade.extensionModifiedProject()
 
     def _reLayoutNodes(self, umlObjects: UmlShapes, oglCoordinates: UmlShapeCoordinates):
