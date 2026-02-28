@@ -1,20 +1,17 @@
+from typing import cast
 
 from logging import Logger
 from logging import getLogger
-
-from typing import cast
 
 from wx import OK
 from wx import MessageBox
 from wx import ICON_ERROR
 
-from wx import Yield as wxYield
-from wx import CallLater as wxCallLater
-
 from umlshapes.ShapeTypes import UmlShapes
-from umlshapes.links.UmlLink import UmlLink
+
 from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlClass import UmlClass
+
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlshapes.mixins.TopLeftMixin import TopLeftMixin
@@ -27,10 +24,11 @@ from umlextensions.extensiontypes.ExtensionDataTypes import ExtensionName
 
 from umlextensions.tools.orthogonallayout.OrthogonalAdapter import OrthogonalAdapter
 from umlextensions.tools.orthogonallayout.OrthogonalAdapter import UmlShapeCoordinate
-from umlextensions.tools.orthogonallayout.DlgLayoutDimensions import DlgLayoutDimensions
-from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
 from umlextensions.tools.orthogonallayout.OrthogonalAdapter import UmlShapeCoordinates
 from umlextensions.tools.orthogonallayout.OrthogonalAdapterException import OrthogonalAdapterException
+
+from umlextensions.tools.orthogonallayout.DlgLayoutDimensions import DlgLayoutDimensions
+from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
 
 from umlextensions.tools.BaseToolExtension import BaseToolExtension
 
@@ -81,11 +79,11 @@ class ToolOrthogonalLayout(BaseToolExtension):
 
         if orthogonalAdapter is not None:
             self._reLayoutNodes(selectedUmlShapes, orthogonalAdapter.umlShapeCoordinates)
-            self._reLayoutLinks(selectedUmlShapes)
+
             self._extensionsFacade.wiggleShapes()
             self._extensionsFacade.extensionModifiedProject()
 
-    def _reLayoutNodes(self, umlObjects: UmlShapes, oglCoordinates: UmlShapeCoordinates):
+    def _reLayoutNodes(self, umlObjects: UmlShapes, umlShapeCoordinates: UmlShapeCoordinates):
         """
 
         Args:
@@ -99,46 +97,22 @@ class ToolOrthogonalLayout(BaseToolExtension):
                 else:
                     umlName = cast(UmlNote, umlObj).modelNote.name
 
-                oglCoordinate: UmlShapeCoordinate = oglCoordinates[umlName]
+                umlShapeCoordinate: UmlShapeCoordinate = umlShapeCoordinates[umlName]
 
-                self._stepNodes(cast(TopLeftMixin, umlObj), oglCoordinate)      # noqas
-            self._animate()
+                self._moveShape(cast(TopLeftMixin, umlObj), umlShapeCoordinate)      # noqas
 
-    def _reLayoutLinks(self, umlShapes: UmlShapes):
-
-        for umlShape in umlShapes:
-            if isinstance(umlShape, UmlLink):
-                umlLink: UmlLink = umlShape
-                self.logger.warning(f'{umlLink=} not optimized line')
-                # TODO: UmlLink needs to implement this
-                # umlLink.optimizeLine()
-            self._animate()
-
-    def _stepNodes(self, srcShape: TopLeftMixin, umlCoordinate: UmlShapeCoordinate):
+    def _moveShape(self, srcShape: TopLeftMixin, umlCoordinate: UmlShapeCoordinate):
         """
 
         Args:
             srcShape:
             umlCoordinate:
-
         """
 
         oldPosition: UmlPosition = srcShape.position
 
-        newPosition: UmlPosition = UmlPosition(x=umlCoordinate.x, y=umlCoordinate.y)
+        umlPosition: UmlPosition = self._preferences.orthogonalLayoutTopLeft
+        newPosition: UmlPosition = UmlPosition(x=umlCoordinate.x + umlPosition.x, y=umlCoordinate.y + umlPosition.y)
         self.logger.info(f'{srcShape} - {oldPosition=}  {newPosition=}')
 
         srcShape.position = newPosition
-
-    def _animate(self):
-        """
-        Does an animation simulation
-        """
-        # self._extensionsFacade.refreshFrame()
-        # self.logger.debug(f'Refreshing ...............')
-        # wxYield()
-        # t = time()
-        # while time() < t + 0.05:
-        #     pass
-        wxCallLater(millis=50, callableObj=self._extensionsFacade.refreshFrame)
-        wxYield()

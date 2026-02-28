@@ -12,21 +12,25 @@ from codeallybasic.DynamicConfiguration import SectionName
 from codeallybasic.DynamicConfiguration import ValueDescription
 from codeallybasic.DynamicConfiguration import ValueDescriptions
 from codeallybasic.DynamicConfiguration import DynamicConfiguration
+from umlshapes.types.UmlPosition import UmlPosition
 
 from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
 
 MODULE_NAME:          str = 'umlextensions'
 PREFERENCES_FILENAME: str = f'{MODULE_NAME}.ini'
 
-DEFAULT_ORTHOGONAL_LAYOUT_SIZE:     LayoutAreaDimensions   = LayoutAreaDimensions(512, 512)
-DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR: str              = DEFAULT_ORTHOGONAL_LAYOUT_SIZE.__str__()
+DEFAULT_ORTHOGONAL_LAYOUT_SIZE:     LayoutAreaDimensions = LayoutAreaDimensions(512, 512)
+DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR: str                  = str(DEFAULT_ORTHOGONAL_LAYOUT_SIZE)
+
+DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT:     UmlPosition = UmlPosition(x=25, y=25)
+DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT_STR: str         = str(DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT)
 
 SECTION_EXTENSIONS: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('sugiyamaStepByStep'): ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
-        KeyName('defaultGMLFilename'): ValueDescription(defaultValue='GmlDump.gml'),
-        KeyName('orthogonalLayoutSize'): ValueDescription(defaultValue=DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR, deserializer=LayoutAreaDimensions.deSerialize),
-
+        KeyName('sugiyamaStepByStep'):      ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+        KeyName('defaultGMLFilename'):      ValueDescription(defaultValue='GmlDump.gml'),
+        KeyName('orthogonalLayoutSize'):    ValueDescription(defaultValue=DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR,    deserializer=LayoutAreaDimensions.deSerialize),
+        KeyName('orthogonalLayoutTopLeft'): ValueDescription(defaultValue=DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT_STR, deserializer=UmlPosition.deSerialize),
     }
 )
 
