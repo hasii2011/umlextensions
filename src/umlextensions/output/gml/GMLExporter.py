@@ -126,7 +126,7 @@ class GMLExporter:
                 nodeGml = (
                     f'{nodeGml}'
                     f'{GMLExporter.singleTab}{GMLExporter.NODE_TOKEN} {GMLExporter.START_TOKEN}\n'
-                    f'{GMLExporter.doubleTab}{GMLExporter.ID_TOKEN} {identifier.id}\n'
+                    f'{GMLExporter.doubleTab}{GMLExporter.ID_TOKEN} "{identifier.id}"\n'
                     f'{GMLExporter.doubleTab}{GMLExporter.LABEL_TOKEN} "{modelObject.name}"\n'
                     f'{self._generateNodeGraphicsSection(umlShape)}'
                     f'{GMLExporter.singleTab}{GMLExporter.END_TOKEN}\n'
@@ -207,9 +207,9 @@ class GMLExporter:
         gml = (
             f'{gml}'
             f'{GMLExporter.singleTab}{GMLExporter.EDGE_TOKEN} {GMLExporter.START_TOKEN}\n'
-            f'{GMLExporter.doubleTab}{GMLExporter.ID_TOKEN} {umlLink.id}\n'
-            f'{GMLExporter.doubleTab}{GMLExporter.SOURCE_ID_TOKEN} {srcShapeId}\n'
-            f'{GMLExporter.doubleTab}{GMLExporter.TARGET_ID_TOKEN} {destShapeId}\n'
+            f'{GMLExporter.doubleTab}{GMLExporter.ID_TOKEN} "{umlLink.id}"\n'
+            f'{GMLExporter.doubleTab}{GMLExporter.SOURCE_ID_TOKEN} "{srcShapeId}"\n'
+            f'{GMLExporter.doubleTab}{GMLExporter.TARGET_ID_TOKEN} "{destShapeId}"\n'
             f'{self.__generateEdgeGraphicsSection(umlLink=umlLink)}'
             f'{GMLExporter.singleTab}{GMLExporter.END_TOKEN}\n'
         )

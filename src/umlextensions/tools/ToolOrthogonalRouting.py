@@ -34,8 +34,8 @@ class ToolOrthogonalRouting(BaseToolExtension):
         super().__init__(extensionsFacade=extensionsFacade)
         self.logger: Logger = getLogger(__name__)
 
-        self._name      = ExtensionName('Orthogonal Automatic Layout')
-        self._author    = Author('Humberto A. Sanchez III')
+        self._name      = ExtensionName('Orthogonal Links')
+        self._author    = Author('Humberto A. Sanchez II')
         self._version   = Version('2.0')
 
     def setOptions(self) -> bool:
