@@ -27,13 +27,11 @@ class BaseToolExtension(BaseExtension, ABC):
         * Arranging orthogonal links
     """
     def __init__(self, extensionsFacade: IExtensionsFacade):
-        from umlshapes.ShapeTypes import UmlShapes
 
         super().__init__(extensionsFacade)
-
         self.logger: Logger = getLogger(__name__)
 
-        self._frameInformation:  FrameInformation = cast(FrameInformation, None)
+        self._frameInformation: FrameInformation = cast(FrameInformation, None)
 
     def executeTool(self):
         """
@@ -53,9 +51,9 @@ class BaseToolExtension(BaseExtension, ABC):
         if frameInformation.frameActive is False:
             self.showNoUmlFrameDialog()
         else:
-            self._selectedUmlShapes = frameInformation.selectedUmlShapes  # syntactic sugar
+            selectedUmlShapes = frameInformation.selectedUmlShapes  # syntactic sugar
 
-            if self._selectedUmlShapes and self._requireSelection is True:
+            if len(selectedUmlShapes) == 0 and self._requireSelection is True:
                 self.showNoSelectedUmlShapesDialog()
             else:
                 BeginBusyCursor()
