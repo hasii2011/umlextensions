@@ -55,11 +55,8 @@ class ToolOrthogonalRouting(BaseToolExtension):
     def doAction(self):
 
         self.logger.info(f'Begin Orthogonal Routing')
-        self._extensionsFacade.getSelectedUmlShapes(callback=self._doAction)
-        self.logger.info('End Orthogonal Routing')
 
-    def _doAction(self, selectedUmlShapes):
-        self.logger.info(f'_doAction')
+        selectedUmlShapes = self._frameInformation.selectedUmlShapes
 
         adapter: OrthogonalConnectorAdapter = OrthogonalConnectorAdapter(extensionsFacade=self._extensionsFacade)
 
@@ -84,6 +81,8 @@ class ToolOrthogonalRouting(BaseToolExtension):
 
                 except (AttributeError, TypeError) as e:
                     self.logger.error(f'{e} - {umlLink=}')
+
+        self.logger.info('End Orthogonal Routing')
 
     def _composeGoodErrorMessage(self, oglLink: UmlLinkGenre) -> str:
 

@@ -279,21 +279,7 @@ class ExtensionFrame(SizedFrame):
 
         for shape in umlShapes:
             if isinstance(shape, UmlShapeGenre):
-                self._doWiggle(shape=shape)
-
-    def _doWiggle(self, shape):
-
-        umlShape: UmlShapeGenre = cast(UmlShapeGenre, shape)
-
-        oldX: int = umlShape.GetX()
-        oldY: int = umlShape.GetY()
-        newX: int = oldX + 10
-        newY: int = oldY + 10
-        from umlshapes.UmlBaseEventHandler import UmlBaseEventHandler
-        eventHandler: UmlBaseEventHandler = umlShape.GetEventHandler()
-
-        eventHandler.OnDragLeft(draw=True, x=newX, y=newY)
-        eventHandler.OnDragLeft(draw=True, x=oldX, y=oldY)
+                self._diagramFrame.wiggleShape(shape=shape)
 
     def _getSelectedUmlShapesListener(self, callback: SelectedUmlShapesCallback):
         selectedShapes: UmlShapes = self._getSelectedUmlShapes()

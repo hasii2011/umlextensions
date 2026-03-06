@@ -62,12 +62,8 @@ class ToolOrthogonalLayout(BaseToolExtension):
         return proceed
 
     def doAction(self):
-        self.logger.info(f'Begin Orthogonal Routing')
-        self._extensionsFacade.getSelectedUmlShapes(callback=self._doAction)
-        self.logger.info('End Orthogonal Routing')
-
-    def _doAction(self, selectedUmlShapes):
-
+        self.logger.info(f'Begin Orthogonal Layout')
+        selectedUmlShapes = self._frameInformation.selectedUmlShapes
         try:
             orthogonalAdapter: OrthogonalAdapter = OrthogonalAdapter(umlShapes=selectedUmlShapes)
 
@@ -82,6 +78,8 @@ class ToolOrthogonalLayout(BaseToolExtension):
 
             self._extensionsFacade.wiggleShapes()
             self._extensionsFacade.extensionModifiedProject()
+
+        self.logger.info('End Orthogonal Layout')
 
     def _reLayoutNodes(self, umlObjects: UmlShapes, umlShapeCoordinates: UmlShapeCoordinates):
         """
