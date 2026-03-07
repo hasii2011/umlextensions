@@ -13,6 +13,7 @@ from umlio.IOTypes import UmlTexts
 from umlio.IOTypes import UmlUseCases
 from umlmodel.Link import Link
 from umlmodel.enumerations.LinkType import LinkType
+from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
 from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
 from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
 from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
@@ -143,8 +144,8 @@ class ExtensionFrame(SizedFrame):
 
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SELECTED_UML_SHAPES, listener=self._getSelectedUmlShapesListener)
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SHAPE_BOUNDARIES,    listener=self._getShapBoundariesListener)
-        pluginPubSub.subscribe(ExtensionsMessageType.DeleteLink,              listener=self._deleteLinkListener)
-        pluginPubSub.subscribe(ExtensionsMessageType.CreateLink,              listener=self._createLinkListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.DELETE_LINK, listener=self._deleteLinkListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.CREATE_LINK, listener=self._createLinkListener)
 
     def _createApplicationMenuBar(self):
 
@@ -325,52 +326,37 @@ class ExtensionFrame(SizedFrame):
 
     def _createLinkListener(self, linkInformation: LinkInformation, callback):
 
-        if linkInformation.linkType == LinkType.INHERITANCE:
+        currentFrame = self._diagramFrame
 
-            baseUmlClass:     UmlClass = cast(UmlClass, linkInformation.destinationShape)   # noqa
-            subClassUmlClass: UmlClass = cast(UmlClass, linkInformation.sourceShape)        # noqa
+        partialName: str = f'{type(linkInformation.linkType)}'
 
-            modelInheritance: Link = self._createInheritanceModelLink(
-                baseUmlClass=baseUmlClass,
-                subUmlClass=subClassUmlClass
-            )
+        path: UmlPositions = linkInformation.path
 
-            umlInheritance: UmlInheritance = UmlInheritance(
-                link=modelInheritance,
-                baseClass=baseUmlClass,
-                subClass=subClassUmlClass
-            )
-            umlInheritance.umlFrame = self._diagramFrame
-            umlInheritance.MakeLineControlPoints(n=2)  # Make this configurable
-            # REMEMBER:   from subclass to base class
-            subClassUmlClass.addLink(umlLink=umlInheritance, destinationClass=baseUmlClass)
-            path:         UmlPositions = linkInformation.path
+        lastIdx:      int         = len(path) - 1  # noqa
+        fromPosition: UmlPosition = path[0]
+        toPosition:   UmlPosition = path[lastIdx]
+        path.remove(fromPosition)
+        path.remove(toPosition)
 
-            lastIdx:      int         = len(path) - 1      # noqa
-            fromPosition: UmlPosition = path[0]
-            toPosition:   UmlPosition = path[lastIdx]
-            umlInheritance.setLinkEnds(
-                fromPosition=fromPosition,
-                toPosition=toPosition
-            )
-            path.remove(fromPosition)
-            path.remove(toPosition)
+        linkControlPositions: UmlPositions = UmlPositions([])
+        for cp in path:
+            linkControlPositions.append(cp)
 
-            for cp in path:
-                controlPoint: UmlPosition = cp
-                umlInheritance.addLineControlPoint(umlPosition=UmlPosition(x=controlPoint.x, y=controlPoint.y))
+        createLinkCommand: CreateLinkCommand = CreateLinkCommand(
+            partialName=partialName,
+            sourceShape=linkInformation.sourceShape,
+            destinationShape=linkInformation.destinationShape,
+            linkType=linkInformation.linkType,
+            umlPubSubEngine=self._umlPubSubEngine,
+            linkSourcePosition=fromPosition,
+            linkDestinationPosition=toPosition,
+            linkControlPositions=linkControlPositions
 
-            # Caller must place on Frame
-            # self._diagramFrame.umlDiagram.AddShape(umlInheritance)
-            # umlInheritance.Show(True)
+        )
+        status = currentFrame.commandProcessor.Submit(createLinkCommand, storeIt=True)
+        self.logger.info(f'Create Link {partialName=} {status=}')
 
-            eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInheritance, previousEventHandler=umlInheritance.GetEventHandler())
-            eventHandler.umlPubSubEngine = self._umlPubSubEngine
-            umlInheritance.SetEventHandler(eventHandler)
-
-            callback(umlInheritance)
-        else:
-            self.logger.warning(f'Do not know how to create link: {linkInformation.linkType}')
+        callback(createLinkCommand.umlLink)
 
     # noinspection PyUnusedLocal
     def _onOpenXmlFile(self, event: CommandEvent):

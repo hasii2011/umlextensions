@@ -80,10 +80,10 @@ class ExtensionsFacade(IExtensionsFacade):
         self._extensionsPubSub.sendMessage(ExtensionsMessageType.GET_SHAPE_BOUNDARIES, callback=callback)
 
     def deleteLink(self, umlLink: UmlLinkGenre):
-        self._extensionsPubSub.sendMessage(ExtensionsMessageType.DeleteLink, umlLink=umlLink)
+        self._extensionsPubSub.sendMessage(ExtensionsMessageType.DELETE_LINK, umlLink=umlLink)
 
     def createLink(self, linkInformation: LinkInformation, callback: CreatedLinkCallback):
-        self._extensionsPubSub.sendMessage(ExtensionsMessageType.CreateLink, linkInformation=linkInformation, callback=callback)
+        self._extensionsPubSub.sendMessage(ExtensionsMessageType.CREATE_LINK, linkInformation=linkInformation, callback=callback)
 
     def showOrthogonalRoutingPoints(self, show: bool, spots: Points):
         pass

@@ -219,8 +219,14 @@ class OrthogonalConnectorAdapter:
         self._extensionsFacade.createLink(linkInformation=linkInformation, callback=self._createLinkCallback)
 
     def _createLinkCallback(self, newLink: UmlLinkGenre):
+        """
+        The link is created and on the frame
 
-        self._extensionsFacade.addShape(newLink)
+        Args:
+            newLink:    The newly created link;  We do nothing with it
+
+        """
+        self.logger.info(f'{newLink=}')
         self._extensionsFacade.refreshFrame()
 
     def _toUmlPositions(self, path: Points) -> UmlPositions:

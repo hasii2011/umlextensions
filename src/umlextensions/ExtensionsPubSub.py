@@ -19,8 +19,8 @@ class ExtensionsMessageType(Enum):
     GET_SELECTED_UML_SHAPES    = 'Get Selected UML Shapes'
     WIGGLE_SHAPES              = 'Wiggle Shapes'
     GET_SHAPE_BOUNDARIES       = 'Get Shape Boundaries'
-    DeleteLink                 = 'DeleteLink'
-    CreateLink                 = 'CreateLink'
+    DELETE_LINK                = 'DeleteLink'
+    CREATE_LINK                = 'CreateLink'
 
 
 AdapterId = NewType('AdapterId', str)

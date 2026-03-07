@@ -88,6 +88,16 @@ class IExtensionsFacade(ABC):
 
     @abstractmethod
     def createLink(self, linkInformation: LinkInformation, callback: CreatedLinkCallback):
+        """
+        The facade implementor creates the link and places it on the appropriate frame
+
+        Args:
+            linkInformation:   The information needed to create the link
+            callback:          This callback returns the created link;  In general, the
+            extensions do not need to do anything with the link.  The facade provides
+            the created link as a convenience
+        """
+
         pass
 
     @abstractmethod
