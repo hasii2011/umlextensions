@@ -132,6 +132,7 @@ class InputPython(BaseInputExtension):
             self._readProgressDlg.Destroy()
             self._layoutUmlClasses(umlClasses=list(umlClassesDict.values()))
             self._layoutLinks(oglLinks=pythonToUmlShapes.umlLinks)
+            self._extensionsFacade.refreshFrame()
 
         except (ValueError, Exception, PythonParseException) as e:
             self._readProgressDlg.Destroy()
@@ -221,10 +222,8 @@ class InputPython(BaseInputExtension):
                     y += incY
                     incY = int(sy)
 
-                # oglClass.SetPosition(x, y)
                 umlClass.position = UmlPosition(x=x, y=y)
                 x += incX
-                # self._pluginAdapter.addShape(shape=oglClass)
                 self._extensionsFacade.addShape(umlShape=umlClass)
 
     def _layoutLinks(self, oglLinks: UmlLinks):

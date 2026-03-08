@@ -276,7 +276,7 @@ class ExtensionFrame(SizedFrame):
         shapes move.
         I tried refresh, redraw, and .DrawLinks;  None of it worked
         """
-        umlShapes: UmlShapes = self._diagramFrame.selectedShapes
+        umlShapes: UmlShapes = self._diagramFrame.umlShapes
 
         for shape in umlShapes:
             if isinstance(shape, UmlShapeGenre):

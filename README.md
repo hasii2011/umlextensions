@@ -11,7 +11,16 @@
 This project is a library for generating UML diagrams from Python source code, and it includes a demonstration application.
 
 # Overview
-The `umlextensions` package provides a flexible way to reverse-engineer Python code into UML class diagrams. It is designed to be extensible, allowing for different input and output formats. The core of the project is a parser that analyzes Python source code and a layout engine that arranges the UML shapes for visualization. A demonstration application built with `wxPython` is included to showcase the library's capabilities.
+
+The `umlextensions` module provides a flexible way to add capabilities to the core UML Diagrammer.  There are extensions that read external data and convert it to a UML class diagram.  An example, is the `InputPython` extension that reads Python source code and generates an appropriate UML Diagram.  There are extensions that take an existing UML diagram and convert it to a different structure format.   For example, the `OutputGML` extension produced [GML](https://grokipedia.com/page/Graph_Modelling_Language) files.
+
+Finally, there are tool extensions that manipulate a UML diagram.  Examples of this are:
+
+-   ToolOrthogonalLayout - Lays out shapes in a manner to minimize link crossings and link bends
+-   ToolOrthgonalRouting - Lays out link such that link bends are orthogonal
+-   [ToolSugiyama](https://www.linkedin.com/pulse/understanding-sugiyama-framework-sanskar-tyagi-anh3c/) - Lays out shapes and links in a pleasing manner.
+
+
 
 # Installation
 
