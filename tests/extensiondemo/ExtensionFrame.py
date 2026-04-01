@@ -14,6 +14,7 @@ from umlio.IOTypes import UmlUseCases
 from umlmodel.Link import Link
 from umlmodel.enumerations.LinkType import LinkType
 from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
+from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
 from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
 from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
@@ -446,6 +447,7 @@ class ExtensionFrame(SizedFrame):
                 umInheritance: UmlInheritance = umlLink
                 subClass  = umInheritance.subClass
                 baseClass = umInheritance.baseClass
+                umInheritance.umlPubSubEngine = self._umlPubSubEngine
 
                 subClass.addLink(umlLink=umInheritance, destinationClass=baseClass)
 
@@ -456,22 +458,41 @@ class ExtensionFrame(SizedFrame):
                 umlLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
                 umlLink.SetEventHandler(umlLinkEventHandler)
 
+            elif isinstance(umlLink, UmlInterface):
+                umlInterface: UmlInterface = umlLink
+                interfaceClass    = umlInterface.interfaceClass
+                implementingClass = umlInterface.implementingClass
+                umlInterface.umlPubSubEngine = self._umlPubSubEngine
+
+                implementingClass.addLink(umlLink=umlInterface, destinationClass=interfaceClass)
+
+                diagramFrame.umlDiagram.AddShape(umlInterface)
+                umlInterface.Show(True)
+
+                eventHandler: UmlLinkEventHandler = UmlLinkEventHandler(umlLink=umlInterface, previousEventHandler=umlInterface.GetEventHandler())
+                eventHandler.umlPubSubEngine = self._umlPubSubEngine
+                umlInterface.SetEventHandler(eventHandler)
+
             elif isinstance(umlLink, UmlNoteLink):
                 umlNoteLink: UmlNoteLink = umlLink
-                sourceNote:       UmlNote  = umlNoteLink.sourceNote
-                destinationClass: UmlClass = umlNoteLink.destinationClass
+                sourceNote:       UmlNote   = umlNoteLink.sourceNote
+                destinationClass: UmlClass  = umlNoteLink.destinationClass
+                umlNoteLink.umlPubSubEngine = self._umlPubSubEngine
 
                 sourceNote.addLink(umlNoteLink=umlNoteLink, umlClass=destinationClass)
 
                 diagramFrame.umlDiagram.AddShape(umlNoteLink)
                 umlNoteLink.Show(True)
-                eventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink, previousEventHandler=umlNoteLink.GetEventHandler())
-                eventHandler.umlPubSubEngine = self._umlPubSubEngine
+                noteLinkEventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink, previousEventHandler=umlNoteLink.GetEventHandler())
+                noteLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
                 umlNoteLink.SetEventHandler(eventHandler)
+
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 
                 source      = umlLink.sourceShape
                 destination = umlLink.destinationShape
+                umlLink.umlPubSubEngine = self._umlPubSubEngine
+
                 source.addLink(umlLink, destination)  # type: ignore
 
                 diagramFrame.umlDiagram.AddShape(umlLink)
