@@ -154,7 +154,7 @@ class ToolForceDirectedLayout(BaseToolExtension):
                     self.logger.info(f'Found: {parentShapeNode}')
                 else:
                     parentShapeNode = UmlShapeNode(umlParentClass)
-                    self._nameToShapeNodeMap[umlParentClass] = parentShapeNode
+                    self._nameToShapeNodeMap[parentClassName] = parentShapeNode
 
                 parentShapeNode.addChild(umlShapeNode)
             except KeyError:
