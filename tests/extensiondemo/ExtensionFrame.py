@@ -283,6 +283,9 @@ class ExtensionFrame(SizedFrame):
             if isinstance(shape, UmlShapeGenre):
                 self._diagramFrame.wiggleShape(shape=shape)
 
+        self._diagramFrame.redrawShapes()
+        self._diagramFrame.refresh()
+
     def _getSelectedUmlShapesListener(self, callback: SelectedUmlShapesCallback):
         selectedShapes: UmlShapes = self._getSelectedUmlShapes()
         callback(selectedShapes)
@@ -485,7 +488,7 @@ class ExtensionFrame(SizedFrame):
                 umlNoteLink.Show(True)
                 noteLinkEventHandler: UmlNoteLinkEventHandler = UmlNoteLinkEventHandler(umlNoteLink=umlNoteLink, previousEventHandler=umlNoteLink.GetEventHandler())
                 noteLinkEventHandler.umlPubSubEngine = self._umlPubSubEngine
-                umlNoteLink.SetEventHandler(eventHandler)
+                umlNoteLink.SetEventHandler(noteLinkEventHandler)
 
             elif isinstance(umlLink, (UmlAssociation, UmlComposition, UmlAggregation)):
 

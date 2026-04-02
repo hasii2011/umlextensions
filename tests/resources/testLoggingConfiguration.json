@@ -46,7 +46,7 @@
             "propagate": true
         },
         "umlextensions.tools": {
-            "level": "WARNING",
+            "level": "INFO",
             "handlers": ["consoleHandler"],
             "propagate": true
         },

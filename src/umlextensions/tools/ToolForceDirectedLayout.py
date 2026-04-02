@@ -42,7 +42,8 @@ from umlextensions.tools.forcedirectedlayout.UmlShapeNode import UmlShapeNode
 NO_PARENT_WINDOW:    Window         = cast(Window, None)
 NO_PROGRESS_DIALOG:  ProgressDialog = cast(ProgressDialog, None)
 
-NameToUmlClassMap = NewType('NameToUmlClassMap', Dict[str, UmlClass])
+NameToUmlClassMap  = NewType('NameToUmlClassMap',  Dict[str, UmlClass])
+NameToUmlShapeNode = NewType('NameToUmlShapeNode', Dict[str, UmlShapeNode])
 
 
 class ToolForceDirectedLayout(BaseToolExtension):
@@ -58,6 +59,7 @@ class ToolForceDirectedLayout(BaseToolExtension):
 
         self._fdl:                  ForceDirectedLayout = ForceDirectedLayout()
         self._layoutProgressDialog: ProgressDialog      = NO_PROGRESS_DIALOG
+        self._nameToShapeNodeMap:   NameToUmlShapeNode = NameToUmlShapeNode({})
 
     def setOptions(self) -> bool:
 
@@ -82,9 +84,10 @@ class ToolForceDirectedLayout(BaseToolExtension):
 
             if isinstance(selectedShape, UmlClass):
 
-                umlClass:      UmlClass     = cast(UmlClass, selectedShape)      # noqa
+                umlClass:      UmlClass    = cast(UmlClass, selectedShape)      # noqa
                 umlShapeNode: UmlShapeNode = UmlShapeNode(umlClass=umlClass)
                 self._fdl.addNode(umlShapeNode)
+                self._nameToShapeNodeMap[umlClass.modelClass.name] = umlShapeNode
 
                 modelClass: Class = umlClass.modelClass
                 self._associateChildShapeNodes(modelClass, umlShapeNode, nameToClassMap)
@@ -96,29 +99,9 @@ class ToolForceDirectedLayout(BaseToolExtension):
         self._extensionsFacade.wiggleShapes()
         self.logger.info('End Force Directed Layout')
 
-    def _associateShapeWithParents(self, modelClass: Class, umlShapeNode: UmlShapeNode, nameToUmlClassMap: NameToUmlClassMap):
-        """
-
-        Args:
-            modelClass:         The model class associated with the UML Shape
-            umlShapeNode:       The UML Shape node that may have parents
-            nameToUmlClassMap:  The UML Shape lookup table
-
-        """
-
-        parents: List[LinkedObject] = modelClass.parents        # type: ignore
-
-        for parent in parents:
-            parentClassName: str = parent.name
-            try:
-                umlParentClass:  UmlClass     = nameToUmlClassMap[parentClassName]
-                parentShapeNode: UmlShapeNode = UmlShapeNode(umlParentClass)
-                parentShapeNode.addChild(umlShapeNode)
-            except KeyError:
-                self.logger.warning(f'{parentClassName}: not selected')
-
     def _associateChildShapeNodes(self, modelClass: Class, parentUmlShapeNode: UmlShapeNode, nameToUmlClassMap: NameToUmlClassMap, ):
         """
+        May create shape nodes for the link destination
 
         Args:
             modelClass:         The model class associated with the UML Shape
@@ -137,10 +120,45 @@ class ToolForceDirectedLayout(BaseToolExtension):
 
             try:
                 umlChildClass:  UmlClass     = nameToUmlClassMap[childClassName]
-                childShapeNode: UmlShapeNode = UmlShapeNode(umlClass=umlChildClass)
+
+                # Do we already have this UML Shape Node
+                if childClassName in self._nameToShapeNodeMap:
+                    childShapeNode: UmlShapeNode = self._nameToShapeNodeMap[childClassName]
+                    self.logger.info(f'Found: {childShapeNode}')
+                else:
+                    childShapeNode = UmlShapeNode(umlClass=umlChildClass)
+                    self._nameToShapeNodeMap[childClassName] = childShapeNode
+
                 parentUmlShapeNode.addChild(childShapeNode)
             except KeyError:
                 self.logger.warning(f'{childClassName}: not selected')
+
+    def _associateShapeWithParents(self, modelClass: Class, umlShapeNode: UmlShapeNode, nameToUmlClassMap: NameToUmlClassMap):
+        """
+
+        Args:
+            modelClass:         The model class associated with the UML Shape
+            umlShapeNode:       The UML Shape node that may have parents
+            nameToUmlClassMap:  The UML Shape lookup table
+
+        """
+
+        parents: List[LinkedObject] = modelClass.parents        # type: ignore
+
+        for parent in parents:
+            parentClassName: str = parent.name
+            try:
+                umlParentClass:  UmlClass     = nameToUmlClassMap[parentClassName]
+                if parentClassName in self._nameToShapeNodeMap:
+                    parentShapeNode: UmlShapeNode = self._nameToShapeNodeMap[parentClassName]
+                    self.logger.info(f'Found: {parentShapeNode}')
+                else:
+                    parentShapeNode = UmlShapeNode(umlParentClass)
+                    self._nameToShapeNodeMap[umlParentClass] = parentShapeNode
+
+                parentShapeNode.addChild(umlShapeNode)
+            except KeyError:
+                self.logger.warning(f'{parentClassName}: not selected')
 
     def _buildNameToUmlClassMap(self, umlShapes: UmlShapes) -> NameToUmlClassMap:
         """
