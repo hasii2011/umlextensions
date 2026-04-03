@@ -3,24 +3,25 @@
 #  implementor of the adapter
 #
 from typing import List
-from typing import NewType
 from typing import Tuple
 from typing import cast
+from typing import NewType
 from typing import Callable
 
-from dataclasses import dataclass
 from dataclasses import field
+from dataclasses import dataclass
 
-from umlshapes.ShapeTypes import UmlLinkGenre
-from umlshapes.types.UmlPosition import UmlPositions
 from wx import ClientDC
+
+from umlshapes.types.UmlPosition import UmlPositions
 
 from umlmodel.enumerations.LinkType import LinkType
 
-from umlshapes.ShapeTypes import LinkableUmlShape
 from umlshapes.frames.UmlFrame import UmlFrame
 
 from umlshapes.ShapeTypes import UmlShapes
+from umlshapes.ShapeTypes import UmlLinkGenre
+from umlshapes.ShapeTypes import LinkableUmlShape
 from umlshapes.ShapeTypes import umlShapesFactory
 
 from umlio.IOTypes import UmlDocumentType

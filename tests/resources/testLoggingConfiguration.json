@@ -47,7 +47,6 @@
         },
         "umlextensions.tools": {
             "level": "INFO",
-            "handlers": ["consoleHandler"],
             "propagate": true
         },
         "codeallybasic.UnitTestBase": {

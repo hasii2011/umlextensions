@@ -35,6 +35,7 @@ from umlextensions.output.BaseOutputExtension import BaseOutputExtension
 from umlextensions.output.OutputGML import OutputGML
 
 from umlextensions.tools.BaseToolExtension import BaseToolExtension
+from umlextensions.tools.ToolDiagramArranger import ToolDiagramArranger
 from umlextensions.tools.ToolForceDirectedLayout import ToolForceDirectedLayout
 from umlextensions.tools.ToolOrthogonalLayout import ToolOrthogonalLayout
 from umlextensions.tools.ToolOrthogonalRouting import ToolOrthogonalRouting
@@ -96,7 +97,7 @@ class ToolExtensionMap(BaseExtensionMap):
 
 
 TOOL_EXTENSIONS: ExtensionList = ExtensionList(
-    [ToolSugiyama, ToolOrthogonalRouting, ToolOrthogonalLayout, ToolForceDirectedLayout]
+    [ToolDiagramArranger, ToolSugiyama, ToolOrthogonalRouting, ToolOrthogonalLayout, ToolForceDirectedLayout]
 )
 INPUT_EXTENSIONS: ExtensionList = ExtensionList(
     [InputPython]

@@ -28,7 +28,10 @@ dependencies = [
     'umlio>=0.7.0',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.7',
-    'pyorthogonalrouting==2.0.0',
+    'networkx>=3.6.1',
+    'numpy>=2.4.4',
+    'scipy>=1.17.1',
+    'pyorthogonalrouting>=2.0.1',
     'orthogonal==1.3.2',
     'pyforcedirectedlayout>=2.0.0',
 ]
