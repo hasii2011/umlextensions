@@ -30,7 +30,7 @@ class ToolSugiyama(BaseToolExtension):
         Prepare for the tool action.
         This can be used to ask some questions to the user.
 
-        Returns: If False, the import should be cancelled.  'True' to proceed
+        Returns: If False, the import should be canceled.  'True' to proceed
         """
         return True
 

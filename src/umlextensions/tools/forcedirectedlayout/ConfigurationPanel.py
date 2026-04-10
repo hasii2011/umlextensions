@@ -32,7 +32,7 @@ from pyforcedirectedlayout.Configuration import Y_RANGE_MAX
 from pyforcedirectedlayout.Configuration import Y_RANGE_MIN
 
 
-NO_DIAL_SELECTOR: DialSelector = cast(DialSelector, None)
+NO_DIAL_SELECTOR: DialSelector = cast(DialSelector, cast(object, None))
 
 
 class ConfigurationPanel:

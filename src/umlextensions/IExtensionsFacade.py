@@ -23,7 +23,7 @@ from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 class IExtensionsFacade(ABC):
     """
-    This facade simplifies communication to the UML diagrammer.  This interface serves as a front-facing interface
+    This facade simplifies communication to the UML Diagrammer.  This interface serves as a front-facing interface
     that masks the complexity of the UML Diagrammer
     """
     def __init__(self):

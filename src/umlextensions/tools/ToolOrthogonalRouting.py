@@ -43,7 +43,7 @@ class ToolOrthogonalRouting(BaseToolExtension):
         Prepare for the tool action.
         This can be used to ask some questions to the user.
 
-        Returns: If False, the import should be cancelled.  'True' to proceed
+        Returns: If False, the import should be canceled.  'True' to proceed
         """
         with DlgOrthogonalRoutingConfiguration(NO_PARENT_WINDOW, extensionsFacade=self._extensionsFacade) as dlg:
             if dlg.ShowModal() == OK:
@@ -60,7 +60,7 @@ class ToolOrthogonalRouting(BaseToolExtension):
 
         adapter: OrthogonalConnectorAdapter = OrthogonalConnectorAdapter(extensionsFacade=self._extensionsFacade)
 
-        umlLink: UmlLinkGenre = cast(UmlLinkGenre, None)
+        umlLink: UmlLinkGenre = cast(UmlLinkGenre, cast(object, None))
 
         for potentialLink in selectedUmlShapes:
             if isinstance(potentialLink, UmlLinkGenre):

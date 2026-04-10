@@ -1,33 +1,41 @@
 
-from typing import cast
-
 from logging import Logger
 from logging import getLogger
 
 from enum import Enum
 
-from codeallybasic.UnitTestBase import UnitTestBase
-from wx import App
+from wx import OK
+from wx import BOTH
+from wx import ID_ANY
+from wx import EVT_HELP
 from wx import CB_READONLY
+from wx import EVT_COMBOBOX
+from wx import DEFAULT_FRAME_STYLE
+from wx import FRAME_FLOAT_ON_PARENT
+
+from wx import App
 from wx import ComboBox
 from wx import CommandEvent
-from wx import DEFAULT_FRAME_STYLE
-from wx import EVT_COMBOBOX
-from wx import FRAME_FLOAT_ON_PARENT
-from wx import ID_ANY
-from wx import OK
+from wx import HelpProvider
+from wx import SimpleHelpProvider
 
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 from wx.lib.sized_controls import SizedStaticBox
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
+
 from umlextensions.input.python.DlgShapeLayoutParameters import DlgShapeLayoutParameters
+
+from codeallybasic.UnitTestBase import UnitTestBase
+
+from tests.extensiondemo.DlgUmlDiagramArrangerPreferences import DlgUmlDiagramArrangerPreferences
 
 
 class DialogNamesEnum(Enum):
 
-    DLG_SHAPE_LAYOUT_PARAMETERS = 'DlgShapeLayoutParameters'
+    DLG_DIAGRAM_ARRANGER_PREFERENCES = 'Diagram Arranger Preferences'
+    DLG_SHAPE_LAYOUT_PARAMETERS    = 'Shape Layout Parameters'
 
 
 class AppTestDialogs(App):
@@ -38,10 +46,10 @@ class AppTestDialogs(App):
 
         UnitTestBase.setUpLogging()
 
-        self.logger:        Logger            = getLogger(__name__)
-        self._preferences:  ExtensionsPreferences = ExtensionsPreferences()
+        self.logger:        Logger    = getLogger(__name__)
+        self._frame:       SizedFrame = None        # noqa
 
-        self._frame:       SizedFrame        = cast(SizedFrame, None)
+        self._preferences:  ExtensionsPreferences = ExtensionsPreferences()
 
         super().__init__(redirect)
 
@@ -49,18 +57,24 @@ class AppTestDialogs(App):
 
         UnitTestBase.setUpLogging()
 
-        self._frame = SizedFrame(parent=None, id=ID_ANY, title="Test Plugin Dialogs", size=(600, 300), style=DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT)
+        provider: SimpleHelpProvider = SimpleHelpProvider()
+
+        self._frame = SizedFrame(parent=None, id=ID_ANY, title="Test Extensions Dialogs", size=(600, 300), style=DEFAULT_FRAME_STYLE | FRAME_FLOAT_ON_PARENT)
 
         self._frame.Show(False)
         self.SetTopWindow(self._frame)
+        HelpProvider.Set(provider)
 
         self._layoutSelectionControls(self._frame)
+        self._frame.Center(dir=BOTH)
         self._frame.Show(True)
 
         # a little trick to make sure that you can't resize the dialog to
         # less screen space than the controls need
         self._frame.Fit()
         self._frame.SetMinSize(self._frame.GetSize())
+
+        self._frame.Bind(EVT_HELP, self._onHelp, self._frame)
 
         return True
 
@@ -96,6 +110,13 @@ class AppTestDialogs(App):
                 with DlgShapeLayoutParameters(parent=self._frame) as dlg:
                     if dlg.ShowModal() == OK:
                         self.logger.info('Ok')
+            case DialogNamesEnum.DLG_DIAGRAM_ARRANGER_PREFERENCES:
+                with DlgUmlDiagramArrangerPreferences(parent=self._frame) as dlg:
+                    if dlg.ShowModal() == OK:
+                        self.logger.info('Ok')
+
+    def _onHelp(self, event: CommandEvent):
+        print(f'{event=}')
 
 
 if __name__ == "__main__":

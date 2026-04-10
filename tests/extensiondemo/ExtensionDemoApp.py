@@ -12,11 +12,14 @@ from umlshapes.lib.ogl import OGLInitialize
 
 from wx import App
 
-from codeallybasic.UnitTestBase import UnitTestBase
-from codeallybasic.UnitTestBase import JSON_LOGGING_CONFIG_FILENAME
+from wx import BOTH
+from wx import HelpProvider
+from wx import SimpleHelpProvider
 
 from tests.extensiondemo.ExtensionFrame import ExtensionFrame
 
+from codeallybasic.UnitTestBase import UnitTestBase
+from codeallybasic.UnitTestBase import JSON_LOGGING_CONFIG_FILENAME
 
 __version__ = "3.0.0"
 
@@ -36,9 +39,12 @@ class ExtensionDemoApp(App):
         OGLInitialize()
         ExtensionDemoApp.setUpLogging()
 
+        provider: SimpleHelpProvider = SimpleHelpProvider()
+        HelpProvider.Set(provider)
         # noinspection PyAttributeOutsideInit
         self._frameTop: ExtensionFrame = ExtensionFrame()
 
+        self._frameTop.Centre(direction=BOTH)
         self._frameTop.Show(True)
 
         return True
@@ -62,14 +68,13 @@ class ExtensionDemoApp(App):
 
         return fqFileName
 
-    def loadXmlFile(self, fqFileName: str):
+    def loadXmlFile(self, fullyQualifiedFileName: str):
         """
 
         Args:
-            fqFileName: full qualified file name
+            fullyQualifiedFileName: full qualified file name
         """
-        # self._frameTop.loadXmlFile(fqFileName=fqFileName)
-        pass
+        self._frameTop.loadXmlFile(fqFileName=fullyQualifiedFileName)
 
 
 @command()

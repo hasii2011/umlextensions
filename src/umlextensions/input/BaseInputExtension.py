@@ -38,7 +38,7 @@ class BaseInputExtension(BaseExtension, ABC):
         self._bieLogger: Logger = getLogger(__name__)
 
         self._inputFormat:      InputFormat      = InputFormat(formatName=UNSPECIFIED_NAME, fileSuffix=UNSPECIFIED_FILE_SUFFIX, description=UNSPECIFIED_DESCRIPTION)
-        self._frameInformation: FrameInformation = cast(FrameInformation, None)
+        self._frameInformation: FrameInformation = cast(FrameInformation, cast(object, None))
 
     @property
     def inputFormat(self) -> InputFormat:
@@ -96,11 +96,11 @@ class BaseInputExtension(BaseExtension, ABC):
 
         self._frameInformation = frameInformation
 
-        if self._requireActiveFrame is True:
-            if frameInformation.frameActive is False:
+        if self._requireActiveFrame:
+            if not frameInformation.frameActive:
                 self.showNoUmlFrameDialog()
                 return
-        if self.setImportOptions() is True:
+        if self.setImportOptions():
             self.read()
 
     @abstractmethod
@@ -110,7 +110,7 @@ class BaseInputExtension(BaseExtension, ABC):
         Use this method to query the end-user for any additional import options
 
         Returns:
-            if False, the import is cancelled
+            if False, the import is canceled
         """
         pass
 

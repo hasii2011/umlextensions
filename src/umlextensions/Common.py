@@ -15,7 +15,7 @@ from wx import BitmapType
 
 from umlextensions.ExtensionsTypes import FrameInformation
 
-NO_PARENT_WINDOW: Window = cast(Window, None)
+NO_PARENT_WINDOW: Window = cast(Window, cast(object, None))
 
 
 def createScreenImageFile(frameInformation: FrameInformation, imagePath: Path, imageType: BitmapType = BITMAP_TYPE_PNG) -> bool:

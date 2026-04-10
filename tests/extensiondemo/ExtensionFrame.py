@@ -1,5 +1,6 @@
 
 from typing import Callable
+from typing import Iterable
 from typing import cast
 
 from logging import Logger
@@ -7,19 +8,6 @@ from logging import getLogger
 
 from pathlib import Path
 
-from umlio.IOTypes import UmlActors
-from umlio.IOTypes import UmlNotes
-from umlio.IOTypes import UmlTexts
-from umlio.IOTypes import UmlUseCases
-from umlmodel.Link import Link
-from umlmodel.enumerations.LinkType import LinkType
-from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
-from umlshapes.links.UmlInterface import UmlInterface
-from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
-from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
-from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
-from umlshapes.shapes.eventhandlers.UmlUseCaseEventHandler import UmlUseCaseEventHandler
-from umlshapes.types.UmlPosition import UmlPositions
 from wx import EVT_MENU
 from wx import FD_CHANGE_DIR
 from wx import FD_OPEN
@@ -41,7 +29,16 @@ from wx import NewIdRef as wxNewIdRef
 from wx.lib.sized_controls import SizedFrame
 from wx.lib.sized_controls import SizedPanel
 
+from umlmodel.Link import Link
+from umlmodel.enumerations.LinkType import LinkType
+
+from umlshapes.shapes.eventhandlers.UmlActorEventHandler import UmlActorEventHandler
+from umlshapes.shapes.eventhandlers.UmlNoteEventHandler import UmlNoteEventHandler
+from umlshapes.shapes.eventhandlers.UmlTextEventHandler import UmlTextEventHandler
+from umlshapes.shapes.eventhandlers.UmlUseCaseEventHandler import UmlUseCaseEventHandler
+
 from umlshapes.commands.DeleteLinkCommand import DeleteLinkCommand
+from umlshapes.commands.CreateLinkCommand import CreateLinkCommand
 
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.ShapeTypes import UmlLinkGenre
@@ -52,11 +49,12 @@ from umlshapes.UmlDiagram import UmlDiagram
 from umlshapes.shapes.UmlClass import UmlClass
 from umlshapes.shapes.UmlNote import UmlNote
 
+from umlshapes.links.UmlNoteLink import UmlNoteLink
+from umlshapes.links.UmlInterface import UmlInterface
 from umlshapes.links.UmlAggregation import UmlAggregation
 from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlComposition import UmlComposition
 from umlshapes.links.UmlInheritance import UmlInheritance
-from umlshapes.links.UmlNoteLink import UmlNoteLink
 
 from umlshapes.links.eventhandlers.UmlAssociationEventHandler import UmlAssociationEventHandler
 from umlshapes.links.eventhandlers.UmlLinkEventHandler import UmlLinkEventHandler
@@ -65,6 +63,7 @@ from umlshapes.links.eventhandlers.UmlNoteLinkEventHandler import UmlNoteLinkEve
 from umlshapes.shapes.eventhandlers.UmlClassEventHandler import UmlClassEventHandler
 
 from umlshapes.types.UmlPosition import UmlPosition
+from umlshapes.types.UmlPosition import UmlPositions
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
 from umlshapes.frames.UmlFrame import Ltrb
@@ -81,6 +80,10 @@ from umlio.IOTypes import UmlDocument
 from umlio.IOTypes import UmlLinks
 
 from umlio.IOTypes import UmlDocumentType
+from umlio.IOTypes import UmlActors
+from umlio.IOTypes import UmlNotes
+from umlio.IOTypes import UmlTexts
+from umlio.IOTypes import UmlUseCases
 
 from umlextensions.ExtensionsManager import OutputExtensionMap
 from umlextensions.ExtensionsManager import ToolExtensionMap
@@ -121,7 +124,7 @@ class ExtensionFrame(SizedFrame):
 
         self._umlPubSubEngine:  UmlPubSubEngine   = UmlPubSubEngine()
         self._extensionsFacade: IExtensionsFacade = ExtensionsFacade()
-        self._editMenu:         Menu             = cast(Menu, None)
+        self._editMenu:         Menu              = None    # noqa
         self._extensionManager: ExtensionsManager = ExtensionsManager(umlPubSubEngine=self._umlPubSubEngine, extensionsFacade=self._extensionsFacade)
 
         self._createApplicationMenuBar()
@@ -139,14 +142,18 @@ class ExtensionFrame(SizedFrame):
         pluginPubSub.subscribe(ExtensionsMessageType.REQUEST_FRAME_INFORMATION,  listener=self._requestFrameInformationListener)
         pluginPubSub.subscribe(ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT, listener=self._extensionModifiedListener)
 
-        pluginPubSub.subscribe(ExtensionsMessageType.REFRESH_FRAME, listener=self._refreshFrameListener)
-        pluginPubSub.subscribe(ExtensionsMessageType.ADD_SHAPE,     listener=self._addShapeListener)
-        pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES, listener=self._wiggleShapesListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.REFRESH_FRAME,     listener=self._refreshFrameListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.ADD_SHAPE,         listener=self._addShapeListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES,     listener=self._wiggleShapesListener)
+        pluginPubSub.subscribe(ExtensionsMessageType.SELECT_UML_SHAPES, listener=self._selectUmlShapesListener)
 
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SELECTED_UML_SHAPES, listener=self._getSelectedUmlShapesListener)
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SHAPE_BOUNDARIES,    listener=self._getShapBoundariesListener)
         pluginPubSub.subscribe(ExtensionsMessageType.DELETE_LINK, listener=self._deleteLinkListener)
         pluginPubSub.subscribe(ExtensionsMessageType.CREATE_LINK, listener=self._createLinkListener)
+
+    def loadXmlFile(self, fqFileName: str):
+        self._readAndLoadTheFile(fqFileName=fqFileName)
 
     def _createApplicationMenuBar(self):
 
@@ -272,7 +279,7 @@ class ExtensionFrame(SizedFrame):
 
     def _wiggleShapesListener(self):
         """
-        This is a hack work around to simulate moving the shapes so
+        This is a hack workaround to simulate moving the shapes so
         that the links are visible and at the correct positions when the
         shapes move.
         I tried refresh, redraw, and .DrawLinks;  None of it worked
@@ -282,6 +289,16 @@ class ExtensionFrame(SizedFrame):
         for shape in umlShapes:
             if isinstance(shape, UmlShapeGenre):
                 self._diagramFrame.wiggleShape(shape=shape)
+
+        self._diagramFrame.redrawShapes()
+        self._diagramFrame.refresh()
+
+    def _selectUmlShapesListener(self):
+        shapes:  Iterable = self._diagramFrame.umlDiagram.shapes
+
+        for s in shapes:
+            if isinstance(s, UmlShapeGenre) or isinstance(s, UmlLinkGenre):
+                s.Select(True)
 
         self._diagramFrame.redrawShapes()
         self._diagramFrame.refresh()
@@ -299,7 +316,7 @@ class ExtensionFrame(SizedFrame):
             if isinstance(s, UmlShapeGenre) or isinstance(s, UmlLinkGenre):
                 umlShape: UmlShapeGenre | UmlLinkGenre = cast(UmlShapeGenre | UmlLinkGenre, s)
 
-                if umlShape.selected is True:
+                if umlShape.selected:
                     selectedShapes.append(umlShape)
 
         return selectedShapes
@@ -367,10 +384,7 @@ class ExtensionFrame(SizedFrame):
 
         selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
         if selectedFile != '':
-            reader: Reader = Reader()
-            umlProject: UmlProject = reader.readXmlFile(fileName=Path(selectedFile))
-            self.logger.debug(f'{umlProject=}')
-            self._loadProject(umlProject)
+            self._readAndLoadTheFile(fqFileName=selectedFile)
 
     # noinspection PyUnusedLocal
     def _onSelectAll(self, event: CommandEvent):
@@ -536,3 +550,10 @@ class ExtensionFrame(SizedFrame):
         modelInheritance.source       = subUmlClass.modelClass
 
         return modelInheritance
+
+    def _readAndLoadTheFile(self, fqFileName: str):
+
+        reader: Reader = Reader()
+        umlProject: UmlProject = reader.readXmlFile(fileName=Path(fqFileName))
+        self.logger.debug(f'{umlProject=}')
+        self._loadProject(umlProject)

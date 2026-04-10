@@ -73,7 +73,7 @@ class InputPython(BaseInputExtension):
         self._moduleCount:    int = 0
         self._importPackages: ImportPackages = ImportPackages([])
 
-        self._readProgressDlg: ProgressDialog = cast(ProgressDialog, None)
+        self._readProgressDlg: ProgressDialog = cast(ProgressDialog, cast(object, None))
 
     def setImportOptions(self) -> bool:
         """
@@ -83,7 +83,7 @@ class InputPython(BaseInputExtension):
 
         Returns:  'True', we support import
         """
-        if isinstance(self._frameInformation.umlFrame, ClassDiagramFrame) is True:
+        if isinstance(self._frameInformation.umlFrame, ClassDiagramFrame):
             startDirectory: str = self._preferences.startDirectory
             with DlgSelectMultiplePackages(startDirectory=startDirectory, inputFormat=self.inputFormat) as dlg:
                 if dlg.ShowModal() == OK:
@@ -202,8 +202,6 @@ class InputPython(BaseInputExtension):
             if dlg.ShowModal() == OK:
                 self.logger.info('Ok')
 
-            # x: int = 20     # startX
-            # y: int = 20     # startY
             shapeLayout: ShapeLayout = dlg.shapeLayout
             x: int = shapeLayout.startX
             y: int = shapeLayout.startY
