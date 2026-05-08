@@ -58,7 +58,7 @@ MAX_GLOBAL_BOUND: int = 10000
 
 GlobalBoundsControls = NewType('GlobalBoundsControls', List[GlobalBoundsControl])
 
-NO_SPIN_CTRL: SpinCtrl = cast(SpinCtrl, None)
+NO_SPIN_CTRL: SpinCtrl = cast(SpinCtrl, None)   # noqa
 
 
 class DlgOrthogonalRoutingConfiguration(SizedDialog):
@@ -72,7 +72,7 @@ class DlgOrthogonalRoutingConfiguration(SizedDialog):
         """
 
         self._extensionsFacade: IExtensionsFacade = extensionsFacade
-        self._configuration: Configuration     = cast(Configuration, None)
+        self._configuration: Configuration     = cast(Configuration, None)  # noqa
 
         style:   int  = DEFAULT_DIALOG_STYLE | RESIZE_BORDER
         dlgSize: Size = Size(475, 400)
@@ -93,8 +93,8 @@ class DlgOrthogonalRoutingConfiguration(SizedDialog):
         self._sizedPanel: SizedPanel = self.GetContentsPane()
         self._sizedPanel.SetSizerType('horizontal')
 
-        self._sourceEdgeDistance:      SpinCtrlDouble = cast(SpinCtrlDouble, None)
-        self._destinationEdgeDistance: SpinCtrlDouble = cast(SpinCtrlDouble, None)
+        self._sourceEdgeDistance:      SpinCtrlDouble = cast(SpinCtrlDouble, None)  # noqa
+        self._destinationEdgeDistance: SpinCtrlDouble = cast(SpinCtrlDouble, None)  # noqa
 
         self._extensionsFacade.getShapeBoundaries(callback=self._objectBoundariesCallback)
         #
@@ -215,7 +215,7 @@ class DlgOrthogonalRoutingConfiguration(SizedDialog):
         localPanel.SetSizerProps(expand=True)
 
         for c in globalBoundsControls:
-            control: GlobalBoundsControl = cast(GlobalBoundsControl, c)
+            control: GlobalBoundsControl = c
             StaticText(parent=localPanel, label=control.label)
 
             control.spinCtrl = SpinCtrl(localPanel, id=control.id, size=Size(25, -1))

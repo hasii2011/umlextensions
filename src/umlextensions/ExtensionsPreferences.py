@@ -105,7 +105,7 @@ SECTION_FORCE_ATLAS2_LAYOUT: ValueDescriptions = ValueDescriptions(
 
 SECTION_ARRANGER_COMMON: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('layoutCenter'):   ValueDescription(defaultValue=DEFAULT_SPRING_LAYOUT_CENTER_STR, deserializer=UmlPosition.deSerialize),
+        KeyName('layoutCenter'):    ValueDescription(defaultValue=DEFAULT_SPRING_LAYOUT_CENTER_STR, deserializer=UmlPosition.deSerialize),
         KeyName('defaultArranger'): ValueDescription(defaultValue=str(DEFAULT_ARRANGER), deserializer=ArrangerType),
     }
 )

@@ -134,14 +134,14 @@ class LinkInformation:
         PyutLinkType.COMPOSITION
         PyutLinkType.AGGREGATION
     """
-    linkType:               LinkType                = cast(LinkType, None)
+    linkType:               LinkType                = cast(LinkType, None)                          # noqa
     path:                   UmlPositions            = field(default_factory=umlPositionsFactory)
-    sourceShape:            LinkableUmlShape        = cast(LinkableUmlShape, None)
-    destinationShape:       LinkableUmlShape        = cast(LinkableUmlShape, None)
-    interfaceName:          InterfaceName           = cast(InterfaceName, None)
-    associationName:        AssociationName         = cast(AssociationName, None)
-    sourceCardinality:      SourceCardinality       = cast(SourceCardinality, None)
-    destinationCardinality: DestinationCardinality  = cast(DestinationCardinality, None)
+    sourceShape:            LinkableUmlShape        = cast(LinkableUmlShape, None)                  # noqa
+    destinationShape:       LinkableUmlShape        = cast(LinkableUmlShape, None)                  # noqa
+    interfaceName:          InterfaceName           = cast(InterfaceName, None)                     # noqa
+    associationName:        AssociationName         = cast(AssociationName, None)                   # noqa
+    sourceCardinality:      SourceCardinality       = cast(SourceCardinality, None)                 # noqa
+    destinationCardinality: DestinationCardinality  = cast(DestinationCardinality, None)            # noqa
 
 
 CreatedLinkCallback = Callable[[UmlLinkGenre], None]

@@ -60,7 +60,7 @@ class OrthogonalConnectorAdapter:
         self._extensionsFacade: IExtensionsFacade = extensionsFacade
         self._configuration:    Configuration  = Configuration()
 
-        self._byProducts:   OrthogonalConnectorByProduct = cast(OrthogonalConnectorByProduct, None)
+        self._byProducts:   OrthogonalConnectorByProduct = cast(OrthogonalConnectorByProduct, None)     # noqa
 
     @property
     def diagnosticInformation(self) -> DiagnosticInformation:
@@ -69,9 +69,6 @@ class OrthogonalConnectorAdapter:
     # noinspection PyTypeChecker
     @classmethod
     def whichConnectorSide(cls, shape: UmlShapeGenre, anchorPosition: Position) -> Side:
-
-        # shapeX, shapeY           = shape.GetPosition()
-        # shapeWidth, shapeHeight  = shape.GetSize()
 
         umlPosition:   UmlPosition   = shape.position
         umlDimensions: UmlDimensions = shape.size
@@ -137,8 +134,6 @@ class OrthogonalConnectorAdapter:
 
     def _shapeToRect(self, umlShape: UmlShapeGenre) -> Rect:
 
-        # shapeX, shapeY           = umlShape.GetPosition()
-        # shapeWidth, shapeHeight  = umlShape.GetSize()
         umlPosition:   UmlPosition = umlShape.position
         umlDimensions: UmlDimensions = umlShape.size
 
@@ -152,15 +147,6 @@ class OrthogonalConnectorAdapter:
         return rect
 
     def _determineAttachmentSide(self, umlLink: UmlLinkGenre) -> Tuple[Side, Side]:
-
-        # sourceShape      = oglLink.sourceShape
-        # destinationShape = oglLink.destinationShape
-        # sourceAnchorPoint:      AnchorPoint = oglLink.sourceAnchor
-        # destinationAnchorPoint: AnchorPoint = oglLink.destinationAnchor
-        # sourcePosition:      Tuple[int, int] = sourceAnchorPoint.GetPosition()
-        # destinationPosition: Tuple[int, int] = destinationAnchorPoint.GetPosition()
-        # sourceSide:      Side = OrthogonalConnectorAdapter.whichConnectorSide(shape=sourceShape,      anchorPosition=Position(x=sourcePosition[0], y=sourcePosition[1]))
-        # destinationSide: Side = OrthogonalConnectorAdapter.whichConnectorSide(shape=destinationShape, anchorPosition=Position(x=destinationPosition[0], y=destinationPosition[1]))
 
         sourceShape      = umlLink.sourceShape
         destinationShape = umlLink.destinationShape
@@ -234,7 +220,7 @@ class OrthogonalConnectorAdapter:
         oglPositions: UmlPositions = UmlPositions([])
 
         for pt in path:
-            point:       Point       = cast(Point, pt)
+            point:       Point       = pt
             oglPosition: UmlPosition = UmlPosition(x=point.x, y=point.y)
 
             oglPositions.append(oglPosition)
@@ -263,7 +249,7 @@ class OrthogonalConnectorAdapter:
             diagnosticPts: DiagnosticPoints = DiagnosticPoints([])
 
             for pt in refPoints:
-                point: Point = cast(Point, pt)
+                point: Point = pt
                 self.logger.info(f'{point=}')
 
                 diagnosticPoint: DiagnosticPoint = DiagnosticPoint(x=point.x, y=point.y)

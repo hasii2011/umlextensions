@@ -65,9 +65,9 @@ class ToolOrthogonalRouting(BaseToolExtension):
         for potentialLink in selectedUmlShapes:
             if isinstance(potentialLink, UmlLinkGenre):
                 try:
-                    umlLink = cast(UmlLinkGenre, potentialLink)
+                    umlLink = potentialLink
                     success: bool = adapter.runConnector(oglLink=umlLink)
-                    if success is False:
+                    if not success:
                         message: str           = self._composeGoodErrorMessage(umlLink)
                         booBoo:  MessageDialog = MessageDialog(parent=None, message=message, caption='No orthogonal route', style=OK | ICON_ERROR)
                         booBoo.ShowModal()

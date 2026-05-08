@@ -153,7 +153,7 @@ class InputPython(BaseInputExtension):
 
         cumulativeModelClasses: ModelClasses = ModelClasses({})
         for directory in self._importPackages:
-            importPackage: Package = cast(Package, directory)
+            importPackage: Package = directory
 
             currentModelClasses: ModelClasses = pythonToUmlShapes.pass1(directoryName=importPackage.packageName,
                                                                         files=importPackage.importModules,
@@ -167,7 +167,7 @@ class InputPython(BaseInputExtension):
 
         updatedModelClasses: ModelClasses = ModelClasses({})
         for directory in self._importPackages:
-            importPackage: Package = cast(Package, directory)
+            importPackage: Package = directory
 
             updatedModelClasses = pythonToUmlShapes.pass2(directoryName=importPackage.packageName,
                                                           files=importPackage.importModules,

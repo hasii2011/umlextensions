@@ -7,4 +7,3 @@ class ArrangerType(StrEnum):
     PLANAR       = 'Planar'
     ARF          = 'ARF'
     SPRING       = 'Spring'
-    MUST_SELECT  = 'Must Select'

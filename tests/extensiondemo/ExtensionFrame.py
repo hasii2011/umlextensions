@@ -314,7 +314,7 @@ class ExtensionFrame(SizedFrame):
 
         for s in umlShapes:
             if isinstance(s, UmlShapeGenre) or isinstance(s, UmlLinkGenre):
-                umlShape: UmlShapeGenre | UmlLinkGenre = cast(UmlShapeGenre | UmlLinkGenre, s)
+                umlShape: UmlShapeGenre | UmlLinkGenre = s
 
                 if umlShape.selected:
                     selectedShapes.append(umlShape)
@@ -349,7 +349,7 @@ class ExtensionFrame(SizedFrame):
 
         currentFrame = self._diagramFrame
 
-        partialName: str = f'{type(linkInformation.linkType)}'
+        partialName: str = f'{type(linkInformation.linkType)}'      # noqa
 
         path: UmlPositions = linkInformation.path
 

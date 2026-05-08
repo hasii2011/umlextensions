@@ -53,6 +53,11 @@
             "level": "WARNING",
             "propagate": false
         },
+        "codeallyadvanced.ui.mystic": {
+            "level": "INFO",
+            "handlers": ["consoleHandler"],
+            "propagate": false
+        },
         "umlextensions.ExtensionsManager": {
             "level": "ERROR",
             "handlers": ["rotatingFileHandler"],

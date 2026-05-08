@@ -77,9 +77,9 @@ class OrthogonalAdapter:
         with open(self._pathToLayout, 'w') as writer:
             writer.write(gmlExporter.gml)
 
-        self._ets:            EmbeddingToScreen        = cast(EmbeddingToScreen, None)
-        self._nxGraph:        Graph                    = cast(Graph, None)
-        self._umlShapeCoordinates: UmlShapeCoordinates = cast(UmlShapeCoordinates, None)
+        self._ets:            EmbeddingToScreen        = cast(EmbeddingToScreen, None)      # noqa
+        self._nxGraph:        Graph                    = cast(Graph, None)                  # noqa
+        self._umlShapeCoordinates: UmlShapeCoordinates = cast(UmlShapeCoordinates, None)    # noqa
 
     @property
     def umlShapeCoordinates(self) -> UmlShapeCoordinates:

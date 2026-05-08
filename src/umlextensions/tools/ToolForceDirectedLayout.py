@@ -39,8 +39,8 @@ from umlextensions.tools.BaseToolExtension import BaseToolExtension
 from umlextensions.tools.forcedirectedlayout.DlgConfiguration import DlgConfiguration
 from umlextensions.tools.forcedirectedlayout.UmlShapeNode import UmlShapeNode
 
-NO_PARENT_WINDOW:    Window         = cast(Window, None)
-NO_PROGRESS_DIALOG:  ProgressDialog = cast(ProgressDialog, None)
+NO_PARENT_WINDOW:    Window         = cast(Window, None)                # noqa
+NO_PROGRESS_DIALOG:  ProgressDialog = cast(ProgressDialog, None)        # noqa
 
 NameToUmlClassMap  = NewType('NameToUmlClassMap',  Dict[str, UmlClass])
 NameToUmlShapeNode = NewType('NameToUmlShapeNode', Dict[str, UmlShapeNode])
@@ -84,7 +84,7 @@ class ToolForceDirectedLayout(BaseToolExtension):
 
             if isinstance(selectedShape, UmlClass):
 
-                umlClass:      UmlClass    = cast(UmlClass, selectedShape)      # noqa
+                umlClass:      UmlClass    = selectedShape
                 umlShapeNode: UmlShapeNode = UmlShapeNode(umlClass=umlClass)
                 self._fdl.addNode(umlShapeNode)
                 self._nameToShapeNodeMap[umlClass.modelClass.name] = umlShapeNode
@@ -112,7 +112,7 @@ class ToolForceDirectedLayout(BaseToolExtension):
         links: Links = modelClass.links             # inspect the model for links
 
         for link in links:
-            modelLink: Link = cast(Link, link)
+            modelLink: Link = link
             self.logger.info(f'{modelLink}')
 
             childModelClass: LinkDestination = link.destination
@@ -175,7 +175,7 @@ class ToolForceDirectedLayout(BaseToolExtension):
         for umlShape in umlShapes:
             if isinstance(umlShape, UmlClass):
 
-                umlClass:   UmlClass = cast(UmlClass, umlShape)     # noqa
+                umlClass:   UmlClass = umlShape
                 modelClass: Class    = umlClass.modelClass
                 nameToUmlClassMap[modelClass.name] = umlClass
 

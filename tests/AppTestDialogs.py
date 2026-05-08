@@ -2,7 +2,7 @@
 from logging import Logger
 from logging import getLogger
 
-from enum import Enum
+from enum import StrEnum
 
 from wx import OK
 from wx import BOTH
@@ -30,12 +30,14 @@ from umlextensions.input.python.DlgShapeLayoutParameters import DlgShapeLayoutPa
 from codeallybasic.UnitTestBase import UnitTestBase
 
 from tests.extensiondemo.DlgUmlDiagramArrangerPreferences import DlgUmlDiagramArrangerPreferences
+from umlextensions.tools.diagramarranger.mystic.MysticAdapter import MysticAdapter
 
 
-class DialogNamesEnum(Enum):
+class DialogNamesEnum(StrEnum):
 
+    DLG_ARRANGER_MYSTIC              = 'Diagram Arranger Mystic'
     DLG_DIAGRAM_ARRANGER_PREFERENCES = 'Diagram Arranger Preferences'
-    DLG_SHAPE_LAYOUT_PARAMETERS    = 'Shape Layout Parameters'
+    DLG_SHAPE_LAYOUT_PARAMETERS      = 'Shape Layout Parameters'
 
 
 class AppTestDialogs(App):
@@ -106,6 +108,14 @@ class AppTestDialogs(App):
         self.logger.warning(f'Selected dialog: {dlgNamesEnum}')
 
         match dlgNamesEnum:
+            case DialogNamesEnum.DLG_ARRANGER_MYSTIC:
+                mysticAdapter: MysticAdapter = MysticAdapter(
+                    parent=self._frame,
+                    completeCallback=self._completeCallback,
+                    cancelCallback=self._cancelCallback
+                )
+                mysticAdapter.run()
+
             case DialogNamesEnum.DLG_SHAPE_LAYOUT_PARAMETERS:
                 with DlgShapeLayoutParameters(parent=self._frame) as dlg:
                     if dlg.ShowModal() == OK:
@@ -116,8 +126,13 @@ class AppTestDialogs(App):
                         self.logger.info('Ok')
 
     def _onHelp(self, event: CommandEvent):
-        print(f'{event=}')
+        print(f'{event=}')  # noqa
 
+    def _completeCallback(self):
+        self.logger.info('Mystic complete')
+
+    def _cancelCallback(self):
+        self.logger.info(f'Mystic canceled')
 
 if __name__ == "__main__":
 

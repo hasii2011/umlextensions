@@ -121,7 +121,7 @@ class PythonToUmlShapes:
         Uses the simplified class visitor
 
         Args:
-            directoryName:    The fully qualified directory name of the python files
+            directoryName:    The fully qualified directory name of the Python files
             files:            The list of files to parse
             progressCallback: A callback to report status as each file is processed; The callback
             should have the signature of the type ProgressCallback
@@ -138,7 +138,7 @@ class PythonToUmlShapes:
 
                 progressCallback(currentFileCount, f'Pass 1 processing: {directoryName}\n {fileName}')
 
-                tree:    PythonParser.File_inputContext = self._setupPegBasedParser(fqFileName=fqFileName)
+                tree:    PythonParser.File_inputContext = self._setupPegBasedParser(fqFilename=fqFileName)
                 visitor: PythonPegParserClassVisitor    = PythonPegParserClassVisitor()
 
                 visitor.modelClasses = modelClasses
@@ -180,7 +180,7 @@ class PythonToUmlShapes:
 
                 progressCallback(currentFileCount, f'2nd pass - processing: {directoryName}\n {fileName}')
 
-                tree: PythonParser.File_inputContext = self._setupPegBasedParser(fqFileName=fqFileName)
+                tree: PythonParser.File_inputContext = self._setupPegBasedParser(fqFilename=fqFileName)
                 #
                 # Account for empty files
                 #
@@ -268,11 +268,11 @@ class PythonToUmlShapes:
         associations: Associations = self._cumulativeAssociations
 
         for className in associations:
-            modelClassName: ModelClassName = cast(ModelClassName, className)
+            modelClassName: ModelClassName = className
             associates:     Associates    = associations[modelClassName]
 
             for assoc in associates:
-                associate: Associate = cast(Associate, assoc)
+                associate: Associate = assoc
                 sourceClass:      UmlClass = umlClassesDict[modelClassName]
                 destinationClass: UmlClass = umlClassesDict[associate.associateName]
 
@@ -281,19 +281,19 @@ class PythonToUmlShapes:
 
                 self._umlLinks.append(oglLink)
 
-    def _setupPegBasedParser(self, fqFileName: str) -> PythonParser.File_inputContext:
+    def _setupPegBasedParser(self, fqFilename: str) -> PythonParser.File_inputContext:
         """
         May return None if there are syntax errors in the input file
         In that case the error listener will raise and PythonParseException exception
         with the appropriate detailed error message
 
         Args:
-            fqFileName:
+            fqFilename:
 
         Returns:  Returns a visitor
         """
 
-        fileStream: FileStream  = FileStream(fqFileName)
+        fileStream: FileStream  = FileStream(fqFilename)
         lexer:      PythonLexer = PythonLexer(fileStream)
 
         stream: CommonTokenStream = CommonTokenStream(lexer)
@@ -304,9 +304,9 @@ class PythonToUmlShapes:
 
         tree: PythonParser.File_inputContext = parser.file_input()
         if parser.getNumberOfSyntaxErrors() != 0:
-            eMsg: str = f"File {fqFileName} contains {parser.getNumberOfSyntaxErrors()} syntax errors"
+            eMsg: str = f"File {fqFilename} contains {parser.getNumberOfSyntaxErrors()} syntax errors"
             self.logger.error(eMsg)
-            tree = cast(PythonParser.File_inputContext, None)
+            tree = cast(PythonParser.File_inputContext, None)       # noqa
 
         return tree
 

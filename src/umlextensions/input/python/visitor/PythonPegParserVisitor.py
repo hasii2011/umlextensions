@@ -93,7 +93,7 @@ class PythonPegParserVisitor(BaseVisitor):
         self._associations: Associations = Associations({})
         self._propertyMap:  PropertyMap  = PropertyMap({})
 
-        self._currentCode:              SourceCode               = cast(SourceCode, None)
+        self._currentCode:              SourceCode               = cast(SourceCode, None)       # noqa
         self._parentsDictionaryHandler: ParentsDictionaryHandler = ParentsDictionaryHandler()
 
     @property
@@ -168,7 +168,7 @@ class PythonPegParserVisitor(BaseVisitor):
             elif methodName.startswith(PROTECTED_INDICATOR):
                 visibility = Visibility.PROTECTED
 
-            if self._isProperty(ctx) is True:
+            if self._isProperty(ctx):
                 self._makePropertyEntry(className=className, methodName=methodName)
                 self._handleField(ctx=ctx)
             else:
@@ -212,7 +212,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
             className:    ModelClassName    = self._extractClassName(ctx=classCtx)
             propertyName: PropertyName = self._extractPropertyName(ctx=methodCtx.function_def_raw())
-            if self._isThisAParameterListForAProperty(className=className, propertyName=propertyName) is True:
+            if self._isThisAParameterListForAProperty(className=className, propertyName=propertyName):
                 pass
             else:
                 methodName: MethodName = self._extractMethodName(ctx=methodCtx.function_def_raw())
@@ -239,7 +239,7 @@ class PythonPegParserVisitor(BaseVisitor):
     def visitAssignment(self, ctx: PythonParser.AssignmentContext):
         """
         Visit a parse tree produced by PythonParser#assignment.
-        Do data classes
+        Do dataclasses
 
         Args:
             ctx:
@@ -269,7 +269,7 @@ class PythonPegParserVisitor(BaseVisitor):
         parentCtx = ctx.parentCtx
 
         if isinstance(parentCtx, PythonParser.BlockContext):
-            blockContext: PythonParser.BlockContext      = cast(PythonParser.BlockContext, parentCtx)
+            blockContext: PythonParser.BlockContext      = parentCtx
             statements:   PythonParser.StatementsContext = blockContext.statements()
 
             for child in statements.children:
@@ -350,8 +350,8 @@ class PythonPegParserVisitor(BaseVisitor):
 
     def _handleField(self, ctx: PythonParser.Function_defContext):
         """
-        Turns methods annotated as a property into an UML field
-        Also check to see if it needs to make a entry into the association dictionary
+        Turns methods annotated as a property into a UML field
+        Also check to see if it needs to make an entry into the association dictionary
 
         Args:
             ctx:
@@ -404,7 +404,7 @@ class PythonPegParserVisitor(BaseVisitor):
         decoratorsCtx: PythonParser.DecoratorsContext = ctx.decorators()
         if decoratorsCtx is not None:
             for decorator in decoratorsCtx.children:
-                if isinstance(decorator, PythonParser.Named_expressionContext) is True:
+                if isinstance(decorator, PythonParser.Named_expressionContext):
                     # self.logger.info(f'{decorator.getText()=}')
                     ans = True
                     break
@@ -516,11 +516,11 @@ class PythonPegParserVisitor(BaseVisitor):
 
     def _findModelMethod(self, modelClass: Class, methodName: MethodName) -> Method:
 
-        foundMethod: Method = cast(Method, None)
+        foundMethod: Method = cast(Method, None)        # noqa
 
         methods: Methods = modelClass.methods
         for m in methods:
-            method: Method = cast(Method, m)
+            method: Method = m
             if method.name == methodName:
                 foundMethod = method
                 break

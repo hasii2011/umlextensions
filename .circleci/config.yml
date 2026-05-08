@@ -43,7 +43,7 @@ jobs:
             pip install six==1.17.0
             pip install attrdict3==2.0.2  
             pip install -v -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04  wxPython==4.2.4 -c constraints.txt
-            pip install codeallyadvanced==2.3.0
+            pip install codeallyadvanced==2.4.1
             pip install umlshapes==2.3.1
             pip install umlio==0.7.1
             pip install pyorthogonalrouting==2.0.1
