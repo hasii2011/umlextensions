@@ -21,6 +21,7 @@ from wx import RichMessageDialog
 
 from umlshapes.pubsubengine.IUmlPubSubEngine import IUmlPubSubEngine
 
+from umlextensions.Common import WindowId
 from umlextensions.ErrorFormatter import ErrorFormatter
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
@@ -43,10 +44,6 @@ from umlextensions.tools.ToolOrthogonalRouting import ToolOrthogonalRouting
 from umlextensions.tools.ToolSugiyama import ToolSugiyama
 
 from umlextensions.ExtensionsPubSub import ExtensionsPubSub
-
-
-# Return type from wx.NewIdRef()
-WindowId = NewType('WindowId', int)
 
 #
 #  Both of these hold the class extension types for the Extension classes
@@ -252,7 +249,7 @@ class ExtensionsManager:
         self.logger.error(fs)
         #
         # TODO: Build my own dialog so I can set the detailed text font
-        booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),
+        booBoo: RichMessageDialog = RichMessageDialog(cast(Window, None),       # noqa
                                                       message=errorMessage,
                                                       caption=dialogTitle,
                                                       style=ICON_ERROR | OK

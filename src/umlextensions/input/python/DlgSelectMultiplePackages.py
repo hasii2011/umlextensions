@@ -69,10 +69,10 @@ class DlgSelectMultiplePackages(SizedDialog):
         sizedPanel.SetSizerType('vertical')
         sizedPanel.SetSizerProps(expand=True, proportion=1)
 
-        self._btnMore:    Button = cast(Button, None)
-        self._btnCancel:  Button = cast(Button, None)
-        self._btnOk:      Button = cast(Button, None)
-        self._simpleGrid: Grid   = cast(Grid, None)
+        self._btnMore:    Button = cast(Button, None)       # noqa
+        self._btnCancel:  Button = cast(Button, None)       # noqa
+        self._btnOk:      Button = cast(Button, None)       # noqa
+        self._simpleGrid: Grid   = cast(Grid, None)         # noqa
 
         self._layoutSimpleGrid(parent=sizedPanel)
         self._layoutCustomDialogButtonContainer(parent=sizedPanel)

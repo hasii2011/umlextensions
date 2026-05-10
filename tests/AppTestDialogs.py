@@ -30,6 +30,7 @@ from umlextensions.input.python.DlgShapeLayoutParameters import DlgShapeLayoutPa
 from codeallybasic.UnitTestBase import UnitTestBase
 
 from tests.extensiondemo.DlgUmlDiagramArrangerPreferences import DlgUmlDiagramArrangerPreferences
+from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
 from umlextensions.tools.diagramarranger.mystic.MysticAdapter import MysticAdapter
 
 
@@ -112,7 +113,10 @@ class AppTestDialogs(App):
                 mysticAdapter: MysticAdapter = MysticAdapter(
                     parent=self._frame,
                     completeCallback=self._completeCallback,
-                    cancelCallback=self._cancelCallback
+                    cancelCallback=self._cancelCallback,
+                    layoutCallback = self._layoutCallback,
+                    undoCallback = self._undoCallback
+
                 )
                 mysticAdapter.run()
 
@@ -133,6 +137,23 @@ class AppTestDialogs(App):
 
     def _cancelCallback(self):
         self.logger.info(f'Mystic canceled')
+
+    def _undoCallback(self):
+        pass
+        """
+        Undo the last layout
+        """
+        pass
+
+    def _layoutCallback(self, arrangerType: ArrangerType):
+        """
+        Run the appropriate layout algorithm
+        Args:
+            arrangerType:
+
+        """
+        pass
+
 
 if __name__ == "__main__":
 

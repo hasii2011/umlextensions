@@ -1,7 +1,4 @@
 
-from logging import Logger
-from logging import getLogger
-
 from wx import ID_ANY
 from wx import StaticLine
 from wx import StaticText
@@ -29,7 +26,6 @@ class IntroductionStep(MysticStepBase):
 
     def __init__(self, parent: SizedPanel):
 
-        self.logger: Logger = getLogger(__name__)
         super().__init__(parent=parent)
 
         self.SetSizerType('vertical')

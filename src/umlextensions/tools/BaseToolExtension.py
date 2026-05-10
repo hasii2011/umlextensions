@@ -23,7 +23,7 @@ class BaseToolExtension(BaseExtension, ABC):
     include but are not limited to:
 
         * Various layouts (Sugiyama, Orthogonal, Force Directed
-        * Arranging non crossing links
+        * Arranging non-crossing links
         * Arranging orthogonal links
     """
     def __init__(self, extensionsFacade: IExtensionsFacade):
@@ -31,16 +31,22 @@ class BaseToolExtension(BaseExtension, ABC):
         super().__init__(extensionsFacade)
         self.logger: Logger = getLogger(__name__)
 
-        self._frameInformation: FrameInformation = cast(FrameInformation, None)
+        self._frameInformation: FrameInformation = cast(FrameInformation, None)     # noqa
+
+        self._displayBusyCursor: bool = True
+        """
+        If `True` display the busy cursor during the tool action;  else do not
+        """
+
 
     def executeTool(self):
         """
         This is used by the Plugin Manger to invoke the tool.  This should NOT
         be overridden
         """
-        if self.setOptions() is True:
+        if self.setOptions():
 
-            if self._autoSelectAll is True:
+            if self._autoSelectAll:
                 self._extensionsFacade.selectUmlShapes()
             self._extensionsFacade.requestCurrentFrameInformation(callback=self._executeTool)
 
@@ -48,7 +54,7 @@ class BaseToolExtension(BaseExtension, ABC):
 
         self._frameInformation = frameInformation
 
-        if frameInformation.frameActive is False:
+        if not frameInformation.frameActive:
             self.showNoUmlFrameDialog()
         else:
             selectedUmlShapes = frameInformation.selectedUmlShapes  # syntactic sugar
@@ -56,10 +62,12 @@ class BaseToolExtension(BaseExtension, ABC):
             if len(selectedUmlShapes) == 0 and self._requireSelection is True:
                 self.showNoSelectedUmlShapesDialog()
             else:
-                BeginBusyCursor()
-                wxYield()
+                if self._displayBusyCursor:
+                    BeginBusyCursor()
+                    wxYield()
                 self.doAction()
-                EndBusyCursor()
+                if self._displayBusyCursor:
+                    EndBusyCursor()
 
     @abstractmethod
     def setOptions(self) -> bool:

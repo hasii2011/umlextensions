@@ -1,4 +1,4 @@
-
+from typing import NewType
 from typing import cast
 
 from pathlib import Path
@@ -16,6 +16,9 @@ from wx import BitmapType
 from umlextensions.ExtensionsTypes import FrameInformation
 
 NO_PARENT_WINDOW: Window = cast(Window, cast(object, None))
+
+# Return type from wx.NewIdRef()
+WindowId = NewType('WindowId', int)
 
 
 def createScreenImageFile(frameInformation: FrameInformation, imagePath: Path, imageType: BitmapType = BITMAP_TYPE_PNG) -> bool:

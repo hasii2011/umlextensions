@@ -7,20 +7,31 @@ from wx.lib.sized_controls import SizedPanel
 from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
 from umlextensions.tools.diagramarranger.configpanels.ForceAtlas2ConfigPanel import ForceAtlas2ConfigPanel
 from umlextensions.tools.diagramarranger.mystic.arrangersteps.BaseConfigStep import BaseConfigStep
+from umlextensions.tools.diagramarranger.mystic.arrangersteps.BaseConfigStep import LayoutCallback
+from umlextensions.tools.diagramarranger.mystic.arrangersteps.BaseConfigStep import UndoCallback
 
 
 class ForceAtlas2ConfigStep(BaseConfigStep):
     TITLE: str = 'Configure the ForceAtlas2 layout algorithm'
 
-    def __init__(self, parent: SizedPanel, configuresArranger: ArrangerType):
+    def __init__(self, parent: SizedPanel, configuresArranger: ArrangerType, layoutCallback: LayoutCallback, undoCallback: UndoCallback):
+        """
+
+        Args:
+            parent:
+            configuresArranger:     They type of arranger configuration we configure
+            layoutCallback:         Method to call to re-arrange UML Diagram
+            undoCallback:           Method to call to undo last arrangement
+        """
 
         self.logger: Logger = getLogger(__name__)
 
-        super().__init__(parent=parent, configuresArranger=configuresArranger)
+        super().__init__(parent=parent, configuresArranger=configuresArranger, layoutCallback=layoutCallback, undoCallback=undoCallback)
 
-        self._forceAtlas2ConfigPanel: ForceAtlas2ConfigPanel = ForceAtlas2ConfigPanel(parent=self)
-
-    def _createPageTitle(self):
+    def _layoutPageTitle(self):
         """
         """
         self._createLabel(label=ForceAtlas2ConfigStep.TITLE)
+
+    def _layoutConfigPanel(self):
+        self._forceAtlas2ConfigPanel: ForceAtlas2ConfigPanel = ForceAtlas2ConfigPanel(parent=self)
