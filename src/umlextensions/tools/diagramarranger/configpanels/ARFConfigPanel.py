@@ -2,14 +2,15 @@
 from logging import Logger
 from logging import getLogger
 
+from wx import Window
 from wx import CommandEvent
 from wx import SpinDoubleEvent
-from wx import Window
 
 from wx.lib.sized_controls import SizedPanel
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
+from umlextensions.Common import createBalloonTip
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.ExtensionsPreferences import MAX_ARF_SPRING_STRENGTH
 from umlextensions.ExtensionsPreferences import MAX_ITERATION_STEP_SIZE
@@ -26,6 +27,19 @@ SPRING_STRENGTH_INCREMENT:     float = 0.1
 ITERATION_STEP_SIZE_INCREMENT: float = 0.1
 
 class ARFConfigPanel(BaseConfigPanel):
+    TIP_TITLE: str = 'The attractive and repulsive forces (arf) layout'
+    TIP_TEXT: str = """
+    Applies the ARF layout to the shapes in the provided UmlFrame.
+
+    This algorithm improves the spring layout as follows: 
+    
+        1) It prevents congestion of highly connected nodes due to 
+        strong forcing between nodes. 
+        2) It utilizes the layout space more effectively by preventing 
+        large gaps that spring layout tends to create. 
+        3) The layout represents symmetries in the layout better than 
+        the default spring layout.
+    """
 
     def __init__(self, parent: Window):
 
@@ -95,6 +109,12 @@ class ARFConfigPanel(BaseConfigPanel):
             ]
         )
         self._layoutFormControls(valueControlSpecs=valueControlSpecs, formPanel=innerForm)
+
+        createBalloonTip(
+            tipTitle=ARFConfigPanel.TIP_TITLE,
+            tipText=ARFConfigPanel.TIP_TEXT,
+            tipTarget=self._layoutHelpButton(self)
+        )
 
     def _onArfMaxIterationsChanged(self, event: CommandEvent):
         newValue: int = event.GetInt()

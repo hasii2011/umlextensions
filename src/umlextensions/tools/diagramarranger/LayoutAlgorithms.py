@@ -63,10 +63,10 @@ class LayoutAlgorithms:
         jitterTolerance:       float = preferences.jitterTolerance
         scalingRatio:          float = preferences.scalingRatio
         gravity:               float = preferences.gravity
-        distributedAction:     bool = preferences.distributedAction
-        strongGravity:         bool = preferences.strongGravity
-        logarithmicAttraction: bool = preferences.logarithmicAttraction
-        preventShapeCrowding:  bool = preferences.preventShapeCrowding
+        distributedAction:     bool  = preferences.distributedAction
+        strongGravity:         bool  = preferences.strongGravity
+        logarithmicAttraction: bool  = preferences.logarithmicAttraction
+        preventShapeCrowding:  bool  = preferences.preventShapeCrowding
 
         networkXGraph: Graph = Graph()
 
@@ -198,9 +198,9 @@ class LayoutAlgorithms:
 
         networkXGraph: Graph = Graph()
 
-        iterations:   int   = preferences.iterations                    # The maximum number of iterations for the algorithm
-        k:            float = preferences.optimalNodeDistance           # Optimal distance between nodes; larger values space nodes farther apart
-        scale:        int   = self._preferences.frameSizeScaleFactor    # Factor that adjusts the layout to the UML Frame size
+        iterations: int   = preferences.iterations              # The maximum number of iterations for the algorithm
+        k:          float = preferences.optimalNodeDistance     # Optimal distance between nodes; larger values space nodes farther apart
+        scale:      int   = preferences.frameSizeScaleFactor    # Factor that adjusts the layout to the UML Frame size
 
         layoutMethod: ForceDirectedMethod = preferences.layoutMethod  # The method used to compute the layout
 
@@ -210,9 +210,8 @@ class LayoutAlgorithms:
         # This returns a dictionary mapping nodes to (x, y) coordinates
         positionDictionary: dict = spring_layout(
             networkXGraph,
-            # k=k,
+            k=k,
             iterations=iterations,
-            method=layoutMethod.value   # noqa
         )
 
         self.logger.debug(f'{positionDictionary}')

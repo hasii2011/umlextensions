@@ -55,11 +55,11 @@ class FrameInformation:
     """
     The document title is the name of the frame
     """
-    umlFrame:           UmlFrame   = cast(UmlFrame, None)
+    umlFrame:           UmlFrame   = cast(UmlFrame, None)               # noqa
     frameActive:        bool       = False
     selectedUmlShapes:  UmlShapes  = field(default_factory=umlShapesFactory)
     frameSize:          FrameSize  = field(default_factory=createFrameSizeFactory)
-    clientDC:           ClientDC   = cast(ClientDC, None)
+    clientDC:           ClientDC   = cast(ClientDC, None)               # noqa
     diagramTitle:       str        = ''
     diagramType:        UmlDocumentType = UmlDocumentType.NOT_SET
 
@@ -68,7 +68,7 @@ FrameInformationCallback  = Callable[[FrameInformation], None]
 FrameSizeCallback         = Callable[[FrameSize], None]
 SelectedUmlShapesCallback = Callable[[UmlShapes], None]
 
-NO_INTEGER: int = cast(int, None)
+NO_INTEGER: int = cast(int, None)       # noqa
 
 
 @dataclass

@@ -2,16 +2,20 @@
 from logging import Logger
 from logging import getLogger
 
+from wx import ART_TIP
 from wx import EVT_CHECKBOX
 from wx import ID_ANY
 from wx import EVT_TEXT
 from wx import EVT_SPINCTRL
 from wx import EVT_SPINCTRLDOUBLE
+from wx import ID_HELP
 
+from wx import Button
 from wx import Window
 from wx import CheckBox
 from wx import SpinCtrl
 from wx import StaticText
+from wx import ArtProvider
 from wx import SpinCtrlDouble
 
 from wx.lib.sized_controls import SizedPanel
@@ -123,10 +127,10 @@ class BaseConfigPanel(SizedPanel):
 
         layoutCenter: PositionControl = PositionControl(
             sizedPanel=sizedPanel,
-            displayText='Layout Center',
+            displayText='The coordinate pair around which to center the layout',
             minValue=MIN_LAYOUT_CENTER,
             maxValue=MAX_LAYOUT_CENTER,
-            valueChangedCallback=self._layoutCenterChanged,
+            valueChangedCallback=self._onLayoutCenterChanged,
             setControlsSize=True
         )
         layoutCenter.position = p.layoutCenter
@@ -134,5 +138,12 @@ class BaseConfigPanel(SizedPanel):
 
         return layoutCenter
 
-    def _layoutCenterChanged(self, newPosition: Position):
+    def _layoutHelpButton(self, parent:SizedPanel) -> Button:
+
+        helpButton: Button   = Button(parent, ID_HELP, label='')
+        helpButton.SetBitmap(ArtProvider.GetBitmapBundle(ART_TIP))
+
+        return helpButton
+
+    def _onLayoutCenterChanged(self, newPosition: Position):
         self._preferences.layoutCenter = newPosition

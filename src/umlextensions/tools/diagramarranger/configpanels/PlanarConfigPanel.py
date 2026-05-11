@@ -6,6 +6,7 @@ from wx.lib.sized_controls import SizedPanel
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
+from umlextensions.Common import createBalloonTip
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 from umlextensions.tools.diagramarranger.configpanels.BaseConfigPanel import BaseConfigPanel
@@ -15,6 +16,10 @@ from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import Va
 
 
 class PlanarConfigPanel(BaseConfigPanel):
+    TIP_TITLE: str = 'Planar layout algorithm'
+    TIP_TEXT: str = """
+    Position shapes that minimizes line intersections.
+    """
 
     def __init__(self, parent: Window):
 
@@ -23,6 +28,12 @@ class PlanarConfigPanel(BaseConfigPanel):
         self.SetSizerType('vertical')
 
         self._layoutControls(parent=self, p=self._preferences)
+
+        createBalloonTip(
+            tipTitle=PlanarConfigPanel.TIP_TITLE,
+            tipText=PlanarConfigPanel.TIP_TEXT,
+            tipTarget=self._layoutHelpButton(self)
+        )
 
     def _layoutControls(self, parent: SizedPanel, p: ExtensionsPreferences):
         """

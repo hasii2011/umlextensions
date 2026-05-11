@@ -12,6 +12,8 @@ from codeallybasic.DynamicConfiguration import SectionName
 from codeallybasic.DynamicConfiguration import ValueDescription
 from codeallybasic.DynamicConfiguration import ValueDescriptions
 from codeallybasic.DynamicConfiguration import DynamicConfiguration
+from umlshapes.types.UmlColor import UmlColor
+from umlshapes.types.UmlFontFamily import UmlFontFamily
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
@@ -37,6 +39,11 @@ MIN_ITERATION_STEP_SIZE: float = 0.001
 MAX_ITERATION_STEP_SIZE: float = 0.9
 
 DEFAULT_ARRANGER: ArrangerType = ArrangerType.SPRING
+
+DEFAULT_TIP_TITLE_TEXT_COLOR: str = UmlColor.BLACK.value
+DEFAULT_TIP_TEXT_COLOR:       str = UmlColor.BLACK.value
+DEFAULT_BALLOON_COLOR:        str = UmlColor.LIGHT_YELLOW.value
+
 
 
 SECTION_EXTENSIONS: ValueDescriptions = ValueDescriptions(
@@ -109,7 +116,24 @@ SECTION_ARRANGER_COMMON: ValueDescriptions = ValueDescriptions(
         KeyName('defaultArranger'): ValueDescription(defaultValue=str(DEFAULT_ARRANGER), deserializer=ArrangerType),
     }
 )
+SECTION_ARRANGER_TOOLTIP: ValueDescriptions = ValueDescriptions(
+    {
+        KeyName('balloonColor'): ValueDescription(defaultValue=DEFAULT_BALLOON_COLOR, enumUseValue=True, deserializer=UmlColor),
 
+        KeyName('balloonTipTitleFontSize'):   ValueDescription(defaultValue='18',    deserializer=SecureConversions.secureInteger),
+        KeyName('balloonTipTitleBold'):       ValueDescription(defaultValue='True',  deserializer=SecureConversions.secureBoolean),
+        KeyName('balloonTipTitleItalicize'):  ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+        KeyName('balloonTipTitleFontFamily'): ValueDescription(defaultValue='Swiss', deserializer=UmlFontFamily.deSerialize),
+        KeyName('balloonTipTitleColor'):      ValueDescription(defaultValue=DEFAULT_TIP_TITLE_TEXT_COLOR, enumUseValue=True, deserializer=UmlColor),
+
+        KeyName('balloonTipTextFontSize'):   ValueDescription(defaultValue='14',    deserializer=SecureConversions.secureInteger),
+        KeyName('balloonTipTextBold'):       ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+        KeyName('balloonTipTextItalicize'):  ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
+        KeyName('balloonTipTextFontFamily'): ValueDescription(defaultValue='Swiss', deserializer=UmlFontFamily.deSerialize),
+        KeyName('balloonTipTextColor'):      ValueDescription(defaultValue=DEFAULT_TIP_TEXT_COLOR, enumUseValue=True, deserializer=UmlColor),
+
+    }
+)
 SECTION_DEBUG: ValueDescriptions = ValueDescriptions(
     {
         KeyName('autoSelectAll'):         ValueDescription(defaultValue='True',  deserializer=SecureConversions.secureBoolean),
@@ -127,6 +151,7 @@ EXTENSION_SECTIONS: Sections = Sections(
         SectionName('Planar Layout'):       SECTION_PLANAR_LAYOUT,
         SectionName('Force Atlas2 Layout'): SECTION_FORCE_ATLAS2_LAYOUT,
         SectionName('Arranger Common'):     SECTION_ARRANGER_COMMON,
+        SectionName('ArrangerTooltip'):     SECTION_ARRANGER_TOOLTIP,
         SectionName('Debug'):               SECTION_DEBUG,
     }
 )

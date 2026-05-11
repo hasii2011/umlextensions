@@ -75,7 +75,7 @@ class BaseConfigStep(MysticStepBase, ABC, metaclass=MetaMysticPageBase):
         #
         # Layout custom buttons here
         #
-        self._btnUndo   = Button(buttonPanel, ID_UNDO, label='Undo')
+        self._btnUndo   = Button(buttonPanel, ID_UNDO,   label='Undo')
         self._btnLayout = Button(buttonPanel, ID_LAYOUT, label='Layout')
 
         self.Bind(EVT_BUTTON, self._onUndo,   self._btnUndo)
@@ -91,8 +91,10 @@ class BaseConfigStep(MysticStepBase, ABC, metaclass=MetaMysticPageBase):
     def _layoutConfigPanel(self):
         pass
 
+    # noinspection PyUnusedLocal
     def _onUndo(self, event: CommandEvent):
         self._undoCallback()
 
+    # noinspection PyUnusedLocal
     def _onLayout(self, event: CommandEvent):
         self._layoutCallback(self._configuresArranger)

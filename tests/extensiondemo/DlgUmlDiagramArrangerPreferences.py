@@ -59,10 +59,10 @@ class DlgUmlDiagramArrangerPreferences(SizedDialog):
         planarConfigurationPanel       = PlanarConfigPanel(parent=noteBook)
         forceAtlasConfigPanel          = ForceAtlas2ConfigPanel(parent=noteBook)
 
-        noteBook.AddPage(springLayoutConfigurationPanel, 'Spring Layout')
+        noteBook.AddPage(springLayoutConfigurationPanel, 'Spring Layout', select=True)
         noteBook.AddPage(arfConfigurationPanel, 'ARF Layout')
         noteBook.AddPage(planarConfigurationPanel, 'Planar Layout')
-        noteBook.AddPage(forceAtlasConfigPanel, 'ForceAtlas2 Layout', select=True)
+        noteBook.AddPage(forceAtlasConfigPanel, 'ForceAtlas2 Layout')
 
     def _layoutStandardOkCancelButtonSizer(self):
         """

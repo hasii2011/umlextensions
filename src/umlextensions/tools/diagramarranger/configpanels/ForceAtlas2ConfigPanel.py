@@ -1,12 +1,13 @@
 
+from wx import Window
 from wx import CommandEvent
 from wx import SpinDoubleEvent
-from wx import Window
 
 from wx.lib.sized_controls import SizedPanel
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
+from umlextensions.Common import createBalloonTip
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.tools.diagramarranger.configpanels.BaseConfigPanel import BaseConfigPanel
 from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import ControlType
@@ -22,6 +23,12 @@ SCALING_RATIO_MIN_VALUE: float = 0.1
 SCALING_RATIO_MAX_VALUE: float = 10.0
 
 class ForceAtlas2ConfigPanel(BaseConfigPanel):
+    TIP_TITLE: str = 'ForceAtlas2 layout algorithm'
+    TIP_TEXT: str = """
+    Positions the shapes in a way that visually represents the structure of the diagram. 
+    The algorithm uses physical simulation to minimize the energy of the system, 
+    which results in a readable layout.
+    """
 
     def __init__(self, parent: Window):
 
@@ -30,6 +37,12 @@ class ForceAtlas2ConfigPanel(BaseConfigPanel):
         self.SetSizerType('vertical')
 
         self._layoutControls(parent=self, p=self._preferences)
+
+        createBalloonTip(
+            tipTitle=ForceAtlas2ConfigPanel.TIP_TITLE,
+            tipText=ForceAtlas2ConfigPanel.TIP_TEXT,
+            tipTarget=self._layoutHelpButton(self)
+        )
 
     def _layoutControls(self, parent: SizedPanel, p: ExtensionsPreferences):
         """
