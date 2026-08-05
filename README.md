@@ -34,7 +34,7 @@ pip install umlextensions
 
 This project relies on several other packages. `pip` will handle the installation of these dependencies. They are listed here for your reference:
 
-*   wxPython
+*   [wxPython](https://wxpython.org)
 *   [codeallybasic](https://github.com/hasii2011/code-ally-basic)
 *   [codeallyadvanced](https://github.com/hasii2011/code-ally-advanced)
 *   [umlmodel](https://github.com/hasii2011/umlmodel)
@@ -83,7 +83,7 @@ To run the demo application, follow these steps:
 The project is designed to be used as a library. The `umlextensions` package can be imported into your own `wxPython` application. The `ExtensionsManager` class is the main entry point for discovering and running extensions. You can integrate it into your application by providing an implementation of the `IExtensionsFacade`.
 ___
 
-Written by <a href="mailto:humberto.a.sanchez.ii@gmail.com?subject=Hello Humberto">Humberto A. Sanchez II</a>  (C) 2026
+Written by <a href="mailto:humberto.a.sanchez.ii@gmail.com?subject=Hello Humberto">Humberto A. Sanchez II</a>  ©2026
 
 ---
 
