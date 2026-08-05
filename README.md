@@ -16,8 +16,8 @@ The `umlextensions` module provides a flexible way to add capabilities to the co
 
 Finally, there are tool extensions that manipulate a UML diagram.  Examples of this are:
 
--   ToolOrthogonalLayout - Lays out shapes in a manner to minimize link crossings and link bends
--   ToolOrthgonalRouting - Lays out link such that link bends are orthogonal
+-   [ToolOrthogonalLayout](https://github.com/hasii2011/orthogonal) - Lays out shapes in a manner to minimize link crossings and link bends
+-   [ToolOrthgonalRouting](https://github.com/hasii2011/py-orthogonal-routing) - Lays out link such that link bends are orthogonal
 -   [ToolSugiyama](https://www.linkedin.com/pulse/understanding-sugiyama-framework-sanskar-tyagi-anh3c/) - Lays out shapes and links in a pleasing manner.
 
 
@@ -35,13 +35,13 @@ pip install umlextensions
 This project relies on several other packages. `pip` will handle the installation of these dependencies. They are listed here for your reference:
 
 *   wxPython
-*   codeallybasic
-*   codeallyadvanced
-*   umlmodel
-*   umlshapes
-*   umlio
-*   antlr4-python3-runtime
-*   PyPubSub
+*   [codeallybasic](https://github.com/hasii2011/code-ally-basic)
+*   [codeallyadvanced](https://github.com/hasii2011/code-ally-advanced)
+*   [umlmodel](https://github.com/hasii2011/umlmodel)
+*   [umlshapes](https://github.com/hasii2011/umlshapes)
+*   [umlio](https://github.com/hasii2011/umlio)
+*   [antlr4-python3-runtime](https://pypi.org/project/antlr4-python3-runtime/)
+*   [pypubsub](https://github.com/schollii/pypubsub)
 
 # Usage
 
@@ -82,21 +82,13 @@ To run the demo application, follow these steps:
 
 The project is designed to be used as a library. The `umlextensions` package can be imported into your own `wxPython` application. The `ExtensionsManager` class is the main entry point for discovering and running extensions. You can integrate it into your application by providing an implementation of the `IExtensionsFacade`.
 ___
-Written by Humberto A. Sanchez II <mailto@Humberto.A.Sanchez.II@gmail.com>, (C) 2025
 
-# Note
+Written by <a href="mailto:humberto.a.sanchez.ii@gmail.com?subject=Hello Humberto">Humberto A. Sanchez II</a>  (C) 2026
+
+---
+
+## Note
 For all kind of problems, requests, enhancements, bug reports, etc., please drop me an e-mail.
 
-------
-![Humberto's Modified Logo](https://raw.githubusercontent.com/wiki/hasii2011/gittodoistclone/images/SillyGitHub.png)
 
-I am concerned about GitHub's Copilot project
-
-I urge you to read about the
-[Give up GitHub](https://GiveUpGitHub.org) campaign from[the Software Freedom Conservancy](https://sfconservancy.org).
-
-While I do not advocate for all the issues listed there I do not like that a company like Microsoft may profit from open source projects.
-
-I continue to use GitHub because it offers the services I need for free.  But, I continue to monitor their terms of service.
-
-Any use of this project's code by GitHub Copilot, past or present, is done without my permission.  I do not consent to GitHub's use of this project's code in Copilot.
+[Copilot Statement](https://github.com/hasii2011/code-ally-basic/wiki/GitHub-Copilot).
