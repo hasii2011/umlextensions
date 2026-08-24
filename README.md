@@ -1,9 +1,8 @@
 ![](https://github.com/hasii2011/code-ally-basic/blob/master/developer/agpl-license-web-badge-version-2-256x48.png "AGPL")
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/hasii2011/umlextensions/tree/master.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/hasii2011/umlextensions/tree/master)
-[![Build Status](https://app.travis-ci.com/hasii2011/umlextensions.svg?token=xLRFkv8yzJS4p9oSFs49&branch=master)](https://app.travis-ci.com/hasii2011/umlextensions)
+[![CI](https://github.com/hasii2011/umlextensions/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/hasii2011/umlextensions/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/umlextensions.svg)](https://badge.fury.io/py/umlextensions)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/hasii2011/umlextensions/graphs/commit-activity)
 
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 
