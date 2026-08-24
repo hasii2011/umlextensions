@@ -11,12 +11,12 @@ This project is a library for generating UML diagrams from Python source code, a
 
 # Overview
 
-The `umlextensions` module provides a flexible way to add capabilities to the core UML Diagrammer.  There are extensions that read external data and convert it to a UML class diagram.  An example, is the `InputPython` extension that reads Python source code and generates an appropriate UML Diagram.  There are extensions that take an existing UML diagram and convert it to a different structure format.   For example, the `OutputGML` extension produced [GML](https://grokipedia.com/page/Graph_Modelling_Language) files.
+The `umlextensions` module provides a flexible way to add capabilities to the core UML Diagrammer.  There are extensions that read external data and convert it to a UML class diagram.  An example is the `InputPython` extension that reads Python source code and generates an appropriate UML Diagram.  There are extensions that take an existing UML diagram and convert it to a different structure format.   For example, the `OutputGML` extension produces [GML](https://grokipedia.com/page/Graph_Modelling_Language) files.
 
 Finally, there are tool extensions that manipulate a UML diagram.  Examples of this are:
 
--   [ToolOrthogonalLayout](https://github.com/hasii2011/orthogonal) - Lays out shapes in a manner to minimize link crossings and link bends
--   [ToolOrthgonalRouting](https://github.com/hasii2011/py-orthogonal-routing) - Lays out link such that link bends are orthogonal
+-   [ToolOrthogonalLayout](https://github.com/hasii2011/orthogonal) - Lays out shapes in a manner to minimize link crossings and link bends.
+-   [ToolOrthogonalRouting](https://github.com/hasii2011/py-orthogonal-routing) - Lays out links such that link bends are orthogonal.
 -   [ToolSugiyama](https://www.linkedin.com/pulse/understanding-sugiyama-framework-sanskar-tyagi-anh3c/) - Lays out shapes and links in a pleasing manner.
 
 
@@ -87,7 +87,7 @@ Written by <a href="mailto:humberto.a.sanchez.ii@gmail.com?subject=Hello Humbert
 ---
 
 ## Note
-For all kind of problems, requests, enhancements, bug reports, etc., please drop me an e-mail.
+For all kinds of problems, requests, enhancements, bug reports, etc., please drop me an e-mail.
 
 
 [Copilot Statement](https://github.com/hasii2011/code-ally-basic/wiki/GitHub-Copilot).
