@@ -11,19 +11,19 @@ This project is a library for generating UML diagrams from Python source code, a
 
 # Overview
 
-The `umlextensions` module provides a flexible way to add capabilities to the core UML Diagrammer.  There are extensions that read external data and convert it to a UML class diagram.  An example is the `InputPython` extension that reads Python source code and generates an appropriate UML Diagram.  There are extensions that take an existing UML diagram and convert it to a different structure format.   For example, the `OutputGML` extension produces [GML](https://grokipedia.com/page/Graph_Modelling_Language) files.
+The `umlextensions` module provides a flexible way to add capabilities to the core UML Diagrammer.  There are extensions that read external data and convert it to a UML class diagram.  An example is the `InputPython` extension that reads Python source code and generates an appropriate UML diagram.  There are extensions that take an existing UML diagram and convert it to a different format.  For example, the `OutputGML` extension produces [GML](https://grokipedia.com/page/Graph_Modelling_Language) files.
 
-Finally, there are tool extensions that manipulate a UML diagram.  Examples of this are:
+Finally, there are tool extensions that manipulate a UML diagram.  Examples of these are:
 
--   [ToolOrthogonalLayout](https://github.com/hasii2011/orthogonal) - Lays out shapes in a manner to minimize link crossings and link bends.
--   [ToolOrthogonalRouting](https://github.com/hasii2011/py-orthogonal-routing) - Lays out links such that link bends are orthogonal.
--   [ToolSugiyama](https://www.linkedin.com/pulse/understanding-sugiyama-framework-sanskar-tyagi-anh3c/) - Lays out shapes and links in a pleasing manner.
+*   [ToolOrthogonalLayout](https://github.com/hasii2011/orthogonal) - Lays out shapes in a manner that minimizes link crossings and link bends.
+*   [ToolOrthogonalRouting](https://github.com/hasii2011/py-orthogonal-routing) - Lays out links such that link bends are orthogonal.
+*   [ToolSugiyama](https://www.linkedin.com/pulse/understanding-sugiyama-framework-sanskar-tyagi-anh3c/) - Lays out shapes and links in a pleasing manner.
 
 
 
 # Installation
 
-You can install the project using pip. It is recommended to do this in a virtual environment.
+You can install the project using `pip`. It is recommended to do this in a virtual environment.
 
 ```bash
 pip install umlextensions
@@ -69,7 +69,7 @@ To run the demo application, follow these steps:
 
 ### Generating a UML Diagram
 
-1.  In the "Demo UML Extensions" window, navigate to the menu bar and click **Extensions -> Input -> Python File(s)**.
+1.  In the "Demo UML Extensions" window, navigate to the menu bar and click **Extensions → Input → Python File(s)**.
 
 2.  A file dialog will appear, allowing you to select one or more Python files. Select the files you want to include in your UML diagram and click **Open**.
 
@@ -79,8 +79,9 @@ To run the demo application, follow these steps:
 
 ### As a Library
 
-The project is designed to be used as a library. The `umlextensions` package can be imported into your own `wxPython` application. The `ExtensionsManager` class is the main entry point for discovering and running extensions. You can integrate it into your application by providing an implementation of the `IExtensionsFacade`.
-___
+The project is designed to be used as a library. The `umlextensions` package is imported into the `UML Diagrammer` application.  The `ExtensionsManager` class is the main entry point for discovering and running extensions.  The `UML Diagrammer` integrates it by providing its own implementation of `IExtensionsFacade`.
+
+---
 
 Written by <a href="mailto:humberto.a.sanchez.ii@gmail.com?subject=Hello Humberto">Humberto A. Sanchez II</a>  ©2026
 

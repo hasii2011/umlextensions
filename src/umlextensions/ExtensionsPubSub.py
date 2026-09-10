@@ -16,7 +16,6 @@ class ExtensionsMessageType(Enum):
     EXTENSION_MODIFIED_PROJECT = 'Extension Modified Project'
     SELECT_UML_SHAPES          = 'Select UML Shapes'
     ADD_SHAPE                  = 'Add Shape'
-    GET_SELECTED_UML_SHAPES    = 'Get Selected UML Shapes'
     WIGGLE_SHAPES              = 'Wiggle Shapes'
     GET_SHAPE_BOUNDARIES       = 'Get Shape Boundaries'
     DELETE_LINK                = 'DeleteLink'

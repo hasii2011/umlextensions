@@ -18,7 +18,6 @@ from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
 from umlextensions.ExtensionsTypes import Points
 from umlextensions.ExtensionsTypes import Rectangle
 from umlextensions.ExtensionsTypes import Rectangles
-from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 
 class IExtensionsFacade(ABC):
@@ -53,10 +52,6 @@ class IExtensionsFacade(ABC):
 
     @abstractmethod
     def selectUmlShapes(self):
-        pass
-
-    @abstractmethod
-    def getSelectedUmlShapes(self, callback: SelectedUmlShapesCallback):
         pass
 
     @abstractmethod

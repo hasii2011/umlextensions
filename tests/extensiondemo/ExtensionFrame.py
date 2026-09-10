@@ -90,15 +90,17 @@ from umlextensions.ExtensionsManager import ToolExtensionMap
 from umlextensions.ExtensionsTypes import FrameSize
 from umlextensions.ExtensionsManager import WindowId
 from umlextensions.ExtensionsManager import ExtensionDetails
-from umlextensions.ExtensionsPubSub import ExtensionsPubSub
-from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsManager import ExtensionsManager
 from umlextensions.ExtensionsManager import InputExtensionMap
+
+from umlextensions.ExtensionsPubSub import ExtensionsPubSub
 from umlextensions.ExtensionsPubSub import ExtensionsMessageType
+
+from umlextensions.ExtensionsTypes import FrameInformation
 from umlextensions.ExtensionsTypes import LinkInformation
 from umlextensions.ExtensionsTypes import ShapeBoundaries
 from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
-from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
+
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlextensions.input.BaseInputExtension import BaseInputExtension
@@ -147,7 +149,6 @@ class ExtensionFrame(SizedFrame):
         pluginPubSub.subscribe(ExtensionsMessageType.WIGGLE_SHAPES,     listener=self._wiggleShapesListener)
         pluginPubSub.subscribe(ExtensionsMessageType.SELECT_UML_SHAPES, listener=self._selectUmlShapesListener)
 
-        pluginPubSub.subscribe(ExtensionsMessageType.GET_SELECTED_UML_SHAPES, listener=self._getSelectedUmlShapesListener)
         pluginPubSub.subscribe(ExtensionsMessageType.GET_SHAPE_BOUNDARIES,    listener=self._getShapBoundariesListener)
         pluginPubSub.subscribe(ExtensionsMessageType.DELETE_LINK, listener=self._deleteLinkListener)
         pluginPubSub.subscribe(ExtensionsMessageType.CREATE_LINK, listener=self._createLinkListener)
@@ -303,10 +304,6 @@ class ExtensionFrame(SizedFrame):
         self._diagramFrame.redrawShapes()
         self._diagramFrame.refresh()
 
-    def _getSelectedUmlShapesListener(self, callback: SelectedUmlShapesCallback):
-        selectedShapes: UmlShapes = self._getSelectedUmlShapes()
-        callback(selectedShapes)
-
     def _getSelectedUmlShapes(self) -> UmlShapes:
 
         umlShapes:      UmlShapes = self._diagramFrame.umlShapes
@@ -380,14 +377,13 @@ class ExtensionFrame(SizedFrame):
         callback(createLinkCommand.umlLink)
 
     # noinspection PyUnusedLocal
-    def _onOpenXmlFile(self, event: CommandEvent):
+    def _onOpenXmlFile(self, _event: CommandEvent):
 
         selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)
         if selectedFile != '':
             self._readAndLoadTheFile(fqFileName=selectedFile)
 
-    # noinspection PyUnusedLocal
-    def _onSelectAll(self, event: CommandEvent):
+    def _onSelectAll(self, _event: CommandEvent):
         umlShapes: UmlShapes = self._diagramFrame.umlShapes
 
         for shape in umlShapes:

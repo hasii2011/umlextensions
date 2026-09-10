@@ -17,7 +17,6 @@ from umlextensions.ExtensionsTypes import ObjectBoundaryCallback
 from umlextensions.ExtensionsTypes import Points
 from umlextensions.ExtensionsTypes import Rectangle
 from umlextensions.ExtensionsTypes import Rectangles
-from umlextensions.ExtensionsTypes import SelectedUmlShapesCallback
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -29,7 +28,7 @@ class ExtensionsFacade(IExtensionsFacade):
     This class simplifies communication between the extensions
     and the UML Diagrammer
 
-    This is a demonstration method that only works with this simple demonstration
+    This is a demonstration class that only works with this simple demonstration
     application
     """
 
@@ -38,7 +37,7 @@ class ExtensionsFacade(IExtensionsFacade):
         super().__init__()
         self.logger: Logger = getLogger(__name__)
 
-        self._umlPubSub: IUmlPubSubEngine = cast(IUmlPubSubEngine, None)
+        self._umlPubSub: IUmlPubSubEngine = cast(IUmlPubSubEngine, None)        # noqa
 
     @property
     def umlPubSub(self) -> IUmlPubSubEngine:
@@ -53,9 +52,6 @@ class ExtensionsFacade(IExtensionsFacade):
 
     def selectUmlShapes(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.SELECT_UML_SHAPES)
-
-    def getSelectedUmlShapes(self, callback: SelectedUmlShapesCallback):
-        self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.GET_SELECTED_UML_SHAPES, callback=callback)
 
     def extensionModifiedProject(self):
         self.extensionsPubSub.sendMessage(messageType=ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT)

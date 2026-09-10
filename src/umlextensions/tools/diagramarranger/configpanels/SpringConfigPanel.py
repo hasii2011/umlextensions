@@ -135,7 +135,7 @@ class SpringConfigPanel(BaseConfigPanel):
 
         sText = StaticText(formPanel, ID_ANY, 'Compute Method')
         sText.SetSizerProps(valign='center')
-        sText.SetToolTip('If ‘auto’, we use ‘force’ if len(G) < 500 use ‘energy’.')
+        sText.SetToolTip('If "auto", we use "force" if len(G) < 500 use "energy".')
 
         layoutMethodChoice: Choice = Choice(
             formPanel,
@@ -143,7 +143,7 @@ class SpringConfigPanel(BaseConfigPanel):
             choices=[e.value for e in ForceDirectedMethod]
         )
         layoutMethodChoice.SetSelection(layoutMethodChoice.FindString(p.layoutMethod.value))
-        layoutMethodChoice.SetToolTip('If ‘auto’, we use ‘force’ if len(G) < 500 use ‘energy’.')
+        layoutMethodChoice.SetToolTip('If "auto", we use "force" if len(G) < 500 use "energy".')
         self.Bind(EVT_CHOICE, self._onLayoutMethodChanged, layoutMethodChoice)
 
     def _onIterationsChanged(self, event: CommandEvent):

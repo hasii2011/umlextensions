@@ -66,7 +66,6 @@ class FrameInformation:
 
 FrameInformationCallback  = Callable[[FrameInformation], None]
 FrameSizeCallback         = Callable[[FrameSize], None]
-SelectedUmlShapesCallback = Callable[[UmlShapes], None]
 
 NO_INTEGER: int = cast(int, None)       # noqa
 
