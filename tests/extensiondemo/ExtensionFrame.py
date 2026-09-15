@@ -289,7 +289,7 @@ class ExtensionFrame(SizedFrame):
 
         for shape in umlShapes:
             if isinstance(shape, UmlShapeGenre):
-                self._diagramFrame.wiggleShape(shape=shape)
+                self._diagramFrame.wiggleShape(_shape=shape)
 
         self._diagramFrame.redrawShapes()
         self._diagramFrame.refresh()
@@ -342,9 +342,9 @@ class ExtensionFrame(SizedFrame):
         status = self._diagramFrame.commandProcessor.Submit(deleteLinkCommand, storeIt=True)
         self.logger.info(f'Delete Link {partialName=} {status=}')
 
-    def _createLinkListener(self, linkInformation: LinkInformation, callback):
+    def _createLinkListener(self, linkInformation: LinkInformation, callback: Callable):
 
-        currentFrame = self._diagramFrame
+        currentFrame: ClassDiagramFrame = self._diagramFrame
 
         partialName: str = f'{type(linkInformation.linkType)}'      # noqa
 
@@ -361,6 +361,7 @@ class ExtensionFrame(SizedFrame):
             linkControlPositions.append(cp)
 
         createLinkCommand: CreateLinkCommand = CreateLinkCommand(
+            umlFrame=currentFrame,
             partialName=partialName,
             sourceShape=linkInformation.sourceShape,
             destinationShape=linkInformation.destinationShape,
@@ -371,7 +372,7 @@ class ExtensionFrame(SizedFrame):
             linkControlPositions=linkControlPositions
 
         )
-        status = currentFrame.commandProcessor.Submit(createLinkCommand, storeIt=True)
+        status: bool = currentFrame.commandProcessor.Submit(createLinkCommand, storeIt=True)
         self.logger.info(f'Create Link {partialName=} {status=}')
 
         callback(createLinkCommand.umlLink)
