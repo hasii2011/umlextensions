@@ -29,7 +29,7 @@ from umlextensions.tools.orthogonallayout.OrthogonalAdapter import UmlShapeCoord
 from umlextensions.tools.orthogonallayout.OrthogonalAdapterException import OrthogonalAdapterException
 
 from umlextensions.tools.orthogonallayout.DlgLayoutDimensions import DlgLayoutDimensions
-from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
+from codeallybasic.Dimensions import Dimensions
 
 from umlextensions.tools.BaseToolExtension import BaseToolExtension
 
@@ -68,7 +68,7 @@ class ToolOrthogonalLayout(BaseToolExtension):
         try:
             orthogonalAdapter: OrthogonalAdapter = OrthogonalAdapter(umlShapes=selectedUmlShapes)
 
-            layoutAreaSize: LayoutAreaDimensions = LayoutAreaDimensions(self._layoutWidth, self._layoutHeight)
+            layoutAreaSize: Dimensions = Dimensions(self._layoutWidth, self._layoutHeight)
             orthogonalAdapter.doLayout(layoutAreaSize)
         except OrthogonalAdapterException as oae:
             MessageBox(f'{oae}', 'Error', OK | ICON_ERROR)

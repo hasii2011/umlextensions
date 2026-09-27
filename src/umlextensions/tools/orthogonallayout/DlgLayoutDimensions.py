@@ -9,9 +9,10 @@ from wx.lib.sized_controls import SizedPanel
 from umlshapes.dialogs.BaseEditDialog import BaseEditDialog
 
 from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsControl
+from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsParameters
 
+from codeallybasic.Dimensions import Dimensions
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
-from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
 
 
 class DlgLayoutDimensions(BaseEditDialog):
@@ -24,11 +25,11 @@ class DlgLayoutDimensions(BaseEditDialog):
 
         self._preferences:  ExtensionsPreferences = ExtensionsPreferences()
 
-        layoutAreaSize: LayoutAreaDimensions = self._preferences.orthogonalLayoutSize
+        layoutAreaSize: Dimensions = self._preferences.orthogonalLayoutSize
         self._layoutWidth:  int = layoutAreaSize.width
         self._layoutHeight: int = layoutAreaSize.height
 
-        self._layoutSizeControl: DimensionsControl = cast(DimensionsControl, None)
+        self._layoutSizeControl: DimensionsControl = cast(DimensionsControl, None)  # noqa
 
         self._layoutSizeControls(parent=self.GetContentsPane())
         self._layoutStandardOkCancelButtonSizer()
@@ -45,14 +46,17 @@ class DlgLayoutDimensions(BaseEditDialog):
 
     def _layoutSizeControls(self, parent: SizedPanel):
 
-        self._layoutSizeControl = DimensionsControl(sizedPanel=parent, displayText="Layout Width/Height",
-                                                    minValue=480, maxValue=4096,
-                                                    valueChangedCallback=self._onSizeChange,
-                                                    setControlsSize=True)
+        dimensionsParameters: DimensionsParameters = DimensionsParameters(
+            caption='Layout Width/Height',
+            minValue=480,
+            maxValue=4096,
+            valueChangedCallback=self._onSizeChange,
+        )
+        self._layoutSizeControl = DimensionsControl(parent=parent, parameters=dimensionsParameters)
 
         self._layoutSizeControl.dimensions = self._preferences.orthogonalLayoutSize
 
-    def _onSizeChange(self, newValue: LayoutAreaDimensions):
+    def _onSizeChange(self, newValue: Dimensions):
 
         self._layoutWidth  = newValue.width
         self._layoutHeight = newValue.height

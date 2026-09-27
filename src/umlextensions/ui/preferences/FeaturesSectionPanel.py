@@ -11,13 +11,13 @@ from wx import ID_ANY
 
 from wx import CheckBox
 from wx import CommandEvent
-from wx import StaticText
 from wx import Window
 from wx import Size
 
 from wx.lib.sized_controls import SizedStaticBox
 
 from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
+from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelectorParameters
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
@@ -61,19 +61,13 @@ class FeaturesSectionPanel(BaseExtPreferencesPanel):
 
     def _layoutStartDirectory(self):
         """
-        Lays out the start directory selection box.
+        Lays out the start directory selection control.
         """
-        dirBox: SizedStaticBox = SizedStaticBox(self, ID_ANY, 'Start Directory')
-        dirBox.SetSizerType('vertical')
-        dirBox.SetMinSize(Size(-1, 90))
-        dirBox.SetSizerProps(expand=True)
-
-        StaticText(dirBox, ID_ANY, 'Directory opened when the file chooser first appears')
-        self._directorySelector = DirectorySelector(
-            dirBox,
-            pathChangedCallback=self._onStartDirectoryChanged
+        dirParams: DirectorySelectorParameters = DirectorySelectorParameters(
+            caption='Start Directory',
+            pathChangedCallback=self._onStartDirectoryChanged,
         )
-        # noinspection PyUnresolvedReferences
+        self._directorySelector = DirectorySelector(parent=self, parameters=dirParams)
         self._directorySelector.SetSizerProps(expand=True)
 
     def _layoutDiagnostics(self):

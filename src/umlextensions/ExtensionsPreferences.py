@@ -17,17 +17,21 @@ from umlshapes.types.UmlFontFamily import UmlFontFamily
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
+from umlextensions.input.python.InitialShapePosition import InitialShapePosition
+from codeallybasic.Dimensions import Dimensions
 from umlextensions.tools.diagramarranger.configpanels.ForceDirectedMethod import ForceDirectedMethod
-from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
 
 MODULE_NAME:          str = 'umlextensions'
 PREFERENCES_FILENAME: str = f'{MODULE_NAME}.ini'
 
-DEFAULT_ORTHOGONAL_LAYOUT_SIZE:     LayoutAreaDimensions = LayoutAreaDimensions(512, 512)
-DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR: str                  = str(DEFAULT_ORTHOGONAL_LAYOUT_SIZE)
+DEFAULT_ORTHOGONAL_LAYOUT_SIZE:     Dimensions = Dimensions(512, 512)
+DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR: str        = str(DEFAULT_ORTHOGONAL_LAYOUT_SIZE)
 
 DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT:     UmlPosition = UmlPosition(x=25, y=25)
 DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT_STR: str         = str(DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT)
+
+DEFAULT_INITIAL_SHAPE_POSITION:     InitialShapePosition = InitialShapePosition(x=20, y=20)
+DEFAULT_INITIAL_SHAPE_POSITION_STR: str                  = str(DEFAULT_INITIAL_SHAPE_POSITION)
 
 DEFAULT_SPRING_LAYOUT_CENTER:     UmlPosition = UmlPosition(x=800, y=600)
 DEFAULT_SPRING_LAYOUT_CENTER_STR: str         = str(DEFAULT_SPRING_LAYOUT_CENTER)
@@ -45,12 +49,11 @@ DEFAULT_TIP_TEXT_COLOR:       str = UmlColor.BLACK.value
 DEFAULT_BALLOON_COLOR:        str = UmlColor.LIGHT_YELLOW.value
 
 
-
 SECTION_EXTENSIONS: ValueDescriptions = ValueDescriptions(
     {
         KeyName('sugiyamaStepByStep'):      ValueDescription(defaultValue='False', deserializer=SecureConversions.secureBoolean),
         KeyName('defaultGMLFilename'):      ValueDescription(defaultValue='GmlDump.gml'),
-        KeyName('orthogonalLayoutSize'):    ValueDescription(defaultValue=DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR,     deserializer=LayoutAreaDimensions.deSerialize),
+        KeyName('orthogonalLayoutSize'):    ValueDescription(defaultValue=DEFAULT_ORTHOGONAL_LAYOUT_SIZE_STR,     deserializer=Dimensions.deSerialize),
         KeyName('orthogonalLayoutTopLeft'): ValueDescription(defaultValue=DEFAULT_ORTHOGONAL_LAYOUT_TOP_LEFT_STR, deserializer=UmlPosition.deSerialize),
     }
 )
@@ -64,10 +67,9 @@ SECTION_FEATURES: ValueDescriptions = ValueDescriptions(
 
 SECTION_SHAPE_LAYOUT: ValueDescriptions = ValueDescriptions(
     {
-        KeyName('startX'):     ValueDescription(defaultValue='20',   deserializer=SecureConversions.secureInteger),
-        KeyName('startY'):     ValueDescription(defaultValue='20',   deserializer=SecureConversions.secureInteger),
-        KeyName('xIncrement'): ValueDescription(defaultValue='20',   deserializer=SecureConversions.secureInteger),
-        KeyName('maximumX'):   ValueDescription(defaultValue='3000', deserializer=SecureConversions.secureInteger),
+        KeyName('initialShapePosition'): ValueDescription(defaultValue=DEFAULT_INITIAL_SHAPE_POSITION_STR, deserializer=InitialShapePosition.deSerialize),
+        KeyName('xIncrement'):           ValueDescription(defaultValue='20',                                deserializer=SecureConversions.secureInteger),
+        KeyName('maximumX'):             ValueDescription(defaultValue='3000',                              deserializer=SecureConversions.secureInteger),
     }
 )
 

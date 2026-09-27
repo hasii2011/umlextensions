@@ -4,30 +4,36 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from wx import EVT_CHECKBOX
-from wx import EVT_SPINCTRL
-from wx import EVT_TEXT
 from wx import ID_ANY
+from wx import EVT_TEXT
+from wx import DefaultCoord
+from wx import EVT_CHECKBOX
 
-from wx import CheckBox
-from wx import CommandEvent
-from wx import SpinCtrl
-from wx import StaticText
-from wx import TextCtrl
+from wx import Size
 from wx import Window
+from wx import CheckBox
+from wx import TextCtrl
+from wx import StaticText
+from wx import CommandEvent
 
 from wx.lib.sized_controls import SizedStaticBox
 
+from codeallybasic.Dimensions import Dimensions
+
+from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsControl
+from codeallyadvanced.ui.widgets.DimensionsControl import DimensionsParameters
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
+from codeallyadvanced.ui.widgets.PositionControl import PositionParameters
 
 from umlshapes.types.UmlPosition import UmlPosition
 
-from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
 
-LAYOUT_SIZE_MIN: int = 64
-LAYOUT_SIZE_MAX: int = 8192
+GML_BOX_MIN_HEIGHT:  int = 60
+UNCONSTRAINED_WIDTH: int = DefaultCoord
+LAYOUT_SIZE_MIN:     int = 64
+LAYOUT_SIZE_MAX:     int = 8192
 
 
 class ExtensionsSectionPanel(BaseExtPreferencesPanel):
@@ -37,7 +43,7 @@ class ExtensionsSectionPanel(BaseExtPreferencesPanel):
     Covers:
         sugiyamaStepByStep      - CheckBox
         defaultGMLFilename      - TextCtrl
-        orthogonalLayoutSize    - Two SpinCtrl (width x height)
+        orthogonalLayoutSize    - DimensionsControl
         orthogonalLayoutTopLeft - PositionControl
     """
 
@@ -51,11 +57,10 @@ class ExtensionsSectionPanel(BaseExtPreferencesPanel):
 
         self.SetSizerType('vertical')
 
-        self._sugiyamaStepByStep: CheckBox  = cast(CheckBox,  None)                 # noqa
-        self._defaultGMLFilename: TextCtrl  = cast(TextCtrl,  None)                 # noqa
-        self._layoutWidth:        SpinCtrl  = cast(SpinCtrl,  None)                 # noqa
-        self._layoutHeight:       SpinCtrl  = cast(SpinCtrl,  None)                 # noqa
-        self._topLeftControl:     PositionControl = cast(PositionControl, None)     # noqa
+        self._sugiyamaStepByStep:      CheckBox          = cast(CheckBox,          None)     # noqa
+        self._defaultGMLFilename:      TextCtrl          = cast(TextCtrl,          None)     # noqa
+        self._layoutDimensionsControl: DimensionsControl = cast(DimensionsControl, None)     # noqa
+        self._topLeftControl:          PositionControl   = cast(PositionControl,   None)     # noqa
 
         self._layoutControls()
         self._setControlValues()
@@ -87,48 +92,42 @@ class ExtensionsSectionPanel(BaseExtPreferencesPanel):
         """
         gmlBox: SizedStaticBox = SizedStaticBox(self, ID_ANY, 'Default GML Filename')
         gmlBox.SetSizerType('form')
+        gmlBox.SetMinSize(Size(UNCONSTRAINED_WIDTH, GML_BOX_MIN_HEIGHT))
         gmlBox.SetSizerProps(expand=True)
 
-        StaticText(gmlBox, ID_ANY, 'Filename')
+        st: StaticText = StaticText(gmlBox, ID_ANY, 'Filename')
+        st.SetSizerProps(valign='center')
         self._defaultGMLFilename = TextCtrl(gmlBox, ID_ANY)
-        self._defaultGMLFilename.SetSizerProps(expand=True)
+        self._defaultGMLFilename.SetSizerProps(expand=True, valign='center')
         self._defaultGMLFilename.SetToolTip('Default filename used when dumping GML output')
         self.Bind(EVT_TEXT, self._onDefaultGMLFilenameChanged, self._defaultGMLFilename)
 
     def _layoutOrthogonalLayoutSize(self):
         """
-        Lays out the orthogonal layout area dimensions input box.
+        Lays out the orthogonal layout area dimensions control.
         """
-        sizeBox: SizedStaticBox = SizedStaticBox(self, ID_ANY, 'Orthogonal Layout Size')
-        sizeBox.SetSizerType('form')
-        sizeBox.SetSizerProps(expand=True)
-
-        StaticText(sizeBox, ID_ANY, 'Width')
-        self._layoutWidth = SpinCtrl(sizeBox, ID_ANY, min=LAYOUT_SIZE_MIN, max=LAYOUT_SIZE_MAX)
-        self._layoutWidth.SetSizerProps(expand=True)
-        self._layoutWidth.SetToolTip('Width of the orthogonal layout area in pixels')
-        self.Bind(EVT_SPINCTRL, self._onLayoutWidthChanged, self._layoutWidth)
-        self.Bind(EVT_TEXT,     self._onLayoutWidthChanged, self._layoutWidth)
-
-        StaticText(sizeBox, ID_ANY, 'Height')
-        self._layoutHeight = SpinCtrl(sizeBox, ID_ANY, min=LAYOUT_SIZE_MIN, max=LAYOUT_SIZE_MAX)
-        self._layoutHeight.SetSizerProps(expand=True)
-        self._layoutHeight.SetToolTip('Height of the orthogonal layout area in pixels')
-        self.Bind(EVT_SPINCTRL, self._onLayoutHeightChanged, self._layoutHeight)
-        self.Bind(EVT_TEXT,     self._onLayoutHeightChanged, self._layoutHeight)
+        dimensionsParameters: DimensionsParameters = DimensionsParameters(
+            caption='Orthogonal Layout Size',
+            firstSpinnerLabel='Width:',
+            secondSpinnerLabel='Height:',
+            minValue=LAYOUT_SIZE_MIN,
+            maxValue=LAYOUT_SIZE_MAX,
+            valueChangedCallback=self._onLayoutSizeChanged,
+        )
+        self._layoutDimensionsControl = DimensionsControl(parent=self, parameters=dimensionsParameters)
+        self._layoutDimensionsControl.SetSizerProps(expand=True)
 
     def _layoutOrthogonalLayoutTopLeft(self):
         """
         Lays out the orthogonal layout top-left position control.
         """
-        self._topLeftControl = PositionControl(
-            sizedPanel=self,
-            displayText='Orthogonal Layout Top-Left',
+        positionParameters: PositionParameters = PositionParameters(
+            caption='Orthogonal Layout Top-Left',
             minValue=0,
             maxValue=8192,
             valueChangedCallback=self._onTopLeftChanged,
-            setControlsSize=True
         )
+        self._topLeftControl = PositionControl(parent=self, parameters=positionParameters)
         self._topLeftControl.SetSizerProps(expand=True)
 
     def _setControlValues(self):
@@ -138,9 +137,8 @@ class ExtensionsSectionPanel(BaseExtPreferencesPanel):
         self._sugiyamaStepByStep.SetValue(p.sugiyamaStepByStep)
         self._defaultGMLFilename.SetValue(p.defaultGMLFilename)
 
-        layoutSize: LayoutAreaDimensions = p.orthogonalLayoutSize
-        self._layoutWidth.SetValue(layoutSize.width)
-        self._layoutHeight.SetValue(layoutSize.height)
+        layoutSize: Dimensions = p.orthogonalLayoutSize
+        self._layoutDimensionsControl.dimensions = layoutSize
 
         topLeft: UmlPosition = p.orthogonalLayoutTopLeft
         self._topLeftControl.position = topLeft
@@ -153,15 +151,8 @@ class ExtensionsSectionPanel(BaseExtPreferencesPanel):
     def _onDefaultGMLFilenameChanged(self, event: CommandEvent):
         self._preferences.defaultGMLFilename = event.GetString()
 
-    def _onLayoutWidthChanged(self, event: CommandEvent):
-        currentSize: LayoutAreaDimensions = self._preferences.orthogonalLayoutSize
-        currentSize.width = event.GetInt()
-        self._preferences.orthogonalLayoutSize = currentSize
-
-    def _onLayoutHeightChanged(self, event: CommandEvent):
-        currentSize: LayoutAreaDimensions = self._preferences.orthogonalLayoutSize
-        currentSize.height = event.GetInt()
-        self._preferences.orthogonalLayoutSize = currentSize
+    def _onLayoutSizeChanged(self, newDimensions: Dimensions):
+        self._preferences.orthogonalLayoutSize = newDimensions
 
     def _onTopLeftChanged(self, newPosition: UmlPosition):
         self._preferences.orthogonalLayoutTopLeft = newPosition

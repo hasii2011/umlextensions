@@ -33,7 +33,7 @@ from umlshapes.shapes.UmlNote import UmlNote
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.output.gml.GMLExporter import GMLExporter
-from umlextensions.tools.orthogonallayout.LayoutAreaDimensions import LayoutAreaDimensions
+from codeallybasic.Dimensions import Dimensions
 from umlextensions.tools.orthogonallayout.OrthogonalAdapterException import OrthogonalAdapterException
 
 GraphicsCoordinates = NewType('GraphicsCoordinates', Tuple[int, int])
@@ -85,7 +85,7 @@ class OrthogonalAdapter:
     def umlShapeCoordinates(self) -> UmlShapeCoordinates:
         return self._umlShapeCoordinates
 
-    def doLayout(self, layoutAreaSize: LayoutAreaDimensions):
+    def doLayout(self, layoutAreaSize: Dimensions):
 
         self._nxGraph = Graph(read_gml(self._pathToLayout))
 

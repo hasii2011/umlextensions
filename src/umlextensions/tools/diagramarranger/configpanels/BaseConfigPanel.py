@@ -29,6 +29,7 @@ from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import Un
 from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import ValueControlSpecs
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
+from codeallyadvanced.ui.widgets.PositionControl import PositionParameters
 """
     These are not preferences,  just some of my arbitrary values
 """
@@ -125,14 +126,13 @@ class BaseConfigPanel(SizedPanel):
         parent container
         """
 
-        layoutCenter: PositionControl = PositionControl(
-            sizedPanel=sizedPanel,
-            displayText='The coordinate pair around which to center the layout',
+        positionParameters: PositionParameters = PositionParameters(
+            caption='The coordinate pair around which to center the layout',
             minValue=MIN_LAYOUT_CENTER,
             maxValue=MAX_LAYOUT_CENTER,
             valueChangedCallback=self._onLayoutCenterChanged,
-            setControlsSize=True
         )
+        layoutCenter: PositionControl = PositionControl(parent=sizedPanel, parameters=positionParameters)
         layoutCenter.position = p.layoutCenter
         layoutCenter.SetToolTip('The coordinate pair around which to center the layout')
 

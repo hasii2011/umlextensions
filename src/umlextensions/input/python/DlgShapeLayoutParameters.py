@@ -4,20 +4,21 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
+from dataclasses import field
 from dataclasses import dataclass
 
-from wx import CANCEL
-from wx import EVT_BUTTON
-from wx import EVT_CLOSE
-from wx import ID_CANCEL
-from wx import ID_OK
 from wx import OK
-from wx import DEFAULT_DIALOG_STYLE
+from wx import CANCEL
+from wx import EVT_CLOSE
+from wx import EVT_BUTTON
+from wx import ID_OK
+from wx import ID_CANCEL
 from wx import STAY_ON_TOP
+from wx import DEFAULT_DIALOG_STYLE
 
-from wx import CommandEvent
 from wx import Size
 from wx import Window
+from wx import CommandEvent
 from wx import StdDialogButtonSizer
 
 from wx.lib.sized_controls import SizedDialog
@@ -25,14 +26,14 @@ from wx.lib.sized_controls import SizedPanel
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.input.python.NamedSlider import NamedSlider
+from umlextensions.input.python.InitialShapePosition import InitialShapePosition
 
 
 @dataclass
 class ShapeLayout:
-    startX:     int = 0
-    startY:     int = 0
-    xIncrement: int = 0
-    maximumX:   int = 0
+    initialPosition: InitialShapePosition = field(default_factory=InitialShapePosition)
+    xIncrement:      int                  = 0
+    maximumX:        int                  = 0
 
 class DlgShapeLayoutParameters(SizedDialog):
     def __init__(self, parent: Window = None):
@@ -55,8 +56,7 @@ class DlgShapeLayoutParameters(SizedDialog):
         self._maximumX:   NamedSlider = cast(NamedSlider, None)
 
         self._shapeLayout: ShapeLayout = ShapeLayout(
-            startX=self._extensionPrefs.startX,
-            startY=self._extensionPrefs.startY,
+            initialPosition=self._extensionPrefs.initialShapePosition,
             xIncrement=self._extensionPrefs.xIncrement,
             maximumX=self._extensionPrefs.maximumX
         )
@@ -83,8 +83,8 @@ class DlgShapeLayoutParameters(SizedDialog):
 
     def _setControlValues(self):
 
-        self._startX.value     = self._shapeLayout.startX
-        self._startY.value     = self._shapeLayout.startY
+        self._startX.value     = self._shapeLayout.initialPosition.x
+        self._startY.value     = self._shapeLayout.initialPosition.y
         self._xIncrement.value = self._shapeLayout.xIncrement
         self._maximumX.value   = self._shapeLayout.maximumX
 
@@ -108,15 +108,14 @@ class DlgShapeLayoutParameters(SizedDialog):
             event:
         """
 
-        self._extensionPrefs.startX     = self._startX.value
-        self._extensionPrefs.startY     = self._startY.value
-        self._extensionPrefs.xIncrement = self._xIncrement.value
-        self._extensionPrefs.maximumX   = self._maximumX.value
+        newPosition: InitialShapePosition = InitialShapePosition(x=self._startX.value, y=self._startY.value)
+        self._extensionPrefs.initialShapePosition = newPosition
+        self._extensionPrefs.xIncrement           = self._xIncrement.value
+        self._extensionPrefs.maximumX             = self._maximumX.value
 
-        self._shapeLayout.startX     = self._startX.value
-        self._shapeLayout.startY     = self._startY.value
-        self._shapeLayout.xIncrement = self._xIncrement.value
-        self._shapeLayout.maximumX   = self._maximumX.value
+        self._shapeLayout.initialPosition = newPosition
+        self._shapeLayout.xIncrement      = self._xIncrement.value
+        self._shapeLayout.maximumX        = self._maximumX.value
 
         self.EndModal(OK)
 

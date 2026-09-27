@@ -203,8 +203,8 @@ class InputPython(BaseInputExtension):
                 self.logger.info('Ok')
 
             shapeLayout: ShapeLayout = dlg.shapeLayout
-            x: int = shapeLayout.startX
-            y: int = shapeLayout.startY
+            x: int = shapeLayout.initialPosition.x
+            y: int = shapeLayout.initialPosition.y
 
             incY: int = 0
             for umlClass in sortedUmlClasses:
@@ -216,7 +216,7 @@ class InputPython(BaseInputExtension):
                 sy += 20
                 incY = max(incY, int(sy))              # find good coordinates
                 if x + incX >= shapeLayout.maximumX:   # maximumX
-                    x = 20
+                    x = shapeLayout.initialPosition.x
                     y += incY
                     incY = int(sy)
 
