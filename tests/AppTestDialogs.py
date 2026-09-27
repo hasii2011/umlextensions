@@ -29,16 +29,16 @@ from umlextensions.input.python.DlgShapeLayoutParameters import DlgShapeLayoutPa
 
 from codeallybasic.UnitTestBase import UnitTestBase
 
-from tests.extensiondemo.DlgUmlDiagramArrangerPreferences import DlgUmlDiagramArrangerPreferences
 from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
 from umlextensions.tools.diagramarranger.mystic.MysticAdapter import MysticAdapter
+from umlextensions.ui.preferences.DlgExtensionsPreferences import DlgExtensionsPreferences
 
 
 class DialogNamesEnum(StrEnum):
 
-    DLG_ARRANGER_MYSTIC              = 'Diagram Arranger Mystic'
-    DLG_DIAGRAM_ARRANGER_PREFERENCES = 'Diagram Arranger Preferences'
-    DLG_SHAPE_LAYOUT_PARAMETERS      = 'Shape Layout Parameters'
+    DLG_ARRANGER_MYSTIC         = 'Diagram Arranger Mystic'
+    DLG_EXTENSIONS_PREFERENCES  = 'Extensions Preferences'
+    DLG_SHAPE_LAYOUT_PARAMETERS = 'Shape Layout Parameters'
 
 
 class AppTestDialogs(App):
@@ -87,11 +87,11 @@ class AppTestDialogs(App):
         sizedPanel.SetSizerType('vertical')
         sizedPanel.SetSizerProps(expand=True, proportion=1)
 
-        dialogChoices = []
+        dialogChoices: list[str] = []
         for dlgName in DialogNamesEnum:
             dialogChoices.append(dlgName.value)
 
-        box: SizedStaticBox = SizedStaticBox(sizedPanel, ID_ANY, "Select Dialog to Test")
+        box: SizedStaticBox = SizedStaticBox(sizedPanel, ID_ANY, 'Select Dialog to Test')
         box.SetSizerProps(expand=True, proportion=1)
 
         self._cmbDlgName: ComboBox = ComboBox(box, choices=dialogChoices, style=CB_READONLY)
@@ -124,8 +124,8 @@ class AppTestDialogs(App):
                 with DlgShapeLayoutParameters(parent=self._frame) as dlg:
                     if dlg.ShowModal() == OK:
                         self.logger.info('Ok')
-            case DialogNamesEnum.DLG_DIAGRAM_ARRANGER_PREFERENCES:
-                with DlgUmlDiagramArrangerPreferences(parent=self._frame) as dlg:
+            case DialogNamesEnum.DLG_EXTENSIONS_PREFERENCES:
+                with DlgExtensionsPreferences(parent=self._frame) as dlg:
                     if dlg.ShowModal() == OK:
                         self.logger.info('Ok')
 

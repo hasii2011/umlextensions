@@ -138,10 +138,11 @@ class BaseConfigPanel(SizedPanel):
 
         return layoutCenter
 
-    def _layoutHelpButton(self, parent:SizedPanel) -> Button:
+    def _layoutHelpButton(self, parent: SizedPanel, tipTitle: str, tipText: str) -> Button:
 
-        helpButton: Button   = Button(parent, ID_HELP, label='')
+        helpButton: Button = Button(parent, ID_HELP, label='')
         helpButton.SetBitmap(ArtProvider.GetBitmapBundle(ART_TIP))
+        helpButton.SetToolTip(f'{tipTitle}\n\n{tipText}')
 
         return helpButton
 

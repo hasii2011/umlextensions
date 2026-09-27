@@ -107,6 +107,7 @@ from umlextensions.input.BaseInputExtension import BaseInputExtension
 
 from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
 from umlextensions.output.BaseOutputExtension import BaseOutputExtension
+from umlextensions.ui.preferences.DlgExtensionsPreferences import DlgExtensionsPreferences
 
 FRAME_WIDTH:  int = 1280
 FRAME_HEIGHT: int = 720
@@ -167,7 +168,7 @@ class ExtensionFrame(SizedFrame):
         fileMenu.AppendSeparator()
         fileMenu.Append(ID_EXIT, '&Quit', 'Quit Application')
         fileMenu.AppendSeparator()
-        fileMenu.Append(ID_PREFERENCES, "P&references", 'UML preferences')
+        fileMenu.Append(ID_PREFERENCES, 'P&references', 'UML preferences')
 
         editMenu.Append(ID_SELECTALL)
 
@@ -183,8 +184,9 @@ class ExtensionFrame(SizedFrame):
         menuBar.Append(editMenu, 'Edit')
         menuBar.Append(extensionsMenu, 'Extensions')
 
-        self.Bind(EVT_MENU, self._onOpenXmlFile, id=ID_LOAD_XML_FILE)
-        self.Bind(EVT_MENU, self._onSelectAll,   id=ID_SELECTALL)
+        self.Bind(EVT_MENU, self._onOpenXmlFile,   id=ID_LOAD_XML_FILE)
+        self.Bind(EVT_MENU, self._onSelectAll,     id=ID_SELECTALL)
+        self.Bind(EVT_MENU, self._onPreferences,   id=ID_PREFERENCES)
 
         self.SetMenuBar(menuBar)
 
@@ -249,6 +251,18 @@ class ExtensionFrame(SizedFrame):
         wxId:          int           = event.GetId()
         extensionsDetails: ExtensionDetails = self._extensionManager.doToolAction(wxId=cast(WindowId, wxId))
         self.logger.info(f'Tool: {extensionsDetails=}')
+
+    # noinspection PyUnusedLocal
+    def _onPreferences(self, event: CommandEvent):
+        """
+        Open the Extensions Preferences dialog.
+
+        Args:
+            event: The menu command event
+        """
+        dlg: DlgExtensionsPreferences
+        with DlgExtensionsPreferences(parent=self) as dlg:
+            dlg.ShowModal()
 
     def _makeSubMenuEntry(self, subMenu: Menu, wxId: int, pluginName: str, callback: Callable) -> Menu:
         subMenu.Append(wxId, pluginName)

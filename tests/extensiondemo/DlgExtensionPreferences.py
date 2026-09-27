@@ -77,13 +77,13 @@ class DlgUmlDiagramArrangerPreferences(SizedDialog):
         self.Bind(EVT_CLOSE,  self._onClose)
 
     # noinspection PyUnusedLocal
-    def _onOk(self, event: CommandEvent):
+    def _onOk(self, _event: CommandEvent):
         """
         """
         self.EndModal(OK)
 
     # noinspection PyUnusedLocal
-    def _onClose(self, event: CommandEvent):
+    def _onClose(self, _event: CommandEvent):
         """
         """
         self.EndModal(CANCEL)

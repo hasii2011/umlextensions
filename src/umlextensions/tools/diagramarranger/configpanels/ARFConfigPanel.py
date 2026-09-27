@@ -10,7 +10,6 @@ from wx.lib.sized_controls import SizedPanel
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
-from umlextensions.Common import createBalloonTip
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.ExtensionsPreferences import MAX_ARF_SPRING_STRENGTH
 from umlextensions.ExtensionsPreferences import MAX_ITERATION_STEP_SIZE
@@ -110,10 +109,10 @@ class ARFConfigPanel(BaseConfigPanel):
         )
         self._layoutFormControls(valueControlSpecs=valueControlSpecs, formPanel=innerForm)
 
-        createBalloonTip(
+        self._layoutHelpButton(
+            parent=self,
             tipTitle=ARFConfigPanel.TIP_TITLE,
-            tipText=ARFConfigPanel.TIP_TEXT,
-            tipTarget=self._layoutHelpButton(self)
+            tipText=ARFConfigPanel.TIP_TEXT
         )
 
     def _onArfMaxIterationsChanged(self, event: CommandEvent):

@@ -7,7 +7,6 @@ from wx.lib.sized_controls import SizedPanel
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
-from umlextensions.Common import createBalloonTip
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.tools.diagramarranger.configpanels.BaseConfigPanel import BaseConfigPanel
 from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import ControlType
@@ -38,10 +37,10 @@ class ForceAtlas2ConfigPanel(BaseConfigPanel):
 
         self._layoutControls(parent=self, p=self._preferences)
 
-        createBalloonTip(
+        self._layoutHelpButton(
+            parent=self,
             tipTitle=ForceAtlas2ConfigPanel.TIP_TITLE,
-            tipText=ForceAtlas2ConfigPanel.TIP_TEXT,
-            tipTarget=self._layoutHelpButton(self)
+            tipText=ForceAtlas2ConfigPanel.TIP_TEXT
         )
 
     def _layoutControls(self, parent: SizedPanel, p: ExtensionsPreferences):

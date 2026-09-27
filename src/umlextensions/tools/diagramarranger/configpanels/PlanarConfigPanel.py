@@ -6,7 +6,6 @@ from wx.lib.sized_controls import SizedPanel
 
 from codeallyadvanced.ui.widgets.PositionControl import PositionControl
 
-from umlextensions.Common import createBalloonTip
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 from umlextensions.tools.diagramarranger.configpanels.BaseConfigPanel import BaseConfigPanel
@@ -29,10 +28,10 @@ class PlanarConfigPanel(BaseConfigPanel):
 
         self._layoutControls(parent=self, p=self._preferences)
 
-        createBalloonTip(
+        self._layoutHelpButton(
+            parent=self,
             tipTitle=PlanarConfigPanel.TIP_TITLE,
-            tipText=PlanarConfigPanel.TIP_TEXT,
-            tipTarget=self._layoutHelpButton(self)
+            tipText=PlanarConfigPanel.TIP_TEXT
         )
 
     def _layoutControls(self, parent: SizedPanel, p: ExtensionsPreferences):

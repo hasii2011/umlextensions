@@ -9,8 +9,9 @@ description = 'Plugins for umldiagrammer'
 readme = "README.md"
 authors = [{name = 'Humberto A. Sanchez II', email = 'Humberto.A.Sanchez.II@gmail.com'}]
 maintainers = [{name = 'Humberto A. Sanchez II', email = 'Humberto.A.Sanchez.II@gmail.com'}]
-keywords = ['umldiagrammer,graphical,uml shapes,python']
+keywords = ['umldiagrammer','graphical', 'uml', 'shapes', 'python']
 license  = 'AGPL-1.0-or-later'
+license-files = ['LICENSE']
 
 classifiers = [
   "Programming Language :: Python",
