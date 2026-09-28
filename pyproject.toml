@@ -43,7 +43,7 @@ test = [
     'mypy==2.1.0',
     'mypy-extensions==1.1.0',
     'html-testRunner~=1.2.1',
-    'click==8.4.0'
+    'click<=8.4.2'
 ]
 
 deploy = [

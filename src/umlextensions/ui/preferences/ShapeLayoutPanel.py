@@ -23,13 +23,13 @@ from codeallyadvanced.ui.widgets.PositionControl import PositionParameters
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 from umlextensions.input.python.InitialShapePosition import InitialShapePosition
-from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
+from umlextensions.ui.preferences.BasePreferencesPanel import BasePreferencesPanel
 
 FORM_ROW_GAP: int = 10
 FORM_COL_GAP: int = 10
 
 
-class ShapeLayoutSectionPanel(BaseExtPreferencesPanel):
+class ShapeLayoutPanel(BasePreferencesPanel):
     """
     Preferences panel for the 'Shape Layout' INI section.
 
@@ -58,7 +58,7 @@ class ShapeLayoutSectionPanel(BaseExtPreferencesPanel):
 
     @property
     def name(self) -> str:
-        return ShapeLayoutSectionPanel.PANEL_NAME
+        return ShapeLayoutPanel.PANEL_NAME
 
     def _layoutControls(self):
 

@@ -20,11 +20,11 @@ from wx import Window
 from wx.lib.sized_controls import SizedDialog
 from wx.lib.sized_controls import SizedPanel
 
-from umlextensions.ui.preferences.ArrangerSectionPanel import ArrangerSectionPanel
-from umlextensions.ui.preferences.ExtensionsSectionPanel import ExtensionsSectionPanel
-from umlextensions.ui.preferences.FeaturesSectionPanel import FeaturesSectionPanel
-from umlextensions.ui.preferences.ShapeLayoutSectionPanel import ShapeLayoutSectionPanel
-from umlextensions.ui.preferences.TooltipSectionPanel import TooltipSectionPanel
+from umlextensions.ui.preferences.ArrangerPanel import ArrangerPanel
+from umlextensions.ui.preferences.ExtensionsPanel import ExtensionsPanel
+from umlextensions.ui.preferences.FeaturesPanel import FeaturesPanel
+from umlextensions.ui.preferences.ShapeLayoutPanel import ShapeLayoutPanel
+from umlextensions.ui.preferences.TooltipPanel import TooltipPanel
 
 
 class DlgExtensionsPreferences(SizedDialog):
@@ -74,11 +74,11 @@ class DlgExtensionsPreferences(SizedDialog):
         book: Notebook = Notebook(sizedPanel, style=NB_TOP)
         book.SetSizerProps(expand=True, proportion=1)
 
-        extensionsPanel:  ExtensionsSectionPanel  = ExtensionsSectionPanel(book)
-        featuresPanel:    FeaturesSectionPanel    = FeaturesSectionPanel(book)
-        shapeLayoutPanel: ShapeLayoutSectionPanel = ShapeLayoutSectionPanel(book)
-        arrangerPanel:    ArrangerSectionPanel    = ArrangerSectionPanel(book)
-        tooltipPanel:     TooltipSectionPanel     = TooltipSectionPanel(book)
+        extensionsPanel:  ExtensionsPanel  = ExtensionsPanel(book)
+        featuresPanel:    FeaturesPanel    = FeaturesPanel(book)
+        shapeLayoutPanel: ShapeLayoutPanel = ShapeLayoutPanel(book)
+        arrangerPanel:    ArrangerPanel    = ArrangerPanel(book)
+        tooltipPanel:     TooltipPanel     = TooltipPanel(book)
 
         book.AddPage(extensionsPanel,  text=extensionsPanel.name,  select=True)
         book.AddPage(featuresPanel,    text=featuresPanel.name,    select=False)

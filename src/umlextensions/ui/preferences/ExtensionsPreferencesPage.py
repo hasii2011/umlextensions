@@ -10,11 +10,11 @@ from wx import Notebook
 
 from wx.lib.sized_controls import SizedPanel
 
-from umlextensions.ui.preferences.ArrangerSectionPanel import ArrangerSectionPanel
-from umlextensions.ui.preferences.ExtensionsSectionPanel import ExtensionsSectionPanel
-from umlextensions.ui.preferences.FeaturesSectionPanel import FeaturesSectionPanel
-from umlextensions.ui.preferences.ShapeLayoutSectionPanel import ShapeLayoutSectionPanel
-from umlextensions.ui.preferences.TooltipSectionPanel import TooltipSectionPanel
+from umlextensions.ui.preferences.ArrangerPanel import ArrangerPanel
+from umlextensions.ui.preferences.ExtensionsPanel import ExtensionsPanel
+from umlextensions.ui.preferences.FeaturesPanel import FeaturesPanel
+from umlextensions.ui.preferences.ShapeLayoutPanel import ShapeLayoutPanel
+from umlextensions.ui.preferences.TooltipPanel import TooltipPanel
 
 
 class ExtensionsPreferencesPage(SizedPanel):
@@ -76,11 +76,11 @@ class ExtensionsPreferencesPage(SizedPanel):
         subBook: Notebook = Notebook(self, ID_ANY, style=NB_TOP)
         subBook.SetSizerProps(expand=True, proportion=1)
 
-        extensionsPanel:  ExtensionsSectionPanel  = ExtensionsSectionPanel(subBook)
-        featuresPanel:    FeaturesSectionPanel    = FeaturesSectionPanel(subBook)
-        shapeLayoutPanel: ShapeLayoutSectionPanel = ShapeLayoutSectionPanel(subBook)
-        arrangerPanel:    ArrangerSectionPanel    = ArrangerSectionPanel(subBook)
-        tooltipPanel:     TooltipSectionPanel     = TooltipSectionPanel(subBook)
+        extensionsPanel:  ExtensionsPanel  = ExtensionsPanel(subBook)
+        featuresPanel:    FeaturesPanel    = FeaturesPanel(subBook)
+        shapeLayoutPanel: ShapeLayoutPanel = ShapeLayoutPanel(subBook)
+        arrangerPanel:    ArrangerPanel    = ArrangerPanel(subBook)
+        tooltipPanel:     TooltipPanel     = TooltipPanel(subBook)
 
         subBook.AddPage(extensionsPanel,  text=extensionsPanel.name,  select=True)
         subBook.AddPage(featuresPanel,    text=featuresPanel.name,    select=False)

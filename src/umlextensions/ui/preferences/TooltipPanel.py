@@ -27,7 +27,7 @@ from umlshapes.types.UmlColor import UmlColor
 from umlshapes.types.UmlFontFamily import UmlFontFamily
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
-from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
+from umlextensions.ui.preferences.BasePreferencesPanel import BasePreferencesPanel
 
 ColorChoices:       TypeAlias = list[str]
 FontFamilyChoices:  TypeAlias = list[str]
@@ -64,7 +64,7 @@ FONT_SIZE_MIN: int = 6
 FONT_SIZE_MAX: int = 72
 
 
-class TooltipSectionPanel(BaseExtPreferencesPanel):
+class TooltipPanel(BasePreferencesPanel):
     """
     Preferences panel for the 'ArrangerTooltip' INI section.
 
@@ -118,7 +118,7 @@ class TooltipSectionPanel(BaseExtPreferencesPanel):
 
     @property
     def name(self) -> str:
-        return TooltipSectionPanel.PANEL_NAME
+        return TooltipPanel.PANEL_NAME
 
     def _layoutControls(self):
         """

@@ -28,7 +28,7 @@ from codeallyadvanced.ui.widgets.PositionControl import PositionParameters
 from umlshapes.types.UmlPosition import UmlPosition
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
-from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
+from umlextensions.ui.preferences.BasePreferencesPanel import BasePreferencesPanel
 
 GML_BOX_MIN_HEIGHT:  int = 60
 UNCONSTRAINED_WIDTH: int = DefaultCoord
@@ -36,7 +36,7 @@ LAYOUT_SIZE_MIN:     int = 64
 LAYOUT_SIZE_MAX:     int = 8192
 
 
-class ExtensionsSectionPanel(BaseExtPreferencesPanel):
+class ExtensionsPanel(BasePreferencesPanel):
     """
     Preferences panel for the 'Extensions' INI section.
 
@@ -67,7 +67,7 @@ class ExtensionsSectionPanel(BaseExtPreferencesPanel):
 
     @property
     def name(self) -> str:
-        return ExtensionsSectionPanel.PANEL_NAME
+        return ExtensionsPanel.PANEL_NAME
 
     def _layoutControls(self):
         """

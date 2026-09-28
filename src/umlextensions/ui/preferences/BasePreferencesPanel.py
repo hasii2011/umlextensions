@@ -11,7 +11,7 @@ from wx.lib.sized_controls import SizedPanel
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 
-class _MyMetaBaseExtPreferencesPanel(ABCMeta, type(SizedPanel)):    # type: ignore
+class _MetaBasePreferencesPanel(ABCMeta, type(SizedPanel)):    # type: ignore
     """
     Resolves the metaclass conflict between ABCMeta and the wxPython SizedPanel metaclass.
     https://stackoverflow.com/questions/66591752/metaclass-conflict-when-trying-to-create-a-python-abstract-class-that-also-subcl
@@ -19,7 +19,7 @@ class _MyMetaBaseExtPreferencesPanel(ABCMeta, type(SizedPanel)):    # type: igno
     pass
 
 
-class BaseExtPreferencesPanel(SizedPanel, ABC, metaclass=_MyMetaBaseExtPreferencesPanel):
+class BasePreferencesPanel(SizedPanel, ABC, metaclass=_MetaBasePreferencesPanel):
     """
     Abstract base class for all umlextensions preferences section panels.
     Subclasses must provide a name property (used as the notebook tab label)

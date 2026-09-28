@@ -20,10 +20,10 @@ from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelector
 from codeallyadvanced.ui.widgets.DirectorySelector import DirectorySelectorParameters
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
-from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
+from umlextensions.ui.preferences.BasePreferencesPanel import BasePreferencesPanel
 
 
-class FeaturesSectionPanel(BaseExtPreferencesPanel):
+class FeaturesPanel(BasePreferencesPanel):
     """
     Preferences panel for the 'Features' INI section.
 
@@ -50,7 +50,7 @@ class FeaturesSectionPanel(BaseExtPreferencesPanel):
 
     @property
     def name(self) -> str:
-        return FeaturesSectionPanel.PANEL_NAME
+        return FeaturesPanel.PANEL_NAME
 
     def _layoutControls(self):
         """

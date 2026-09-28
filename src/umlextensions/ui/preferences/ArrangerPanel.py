@@ -22,9 +22,10 @@ from umlextensions.tools.diagramarranger.configpanels.ForceAtlas2ConfigPanel imp
 from umlextensions.tools.diagramarranger.configpanels.PlanarConfigPanel import PlanarConfigPanel
 from umlextensions.tools.diagramarranger.configpanels.SpringConfigPanel import SpringConfigPanel
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
-from umlextensions.ui.preferences.BaseExtPreferencesPanel import BaseExtPreferencesPanel
+from umlextensions.ui.preferences.BasePreferencesPanel import BasePreferencesPanel
 
-class ArrangerSectionPanel(BaseExtPreferencesPanel):
+
+class ArrangerPanel(BasePreferencesPanel):
     """
     Preferences panel for the Arranger-related INI sections:
 
@@ -55,7 +56,7 @@ class ArrangerSectionPanel(BaseExtPreferencesPanel):
 
     @property
     def name(self) -> str:
-        return ArrangerSectionPanel.PANEL_NAME
+        return ArrangerPanel.PANEL_NAME
 
     def _layoutControls(self):
         """
