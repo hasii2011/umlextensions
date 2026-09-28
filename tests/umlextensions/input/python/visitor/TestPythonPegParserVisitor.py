@@ -27,6 +27,7 @@ from umlmodel.enumerations.Visibility import Visibility
 from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import ModelFieldHashIndex
 
 from umlextensions.input.python.visitor.ParserTypes import Associations
+from umlextensions.input.python.visitor.ParserTypes import Associates
 from umlextensions.input.python.visitor.ParserTypes import ParentName
 from umlextensions.input.python.visitor.ParserTypes import ModelClasses
 from umlextensions.input.python.visitor.ParserTypes import ModelClassName
@@ -266,6 +267,20 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         methodPublicMethod: Method = methods[1]
 
         self.assertEqual(7, len(methodPublicMethod.sourceCode), 'Mismatch of source code on publicMethod')
+
+    def testDuplicateAssociationsAvoided(self):
+
+        tree:    PythonParser.File_inputContext = self._setupPegBasedParser('DuplicateAssociations.py')
+        visitor: PythonPegParserVisitor         = PythonPegParserVisitor()
+
+        visitor.modelClasses = self._do1stPassPegBasedParser('DuplicateAssociations.py')
+        visitor.visit(tree)
+
+        className: ModelClassName = ModelClassName('TargetClass')
+        self.assertTrue(className in visitor.associations, 'Missing target class in associations')
+
+        targetAssociates: Associates = visitor.associations[className]
+        self.assertEqual(2, len(targetAssociates), f'Duplicate associations found: {targetAssociates}')
 
     def _runVisibilityTest(self, methodName, visibility: Visibility):
 

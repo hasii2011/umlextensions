@@ -143,7 +143,7 @@ class PythonPegParserVisitor(BaseVisitor):
         if argumentsCtx is not None:
             self._parentsDictionaryHandler.createParentChildEntry(argumentsCtx, className)
 
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
     def visitFunction_def(self, ctx: PythonParser.Function_defContext):
         """
@@ -186,7 +186,7 @@ class PythonPegParserVisitor(BaseVisitor):
                         self.logger.error(f'{e=}')
                         self.logger.error(f'Missing source code for {className}.{methodName}')
 
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
     def visitParameters(self, ctx: PythonParser.ParametersContext):
         """
@@ -234,7 +234,7 @@ class PythonPegParserVisitor(BaseVisitor):
                     self.logger.error(f'{ctx3.getText()}')
                     assert False, f'Unhandled {ctx3.getText()}'
 
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
     def visitAssignment(self, ctx: PythonParser.AssignmentContext):
         """
@@ -252,17 +252,18 @@ class PythonPegParserVisitor(BaseVisitor):
 
                 className: ModelClassName = self._extractClassName(ctx=classDefContext)
                 self.logger.debug(f'{className} is a data class')
-                if len(ctx.children) == 5:
-                    self._handleFullField(className, ctx)
+                if ctx.children is not None:
+                    if len(ctx.children) == 5:
+                        self._handleFullField(className, ctx)
 
-                elif len(ctx.children) == 3:
-                    # if isinstance(ctx.children[0], TerminalNodeImpl):
-                    if isinstance(ctx.children[0], PythonParser.NameContext):
-                        self._handleNoDefaultValueField(className, ctx)
-                    else:
-                        self._handleNoTypeSpecifiedField(className, ctx)
+                    elif len(ctx.children) == 3:
+                        # if isinstance(ctx.children[0], TerminalNodeImpl):
+                        if isinstance(ctx.children[0], PythonParser.NameContext):
+                            self._handleNoDefaultValueField(className, ctx)
+                        else:
+                            self._handleNoTypeSpecifiedField(className, ctx)
 
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
     def visitStatements(self, ctx: PythonParser.StatementsContext):
 
@@ -291,7 +292,7 @@ class PythonPegParserVisitor(BaseVisitor):
                         sourceCode.append(f'{s}')
                     self._currentCode = sourceCode
 
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
 
     def _extractMethodName(self, ctx: PythonParser.Function_def_rawContext) -> MethodName:
 
@@ -377,7 +378,7 @@ class PythonPegParserVisitor(BaseVisitor):
         propertyName: PropertyName = PropertyName(self._extractFunctionNameRawString(ctx=ctx))
         return propertyName
 
-    def _makeAssociationEntry(self, className, typeStr):
+    def _makeAssociationEntry(self, className: ModelClassName, typeStr: str):
         """
         Now check to see if this type is one of our known classes;  If so, then create
         an association entry
@@ -393,7 +394,10 @@ class PythonPegParserVisitor(BaseVisitor):
             associate:     Associate     = Associate(associateName=associateName, associationType=AssociationType.ASSOCIATION)
 
             if className in self._associations:
-                self._associations[className].append(associate)
+                # Make sure it is not already there
+                if associate not in self._associations[className]:
+                    self._associations[className].append(associate)
+
             else:
                 self._associations[className] = Associates([associate])
 
@@ -492,6 +496,9 @@ class PythonPegParserVisitor(BaseVisitor):
             self._updateModelMethodParameter(className=className, methodName=methodName, parameter=parameter)
 
     def _extractParameterNameAndType(self, paramCtx: PythonParser.ParamContext) -> ParameterNameAndType:
+
+        if paramCtx.children is None:
+            return ParameterNameAndType(name='', typeName='')
 
         terminalNode:  TerminalNodeImpl = paramCtx.children[0]
         if len(paramCtx.children) > 1:
