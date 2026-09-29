@@ -22,10 +22,15 @@ from umlmodel.Field import Fields
 from umlmodel.FieldType import FieldType
 from umlmodel.Method import Method
 from umlmodel.Method import Methods
+from umlmodel.Parameter import Parameter
+from umlmodel.ParameterType import ParameterType
 from umlmodel.enumerations.Visibility import Visibility
 
 from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import ModelFieldHashIndex
 
+from umlextensions.input.python.visitor.ParserTypes import Associate
+from umlextensions.input.python.visitor.ParserTypes import AssociateName
+from umlextensions.input.python.visitor.ParserTypes import AssociationType
 from umlextensions.input.python.visitor.ParserTypes import Associations
 from umlextensions.input.python.visitor.ParserTypes import Associates
 from umlextensions.input.python.visitor.ParserTypes import ParentName
@@ -248,7 +253,7 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         """
 
         tree:    PythonParser.File_inputContext = self._setupPegBasedParser('SimpleClassWithCode.py')
-        visitor: PythonPegParserVisitor = PythonPegParserVisitor()
+        visitor: PythonPegParserVisitor         = PythonPegParserVisitor()
 
         visitor.modelClasses = self._do1stPassPegBasedParser('SimpleClassWithCode.py')
 
@@ -279,8 +284,53 @@ class TestPythonPegParserVisitor(BaseTestPythonPegVisitor):
         className: ModelClassName = ModelClassName('TargetClass')
         self.assertTrue(className in visitor.associations, 'Missing target class in associations')
 
-        targetAssociates: Associates = visitor.associations[className]
-        self.assertEqual(2, len(targetAssociates), f'Duplicate associations found: {targetAssociates}')
+        targetAssociates:   Associates = visitor.associations[className]
+        expectedAssociates: Associates = Associates([
+            Associate(associateName=AssociateName('DisplayParameters'), associationType=AssociationType.ASSOCIATION),
+            Associate(associateName=AssociateName('DisplayMethods'),    associationType=AssociationType.ASSOCIATION),
+        ])
+        self.assertEqual(expectedAssociates, targetAssociates, 'Mismatch in expected associations')
+
+    def testMethodParametersAndDefaults(self):
+
+        visitor:      PythonPegParserVisitor = self._setupSimpleClassVisitor()
+        modelClasses: ModelClasses           = visitor.modelClasses
+        modelClass:   Class                  = modelClasses[ModelClassName('SimpleClass')]
+        methodDict:   MethodHashIndex        = self._buildMethodHashIndex(methods=modelClass.methods)
+
+        methodWithDefaults: Method          = methodDict['methodWithParametersAndDefaultValues']
+        parameters:         List[Parameter] = methodWithDefaults.parameters
+
+        self.assertEqual(3, len(parameters), 'Expected 3 parameters (excluding self)')
+
+        self.assertEqual('intParameter', parameters[0].name)
+        self.assertEqual(ParameterType('int'), parameters[0].type)
+        self.assertEqual('0', parameters[0].defaultValue)
+
+        self.assertEqual('floatParameter', parameters[1].name)
+        self.assertEqual(ParameterType('float'), parameters[1].type)
+        self.assertEqual('42.0', parameters[1].defaultValue)
+
+        self.assertEqual('stringParameter', parameters[2].name)
+        self.assertEqual(ParameterType('str'), parameters[2].type)
+        self.assertEqual("''", parameters[2].defaultValue)
+
+        methodWithoutDefaults: Method          = methodDict['methodWithParameters']
+        paramsNoDefaults:      List[Parameter] = methodWithoutDefaults.parameters
+
+        self.assertEqual(3, len(paramsNoDefaults), 'Expected 3 parameters (excluding self)')
+
+        self.assertEqual('intParameter', paramsNoDefaults[0].name)
+        self.assertEqual(ParameterType('int'), paramsNoDefaults[0].type)
+        self.assertEqual('', paramsNoDefaults[0].defaultValue)
+
+        self.assertEqual('floatParameter', paramsNoDefaults[1].name)
+        self.assertEqual(ParameterType('float'), paramsNoDefaults[1].type)
+        self.assertEqual('', paramsNoDefaults[1].defaultValue)
+
+        self.assertEqual('stringParameter', paramsNoDefaults[2].name)
+        self.assertEqual(ParameterType('str'), paramsNoDefaults[2].type)
+        self.assertEqual('', paramsNoDefaults[2].defaultValue)
 
     def _runVisibilityTest(self, methodName, visibility: Visibility):
 

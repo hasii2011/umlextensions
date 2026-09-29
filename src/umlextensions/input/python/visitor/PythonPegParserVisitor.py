@@ -1,4 +1,4 @@
-
+from typing import Any
 from typing import cast
 from typing import List
 from typing import NewType
@@ -11,6 +11,8 @@ from re import Match as regExMatch
 
 from dataclasses import dataclass
 
+from antlr4 import InputStream
+from antlr4 import RuleContext
 from antlr4.tree.Tree import TerminalNodeImpl
 
 from umlmodel.Class import Class
@@ -65,6 +67,7 @@ PARAMETER_SELF:      str = 'self'
 PROTECTED_INDICATOR: str = '_'
 PRIVATE_INDICATOR:   str = '__'
 PROPERTY_DECORATOR:  str = 'property'
+DATACLASS_DECORATOR: str = 'dataclass'
 
 """
     Find 
@@ -139,7 +142,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
         self.logger.debug(f'{className=}')
 
-        argumentsCtx: PythonParser.ArgumentsContext = self._findArgListContext(ctx)
+        argumentsCtx: PythonParser.ArgumentsContext | None = self._findArgListContext(ctx)
         if argumentsCtx is not None:
             self._parentsDictionaryHandler.createParentChildEntry(argumentsCtx, className)
 
@@ -267,17 +270,25 @@ class PythonPegParserVisitor(BaseVisitor):
 
     def visitStatements(self, ctx: PythonParser.StatementsContext):
 
-        parentCtx = ctx.parentCtx
+        parentCtx: RuleContext | None = ctx.parentCtx
 
         if isinstance(parentCtx, PythonParser.BlockContext):
-            blockContext: PythonParser.BlockContext      = parentCtx
-            statements:   PythonParser.StatementsContext = blockContext.statements()
+            blockContext: PythonParser.BlockContext             = parentCtx
+            statements:   PythonParser.StatementsContext | None = blockContext.statements()
 
-            for child in statements.children:
+            if statements is not None:
+                for statement in statements.statement():
+                    self._extractSourceCode(statement)
 
-                statement:     PythonParser.StatementContext = cast(PythonParser.StatementContext, child)
-                statementText: str = statement.start.getInputStream().getText(statement.start.start, statement.stop.stop)
+        self.visitChildren(ctx)
 
+    def _extractSourceCode(self, statement: PythonParser.StatementContext | Any):
+
+        if statement.start is not None and statement.stop is not None:
+
+            inputStream: InputStream | None = statement.start.getInputStream()
+            if inputStream is not None:
+                statementText:       str = inputStream.getText(statement.start.start, statement.stop.stop)
                 match: regExMatch | None = regExSearch(METHOD_FIND_PATTERN, statementText)
 
                 if match is not None:
@@ -290,9 +301,8 @@ class PythonPegParserVisitor(BaseVisitor):
                     for s in splitStatements:
                         s = s.removeprefix('    ')
                         sourceCode.append(f'{s}')
-                    self._currentCode = sourceCode
 
-        self.visitChildren(ctx)
+                    self._currentCode = sourceCode
 
     def _extractMethodName(self, ctx: PythonParser.Function_def_rawContext) -> MethodName:
 
@@ -315,10 +325,8 @@ class PythonPegParserVisitor(BaseVisitor):
         """
         ans: bool = False
 
-        decorators: PythonParser.DecoratorsContext = ctx.decorators()
-        if decorators is None:
-            pass
-        else:
+        decorators: PythonParser.DecoratorsContext | None = ctx.decorators()
+        if decorators is not None:
             namedExpressions: List[PythonParser.Named_expressionContext] = decorators.named_expression()
             for ne in namedExpressions:
                 self.logger.debug(f'{ne.getText()=}')
@@ -329,7 +337,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
     def _extractReturnType(self, ctx: PythonParser.Function_defContext) -> str:
 
-        exprCtx: PythonParser.ExpressionContext = ctx.function_def_raw().expression()
+        exprCtx: PythonParser.ExpressionContext | None = ctx.function_def_raw().expression()
 
         if exprCtx is None:
             returnTypeStr: str = ''
@@ -347,7 +355,7 @@ class PythonPegParserVisitor(BaseVisitor):
             methodName:  A property name which we turn into a field
 
         """
-        self._propertyMap[className].append(cast(PropertyName, methodName))
+        self._propertyMap[className].append(PropertyName(str(methodName)))
 
     def _handleField(self, ctx: PythonParser.Function_defContext):
         """
@@ -405,13 +413,11 @@ class PythonPegParserVisitor(BaseVisitor):
 
         ans: bool = False
 
-        decoratorsCtx: PythonParser.DecoratorsContext = ctx.decorators()
+        decoratorsCtx: PythonParser.DecoratorsContext | None = ctx.decorators()
         if decoratorsCtx is not None:
-            for decorator in decoratorsCtx.children:
-                if isinstance(decorator, PythonParser.Named_expressionContext):
-                    # self.logger.info(f'{decorator.getText()=}')
-                    ans = True
-                    break
+            decoratorNames: List[str] = [ne.getText() for ne in decoratorsCtx.named_expression()]
+            ans = any(DATACLASS_DECORATOR in name for name in decoratorNames)
+
         return ans
 
     def _handleFullField(self, className: ModelClassName, ctx: PythonParser.AssignmentContext):
@@ -422,9 +428,9 @@ class PythonPegParserVisitor(BaseVisitor):
             className:
             ctx:
         """
-        fieldName:  str = ctx.children[0].getText()
-        typeStr:    str = ctx.children[2].getText()
-        fieldValue: str = ctx.children[4].getText()
+        fieldName:  str = ctx.name().getText()
+        typeStr:    str = ctx.expression().getText()
+        fieldValue: str = ctx.annotated_rhs().getText()
 
         self._makeFieldForClass(className=className, propertyName=fieldName, typeStr=typeStr, defaultValue=fieldValue)
         self._makeAssociationEntry(className=className, typeStr=typeStr)
@@ -438,8 +444,8 @@ class PythonPegParserVisitor(BaseVisitor):
             className:
             ctx:
         """
-        fieldName: str = ctx.children[0].getText()
-        typeStr:   str = ctx.children[2].getText()
+        fieldName: str = ctx.name().getText()
+        typeStr:   str = ctx.expression().getText()
 
         self._makeFieldForClass(className=className, propertyName=fieldName, typeStr=typeStr, defaultValue='')
         self._makeAssociationEntry(className=className, typeStr=typeStr)
@@ -452,8 +458,8 @@ class PythonPegParserVisitor(BaseVisitor):
             className:
             ctx:
         """
-        fieldName:    str = ctx.children[0].getText()
-        defaultValue: str = ctx.children[2].getText()
+        fieldName:    str = ctx.star_targets()[0].getText()
+        defaultValue: str = ctx.star_expressions().getText()
 
         self._makeFieldForClass(className=className, propertyName=fieldName, typeStr='', defaultValue=defaultValue)
 
@@ -477,7 +483,7 @@ class PythonPegParserVisitor(BaseVisitor):
             paramCtx:          PythonParser.ParamContext              = withDefaultCtx.param()
             nameAndType:       ParameterNameAndType                   = self._extractParameterNameAndType(paramCtx=paramCtx)
             defaultAssignment: PythonParser.Default_assignmentContext = withDefaultCtx.default_assignment()
-            expr:               str                                   = defaultAssignment.children[1].getText()
+            expr:              str                                    = defaultAssignment.expression().getText()
 
             parameter: Parameter = Parameter(name=nameAndType.name, type=ParameterType(nameAndType.typeName), defaultValue=expr)
             self._updateModelMethodParameter(className=className, methodName=methodName, parameter=parameter)
@@ -497,18 +503,12 @@ class PythonPegParserVisitor(BaseVisitor):
 
     def _extractParameterNameAndType(self, paramCtx: PythonParser.ParamContext) -> ParameterNameAndType:
 
-        if paramCtx.children is None:
-            return ParameterNameAndType(name='', typeName='')
-
-        terminalNode:  TerminalNodeImpl = paramCtx.children[0]
-        if len(paramCtx.children) > 1:
-            annotationCtx: PythonParser.AnnotationContext = paramCtx.children[1]
-            exprCtx:       PythonParser.ExpressionContext = annotationCtx.children[1]
-            typeStr: str = exprCtx.getText()
+        paramName:     str                            = paramCtx.name().getText()
+        annotationCtx: PythonParser.AnnotationContext | None = paramCtx.annotation()
+        if annotationCtx is not None:
+            typeStr: str = annotationCtx.expression().getText()
         else:
             typeStr = ''
-
-        paramName: str = terminalNode.getText()
 
         return ParameterNameAndType(name=paramName, typeName=typeStr)
 

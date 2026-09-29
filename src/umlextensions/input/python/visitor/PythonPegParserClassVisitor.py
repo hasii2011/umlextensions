@@ -59,7 +59,7 @@ class PythonPegParserClassVisitor(BaseVisitor):
         modelClass: Class = Class(name=className)
         modelClass.description = self._generateMyCredits()
 
-        argumentsCtx: PythonParser.ArgumentsContext = self._findArgListContext(ctx)
+        argumentsCtx: PythonParser.ArgumentsContext | None = self._findArgListContext(ctx)
 
         if argumentsCtx is not None:
             args: PythonParser.ArgsContext = argumentsCtx.args()
