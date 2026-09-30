@@ -1,4 +1,3 @@
-from typing import Any
 from typing import cast
 from typing import List
 from typing import NewType
@@ -13,7 +12,6 @@ from dataclasses import dataclass
 
 from antlr4 import InputStream
 from antlr4 import RuleContext
-from antlr4.tree.Tree import TerminalNodeImpl
 
 from umlmodel.Class import Class
 from umlmodel.Method import Method
@@ -282,7 +280,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
         self.visitChildren(ctx)
 
-    def _extractSourceCode(self, statement: PythonParser.StatementContext | Any):
+    def _extractSourceCode(self, statement: PythonParser.StatementContext):
 
         if statement.start is not None and statement.stop is not None:
 
@@ -311,7 +309,7 @@ class PythonPegParserVisitor(BaseVisitor):
 
     def _extractFunctionNameRawString(self, ctx: PythonParser.Function_def_rawContext) -> str:
 
-        name: TerminalNodeImpl = ctx.name()
+        name: PythonParser.NameContext = ctx.name()
         return name.getText()
 
     def _isProperty(self, ctx: PythonParser.Function_defContext) -> bool:

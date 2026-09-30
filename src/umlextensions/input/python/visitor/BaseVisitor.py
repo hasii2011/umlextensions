@@ -8,7 +8,6 @@ from logging import getLogger
 
 from antlr4 import ParserRuleContext
 from antlr4 import RuleContext
-from antlr4.tree.Tree import TerminalNodeImpl
 
 from codeallybasic.ConfigurationProperties import PropertyName
 
@@ -68,8 +67,8 @@ class BaseVisitor(PythonParserVisitor):
 
         child:     PythonParser.Class_def_rawContext = ctx.class_def_raw()
         # name:      TerminalNodeImpl                  = child.NAME()
-        name:      TerminalNodeImpl = child.name()
-        className: ModelClassName    = ModelClassName(name.getText())
+        name:      PythonParser.NameContext          = child.name()
+        className: ModelClassName                    = ModelClassName(name.getText())
 
         return className
 
