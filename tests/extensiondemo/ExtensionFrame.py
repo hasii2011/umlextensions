@@ -16,7 +16,9 @@ from wx import FD_FILE_MUST_EXIST
 from wx import DEFAULT_FRAME_STYLE
 from wx import FRAME_FLOAT_ON_PARENT
 from wx import ID_PREFERENCES
+from wx import ID_REDO
 from wx import ID_SELECTALL
+from wx import ID_UNDO
 
 from wx import Menu
 from wx import Size
@@ -127,10 +129,9 @@ class ExtensionFrame(SizedFrame):
 
         self._umlPubSubEngine:  UmlPubSubEngine   = UmlPubSubEngine()
         self._extensionsFacade: IExtensionsFacade = ExtensionsFacade()
-        self._editMenu:         Menu              = None    # noqa
         self._extensionManager: ExtensionsManager = ExtensionsManager(umlPubSubEngine=self._umlPubSubEngine, extensionsFacade=self._extensionsFacade)
 
-        self._createApplicationMenuBar()
+        self._editMenu: Menu = self._createApplicationMenuBar()
 
         self._diagramFrame = ClassDiagramFrame(
             parent=sizedPanel,
@@ -138,6 +139,9 @@ class ExtensionFrame(SizedFrame):
         )
         # noinspection PyUnresolvedReferences
         self._diagramFrame.SetSizerProps(expand=True, proportion=1)
+        self._diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
+        self._diagramFrame.commandProcessor.SetMenuStrings()
+
         pluginPubSub: ExtensionsPubSub = self._extensionManager.extensionsPubSub
         #
         # Putting the pub sub logic here is just a convenience
@@ -157,7 +161,7 @@ class ExtensionFrame(SizedFrame):
     def loadXmlFile(self, fqFileName: str):
         self._readAndLoadTheFile(fqFileName=fqFileName)
 
-    def _createApplicationMenuBar(self):
+    def _createApplicationMenuBar(self) -> Menu:
 
         menuBar:        MenuBar = MenuBar()
         fileMenu:       Menu = Menu()
@@ -171,6 +175,9 @@ class ExtensionFrame(SizedFrame):
         fileMenu.Append(ID_PREFERENCES, 'P&references', 'UML preferences')
 
         editMenu.Append(ID_SELECTALL)
+        editMenu.Append(ID_UNDO, '&Undo\tCtrl+Z')
+        editMenu.Append(ID_REDO, '&Redo\tCtrl+Y')
+        editMenu.AppendSeparator()
 
         inputSubMenu:  Menu = self._makeInputSubMenu()
         outputSubMenu: Menu = self._makeOutputSubMenu()
@@ -188,7 +195,11 @@ class ExtensionFrame(SizedFrame):
         self.Bind(EVT_MENU, self._onSelectAll,     id=ID_SELECTALL)
         self.Bind(EVT_MENU, self._onPreferences,   id=ID_PREFERENCES)
 
+        self.Bind(EVT_MENU, self._onUndo, id=ID_UNDO)
+        self.Bind(EVT_MENU, self._onRedo, id=ID_REDO)
         self.SetMenuBar(menuBar)
+
+        return editMenu
 
     def _makeInputSubMenu(self) -> Menu:
         """
@@ -252,17 +263,36 @@ class ExtensionFrame(SizedFrame):
         extensionsDetails: ExtensionDetails = self._extensionManager.doToolAction(wxId=cast(WindowId, wxId))
         self.logger.info(f'Tool: {extensionsDetails=}')
 
-    # noinspection PyUnusedLocal
-    def _onPreferences(self, event: CommandEvent):
+    def _onPreferences(self, _event: CommandEvent):
         """
         Open the Extensions Preferences dialog.
 
         Args:
-            event: The menu command event
+            _event: The menu command event
         """
         dlg: DlgExtensionsPreferences
         with DlgExtensionsPreferences(parent=self) as dlg:
             dlg.ShowModal()
+
+    # noinspection PyUnusedLocal
+    def _onUndo(self, _event: CommandEvent):
+        """
+        Undo the previous diagram command.
+
+        Args:
+            _event: The menu command event
+        """
+        self._diagramFrame.commandProcessor.Undo()
+
+    # noinspection PyUnusedLocal
+    def _onRedo(self, _event: CommandEvent):
+        """
+        Redo the previously undone diagram command.
+
+        Args:
+            _event: The menu command event
+        """
+        self._diagramFrame.commandProcessor.Redo()
 
     def _makeSubMenuEntry(self, subMenu: Menu, wxId: int, pluginName: str, callback: Callable) -> Menu:
         subMenu.Append(wxId, pluginName)
