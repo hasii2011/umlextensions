@@ -7,9 +7,12 @@ from logging import getLogger
 from wx import OK
 from wx import MessageBox
 from wx import ICON_ERROR
+from wx import DC
 
 from umlshapes.ShapeTypes import UmlShapes
 
+from umlshapes.ShapeTypes import UmlShape
+from umlshapes.frames.UmlFrame import UmlFrame
 from umlshapes.shapes.UmlNote import UmlNote
 from umlshapes.shapes.UmlClass import UmlClass
 
@@ -98,7 +101,8 @@ class ToolOrthogonalLayout(BaseToolExtension):
 
                 umlShapeCoordinate: UmlShapeCoordinate = umlShapeCoordinates[umlName]
 
-                self._moveShape(cast(TopLeftMixin, umlObj), umlShapeCoordinate)      # noqas
+                self._moveShape(cast(TopLeftMixin, umlObj), umlShapeCoordinate)      # noqa
+
 
     def _moveShape(self, srcShape: TopLeftMixin, umlCoordinate: UmlShapeCoordinate):
         """
@@ -107,11 +111,18 @@ class ToolOrthogonalLayout(BaseToolExtension):
             srcShape:
             umlCoordinate:
         """
-
         oldPosition: UmlPosition = srcShape.position
 
         umlPosition: UmlPosition = self._preferences.orthogonalLayoutTopLeft
         newPosition: UmlPosition = UmlPosition(x=umlCoordinate.x + umlPosition.x, y=umlCoordinate.y + umlPosition.y)
-        self.logger.info(f'{srcShape} - {oldPosition=}  {newPosition=}')
+
+        umlShape: UmlShape = cast(UmlShape, cast(object, srcShape))
+
+        self.logger.info(f'{umlShape} - {oldPosition=}  {newPosition=}')
 
         srcShape.position = newPosition
+
+        umlFrame: UmlFrame = umlShape.umlFrame
+        dc: DC = umlFrame.createDC()
+
+        umlShape.MoveLinks(dc=dc)

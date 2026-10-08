@@ -25,15 +25,15 @@ dependencies = [
     'codeallybasic>=1.40.0',
     'codeallyadvanced>=3.0.0',
     'umlmodel>=3.5.0',
-    'umlshapes>=3.5.0',
+    'umlshapes>=3.5.1',
     'umlio>=1.1.0',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.7',
     'networkx>=3.6.1',
     'numpy>=2.5.3',
     'scipy>=1.18.1',
-    'pyorthogonalrouting>=2.0.1',
-    'orthogonal>=1.3.3',
+    'pyorthogonalrouting>=2.0.2',
+    'orthogonal>=1.3.4',
     'pyforcedirectedlayout>=2.2.0',
 ]
 
