@@ -17,6 +17,7 @@ from wx import STAY_ON_TOP
 from wx import DEFAULT_DIALOG_STYLE
 
 from wx import Size
+from wx import Event
 from wx import Window
 from wx import CommandEvent
 from wx import StdDialogButtonSizer
@@ -50,9 +51,9 @@ class DlgShapeLayoutParameters(SizedDialog):
         sizedPanel.SetSizerType('vertical')
         sizedPanel.SetSizerProps(expand=True, proportion=1)
 
-        self._startX:     NamedSlider = cast(NamedSlider, None)
-        self._startY:     NamedSlider = cast(NamedSlider, None)
-        self._xIncrement: NamedSlider = cast(NamedSlider, None)
+        self._startX:     NamedSlider
+        self._startY:     NamedSlider
+        self._xIncrement: NamedSlider
         self._maximumX:   NamedSlider = cast(NamedSlider, None)
 
         self._shapeLayout: ShapeLayout = ShapeLayout(
@@ -100,12 +101,11 @@ class DlgShapeLayoutParameters(SizedDialog):
         self.Bind(EVT_BUTTON, self._onClose, id=ID_CANCEL)
         self.Bind(EVT_CLOSE,  self._onClose)
 
-    # noinspection PyUnusedLocal
-    def _onOk(self, event: CommandEvent):
+    def _onOk(self, _event: CommandEvent):
         """
         Save the values in the component return value and persist them in the preferences
         Args:
-            event:
+            _event:
         """
 
         newPosition: InitialShapePosition = InitialShapePosition(x=self._startX.value, y=self._startY.value)
@@ -119,8 +119,7 @@ class DlgShapeLayoutParameters(SizedDialog):
 
         self.EndModal(OK)
 
-    # noinspection PyUnusedLocal
-    def _onClose(self, event: CommandEvent):
+    def _onClose(self, _event: Event):
         self.EndModal(CANCEL)
 
     def _resizeDialog(self):

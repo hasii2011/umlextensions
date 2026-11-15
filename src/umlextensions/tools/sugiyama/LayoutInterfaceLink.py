@@ -7,6 +7,7 @@ from umlmodel.enumerations.LinkType import LinkType
 from umlshapes.links.UmlLink import UmlLink
 
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
+from wx import Point
 
 from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
@@ -27,7 +28,7 @@ class LayoutInterfaceLink:
     Thus, we only need to update is this interface, not the automatic layout algorithm.
 
     Note:
-        This happened in 2025, when Humberto did away with the miniogl home grown code and
+        This happened in 2025, when Humberto did away with the miniogl home-grown code and
         instead used wxPython's wx.lib.ogl code
     """
     def __init__(self, umlLink: UmlLink):
@@ -148,7 +149,8 @@ class LayoutInterfaceLink:
             last:     add control right after last
         """
         # self._oglLink.AddControl(control, last)
-        pt: Tuple[int, int] = control.position.x, control.position.y
+        # pt: Tuple[int, int] = control.position.x, control.position.y
+        pt: Point = Point(x=control.point.x, y=control.point.y)
         self._umlLink.InsertLineControlPoint(point=pt)
 
     def removeControlPoint(self, controlPoint):

@@ -1,6 +1,5 @@
 
 from abc import ABC
-from abc import ABCMeta
 from abc import abstractmethod
 
 from wx import BORDER_DEFAULT
@@ -8,18 +7,11 @@ from wx import Window
 
 from wx.lib.sized_controls import SizedPanel
 
+from umlextensions.Common import WxABCMeta
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 
-class _MetaBasePreferencesPanel(ABCMeta, type(SizedPanel)):    # type: ignore
-    """
-    Resolves the metaclass conflict between ABCMeta and the wxPython SizedPanel metaclass.
-    https://stackoverflow.com/questions/66591752/metaclass-conflict-when-trying-to-create-a-python-abstract-class-that-also-subcl
-    """
-    pass
-
-
-class BasePreferencesPanel(SizedPanel, ABC, metaclass=_MetaBasePreferencesPanel):
+class BasePreferencesPanel(SizedPanel, ABC, metaclass=WxABCMeta):
     """
     Abstract base class for all umlextensions preferences section panels.
     Subclasses must provide a name property (used as the notebook tab label)
@@ -35,11 +27,11 @@ class BasePreferencesPanel(SizedPanel, ABC, metaclass=_MetaBasePreferencesPanel)
     @property
     @abstractmethod
     def name(self) -> str:
-        pass
+        raise NotImplementedError('Subclasses must implement name')
 
     @abstractmethod
     def _setControlValues(self):
-        pass
+        raise NotImplementedError('Subclasses must implement _setControlValues')
 
     def _fixPanelSize(self, panel: SizedPanel):
         """

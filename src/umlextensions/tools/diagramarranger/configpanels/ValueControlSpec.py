@@ -1,4 +1,5 @@
 
+from typing import cast
 from typing import List
 from typing import NewType
 from typing import Optional
@@ -34,7 +35,7 @@ class ControlType(StrEnum):
 class ValueControlSpec:
 
     valueLabel:       str          = ''
-    valueCtrl:        ValueControl = None
+    valueCtrl:        ValueControl = cast(ValueControl, None)       # noqa
     initialValue:     ValueType    = 0
     minValue:         ValueType    = MIN_VALUE
     maxValue:         ValueType    = MAX_VALUE

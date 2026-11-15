@@ -1,4 +1,6 @@
 
+from typing import cast
+
 from logging import Logger
 from logging import getLogger
 
@@ -50,7 +52,7 @@ class AppTestDialogs(App):
         UnitTestBase.setUpLogging()
 
         self.logger:        Logger    = getLogger(__name__)
-        self._frame:       SizedFrame = None        # noqa
+        self._frame:       SizedFrame = cast(SizedFrame, None)      # noqa
 
         self._preferences:  ExtensionsPreferences = ExtensionsPreferences()
 

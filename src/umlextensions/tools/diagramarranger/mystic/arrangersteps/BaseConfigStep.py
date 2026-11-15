@@ -2,7 +2,6 @@
 from typing import Callable
 
 from abc import ABC
-from abc import ABCMeta
 from abc import abstractmethod
 
 from wx.lib.sized_controls import SizedPanel
@@ -16,6 +15,7 @@ from wx import CommandEvent
 from codeallyadvanced.ui.mystic.MysticStepBase import MysticStepBase
 
 from umlextensions.Common import WindowId
+from umlextensions.Common import WxABCMeta
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
@@ -23,16 +23,11 @@ from umlextensions.tools.diagramarranger.ArrangerType import ArrangerType
 LayoutCallback   = Callable[[ArrangerType], None]
 UndoCallback     = Callable[[], None]
 
-class MetaMysticPageBase(ABCMeta, type(MysticStepBase)):        # type: ignore
-    """
-    I have no idea why this works:
-    https://stackoverflow.com/questions/66591752/metaclass-conflict-when-trying-to-create-a-python-abstract-class-that-also-subcl
-    """
 ID_UNDO:   WindowId = NewIdRef()
 ID_LAYOUT: WindowId = NewIdRef()
 
 
-class BaseConfigStep(MysticStepBase, ABC, metaclass=MetaMysticPageBase):
+class BaseConfigStep(MysticStepBase, ABC, metaclass=WxABCMeta):
     """
     The subclasses implement the abstract methods to get a standard looking
     configuration and run step

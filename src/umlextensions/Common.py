@@ -1,6 +1,9 @@
 
 from typing import cast
 from typing import NewType
+from typing import TYPE_CHECKING
+
+from abc import ABCMeta
 
 from pathlib import Path
 
@@ -38,6 +41,29 @@ NO_PARENT_WINDOW: Window = cast(Window, cast(object, None))
 
 # Return type from wx.NewIdRef()
 WindowId = NewType('WindowId', int)
+
+if TYPE_CHECKING:
+    from wx.siplib import wrappertype
+else:
+    # noinspection SpellCheckingInspection
+    wrappertype = type(Window)
+
+
+class WxABCMeta(ABCMeta, wrappertype):
+    """
+    Combined metaclass for abstract wxPython widget subclasses.
+
+    Resolves the metaclass conflict between ``abc.ABCMeta`` and wxPython's
+    SIP ``wrappertype`` metaclass.
+
+    Note:
+        Using ``wx.siplib.wrappertype`` under ``if TYPE_CHECKING:`` is used with
+        some consternation because it couples static type checking to wxPython's
+        internal SIP binding module (``type(Window)`` is still used at runtime
+        so a future wxPython release cannot break runtime execution). The
+        ``umlshapes`` project uses this same pattern.
+    """
+    pass
 
 
 def createScreenImageFile(frameInformation: FrameInformation, imagePath: Path, imageType: BitmapType = BITMAP_TYPE_PNG) -> bool:

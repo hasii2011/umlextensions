@@ -21,11 +21,11 @@ classifiers = [
 ]
 
 dependencies = [
-    'wxPython>=4.3.1',
-    'codeallybasic>=1.40.0',
-    'codeallyadvanced>=3.0.0',
-    'umlmodel>=3.5.0',
-    'umlshapes>=3.5.1',
+    'wxPython>=4.3.2',
+    'codeallybasic>=1.41.0',
+    'codeallyadvanced>=3.1.0',
+    'umlmodel>=4.0.0',
+    'umlshapes>=5.2.0',
     'umlio>=1.1.0',
     'antlr4-python3-runtime==4.13.2',
     'Pypubsub==4.0.7',
@@ -40,8 +40,9 @@ dependencies = [
 [project.optional-dependencies]
 
 test = [
-    'mypy==2.1.0',
+    'mypy==2.4.1',
     'mypy-extensions==1.1.0',
+    'mypy-plugins-ally>=1.0.0',
     'html-testRunner~=1.2.1',
     'click<=8.4.2'
 ]

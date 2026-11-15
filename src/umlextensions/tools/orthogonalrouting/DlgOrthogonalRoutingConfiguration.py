@@ -16,6 +16,7 @@ from wx import EVT_BUTTON
 from wx import EVT_CLOSE
 from wx import EVT_SPINCTRL
 from wx import EVT_SPINCTRLDOUBLE
+from wx import Event
 from wx import ID_ANY
 from wx import ID_CANCEL
 from wx import ID_OK
@@ -232,7 +233,7 @@ class DlgOrthogonalRoutingConfiguration(SizedDialog):
         self.EndModal(OK)
 
     # noinspection PyUnusedLocal
-    def _onClose(self, event: CommandEvent):
+    def _onClose(self, event: Event):
         """
         """
         self.EndModal(CANCEL)

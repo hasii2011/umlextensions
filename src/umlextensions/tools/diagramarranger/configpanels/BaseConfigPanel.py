@@ -76,37 +76,39 @@ class BaseConfigPanel(SizedPanel):
             sText.SetToolTip(valueControlSpec.toolTip)
 
             if valueControlSpec.controlType == ControlType.SPIN_CTRL_DOUBLE:
-                valueControlSpec.valueCtrl = SpinCtrlDouble(
+                spinCtrlDouble: SpinCtrlDouble = SpinCtrlDouble(
                     formPanel,
                     initial=valueControlSpec.initialValue,
                     min=valueControlSpec.minValue,
                     max=valueControlSpec.maxValue
                 )
-                valueControlSpec.valueCtrl.SetDigits(valueControlSpec.floatDigits)  # noqa
-                self.Bind(EVT_SPINCTRLDOUBLE, valueControlSpec.spinCallback, valueControlSpec.valueCtrl)
-                valueControlSpec.valueCtrl.SetIncrement(valueControlSpec.spinnerIncrement)
+                spinCtrlDouble.SetDigits(valueControlSpec.floatDigits)
+                self.Bind(EVT_SPINCTRLDOUBLE, valueControlSpec.spinCallback, spinCtrlDouble)
+                spinCtrlDouble.SetIncrement(valueControlSpec.spinnerIncrement)
+                valueControlSpec.valueCtrl = spinCtrlDouble
 
             elif valueControlSpec.controlType == ControlType.SPIN_CTRL:
-                valueControlSpec.valueCtrl = SpinCtrl(
+                spinCtrl: SpinCtrl = SpinCtrl(
                     formPanel,
-                    initial=valueControlSpec.initialValue,  # noqa
-                    min=valueControlSpec.minValue,
-                    max=valueControlSpec.maxValue
+                    initial=int(valueControlSpec.initialValue),
+                    min=int(valueControlSpec.minValue),
+                    max=int(valueControlSpec.maxValue)
                 )
-                self.Bind(EVT_SPINCTRL, valueControlSpec.spinCallback, valueControlSpec.valueCtrl)
+                self.Bind(EVT_SPINCTRL, valueControlSpec.spinCallback, spinCtrl)
                 if valueControlSpec.textCallback is not None:
-                    self.Bind(EVT_TEXT, valueControlSpec.textCallback, valueControlSpec.valueCtrl)
+                    self.Bind(EVT_TEXT, valueControlSpec.textCallback, spinCtrl)
                 else:
                     self.bLogger.warning(f'No text callback registered for {valueControlSpec.valueLabel}')
-                valueControlSpec.valueCtrl.SetIncrement(valueControlSpec.spinnerIncrement)
+                spinCtrl.SetIncrement(int(valueControlSpec.spinnerIncrement))
+                valueControlSpec.valueCtrl = spinCtrl
+
             elif valueControlSpec.controlType == ControlType.CHECK_BOX:
-
-                valueControlSpec.valueCtrl = CheckBox(formPanel,ID_ANY, '')
-                valueControlSpec.valueCtrl.SetValue(valueControlSpec.initialValue)
-
-                self.Bind(EVT_CHECKBOX, valueControlSpec.checkBoxCallback, valueControlSpec.valueCtrl)
+                checkBox: CheckBox = CheckBox(formPanel, ID_ANY, '')
+                checkBox.SetValue(bool(valueControlSpec.initialValue))
+                self.Bind(EVT_CHECKBOX, valueControlSpec.checkBoxCallback, checkBox)
+                valueControlSpec.valueCtrl = checkBox
             else:
-                raise UnknownControlType(f'{valueControlSpec.controlType.value}')
+                raise UnknownControlType(f'{valueControlSpec.controlType}')
 
 
             valueControlSpec.valueCtrl.SetSizerProps(expand=True, valign='center')

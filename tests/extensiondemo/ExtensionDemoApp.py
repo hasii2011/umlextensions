@@ -8,7 +8,7 @@ from click import command
 from click import option
 from click import version_option
 
-from umlshapes.lib.ogl import OGLInitialize
+from wx.lib.ogl import OGLInitialize
 
 from wx import App
 

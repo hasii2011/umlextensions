@@ -12,7 +12,7 @@ from wx import OK
 from wx import Window
 from wx import PD_APP_MODAL
 from wx import PD_ELAPSED_TIME
-from wx import wxAssertionError
+from wx import wxAssertionError  # type: ignore[attr-defined]  # Omitted from wxPython's .pyi stubs
 
 from wx import ProgressDialog
 

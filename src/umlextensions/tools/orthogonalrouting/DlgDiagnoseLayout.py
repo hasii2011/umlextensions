@@ -20,6 +20,7 @@ from wx import RESIZE_BORDER
 from wx import Font
 from wx import CheckBox
 from wx import CommandEvent
+from wx import Event
 from wx import STAY_ON_TOP
 from wx import StaticText
 from wx import StdDialogButtonSizer
@@ -117,7 +118,7 @@ class DlgDiagnoseLayout(SizedDialog):
             self.Destroy()
 
     # noinspection PyUnusedLocal
-    def _onClose(self, event: CommandEvent):
+    def _onClose(self, event: Event):
         """
         Typically shown non modal
 1        """

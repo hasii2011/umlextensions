@@ -6,11 +6,13 @@ from unittest import main as unitTestMain
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 
+from wx.lib.ogl import OGLInitialize
+
 from codeallyadvanced.ui.UnitTestBaseW import UnitTestBaseW
+
 from umlmodel.Class import Class
 
 from umlshapes.frames.ClassDiagramFrame import ClassDiagramFrame
-from umlshapes.lib.ogl import OGLInitialize
 from umlshapes.pubsubengine.UmlPubSubEngine import UmlPubSubEngine
 
 from tests.umlextensions.input.python.visitor.BaseTestPythonPegVisitor import BaseTestPythonPegVisitor

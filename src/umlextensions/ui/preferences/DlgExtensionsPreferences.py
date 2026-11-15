@@ -12,6 +12,7 @@ from wx import NB_TOP
 from wx import OK
 from wx import RESIZE_BORDER
 
+from wx import CloseEvent
 from wx import CommandEvent
 from wx import Notebook
 from wx import Size
@@ -91,6 +92,6 @@ class DlgExtensionsPreferences(SizedDialog):
         self.EndModal(OK)
         event.Skip(skip=True)
 
-    def _onClose(self, event: CommandEvent):
+    def _onClose(self, event: CloseEvent):
         self.EndModal(CANCEL)
         event.Skip(skip=True)
