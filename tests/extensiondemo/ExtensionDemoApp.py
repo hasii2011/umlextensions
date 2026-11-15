@@ -82,13 +82,15 @@ class ExtensionDemoApp(App):
 @option('-i', '--input-file', required=False, help='The input .xml file to preload on startup.')
 def commandHandler(input_file: str):
 
-    if input_file is not None:
-        testApp: ExtensionDemoApp = ExtensionDemoApp(redirect=False, createEmptyProject=False)
-        testApp.loadXmlFile(input_file)
-    else:
-        testApp = ExtensionDemoApp(redirect=False)
+    extensionDemoApp: ExtensionDemoApp
 
-    testApp.MainLoop()
+    if input_file == '':
+        extensionDemoApp = ExtensionDemoApp(redirect=False)
+    else:
+        extensionDemoApp = ExtensionDemoApp(redirect=False, createEmptyProject=False)
+        extensionDemoApp.loadXmlFile(input_file)
+
+    extensionDemoApp.MainLoop()
 
 
 if __name__ == "__main__":

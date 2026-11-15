@@ -137,14 +137,13 @@ class ExtensionFrame(SizedFrame):
             parent=sizedPanel,
             umlPubSubEngine=self._umlPubSubEngine,
         )
-        # noinspection PyUnresolvedReferences
         self._diagramFrame.SetSizerProps(expand=True, proportion=1)
         self._diagramFrame.commandProcessor.SetEditMenu(self._editMenu)
         self._diagramFrame.commandProcessor.SetMenuStrings()
 
         pluginPubSub: ExtensionsPubSub = self._extensionManager.extensionsPubSub
         #
-        # Putting the pub sub logic here is just a convenience
+        # Putting the pub/sub logic here is just a convenience
         #
         pluginPubSub.subscribe(ExtensionsMessageType.REQUEST_FRAME_INFORMATION,  listener=self._requestFrameInformationListener)
         pluginPubSub.subscribe(ExtensionsMessageType.EXTENSION_MODIFIED_PROJECT, listener=self._extensionModifiedListener)
@@ -274,7 +273,6 @@ class ExtensionFrame(SizedFrame):
         with DlgExtensionsPreferences(parent=self) as dlg:
             dlg.ShowModal()
 
-    # noinspection PyUnusedLocal
     def _onUndo(self, _event: CommandEvent):
         """
         Undo the previous diagram command.
@@ -284,7 +282,6 @@ class ExtensionFrame(SizedFrame):
         """
         self._diagramFrame.commandProcessor.Undo()
 
-    # noinspection PyUnusedLocal
     def _onRedo(self, _event: CommandEvent):
         """
         Redo the previously undone diagram command.
@@ -421,7 +418,6 @@ class ExtensionFrame(SizedFrame):
 
         callback(createLinkCommand.umlLink)
 
-    # noinspection PyUnusedLocal
     def _onOpenXmlFile(self, _event: CommandEvent):
 
         selectedFile: str = FileSelector("Choose a XML file to load", wildcard=XML_WILDCARD, flags=FD_OPEN | FD_FILE_MUST_EXIST | FD_CHANGE_DIR)

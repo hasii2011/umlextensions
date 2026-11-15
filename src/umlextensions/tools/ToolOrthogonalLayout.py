@@ -5,6 +5,7 @@ from logging import Logger
 from logging import getLogger
 
 from wx import OK
+from wx import ID_OK
 from wx import MessageBox
 from wx import ICON_ERROR
 from wx import DC
@@ -54,7 +55,7 @@ class ToolOrthogonalLayout(BaseToolExtension):
 
     def setOptions(self) -> bool:
         with DlgLayoutDimensions(None) as dlg:    # noqa
-            if dlg.ShowModal() == OK:
+            if dlg.ShowModal() == ID_OK:
                 self.logger.warning(f'Retrieved data: layoutWidth: {dlg.layoutWidth} layoutHeight: {dlg.layoutHeight}')
                 self._layoutWidth  = dlg.layoutWidth
                 self._layoutHeight = dlg.layoutHeight
@@ -78,10 +79,17 @@ class ToolOrthogonalLayout(BaseToolExtension):
             return
 
         if orthogonalAdapter is not None:
+            umlFrame: UmlFrame = self._frameInformation.umlFrame
+            dc:       DC       = umlFrame.createDC()
+            for shape in selectedUmlShapes:
+                shape.Select(False, dc)
+
             self._reLayoutNodes(selectedUmlShapes, orthogonalAdapter.umlShapeCoordinates)
 
             self._extensionsFacade.wiggleShapes()
             self._extensionsFacade.extensionModifiedProject()
+            self._extensionsFacade.refreshFrame()
+            umlFrame.Refresh()
 
         self.logger.info('End Orthogonal Layout')
 
@@ -125,4 +133,5 @@ class ToolOrthogonalLayout(BaseToolExtension):
         umlFrame: UmlFrame = umlShape.umlFrame
         dc: DC = umlFrame.createDC()
 
+        umlShape.ResetControlPoints()
         umlShape.MoveLinks(dc=dc)

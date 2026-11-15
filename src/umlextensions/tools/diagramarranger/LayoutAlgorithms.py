@@ -33,6 +33,8 @@ from umlextensions.tools.diagramarranger.configpanels.ForceDirectedMethod import
 SelectedClasses = NewType('SelectedClasses', List[UmlClass])
 SelectedLinks   = NewType('SelectedLinks',   List[UmlLink])
 
+MINIMUM_FRAME_MARGIN: int = 20
+
 @dataclass
 class SelectionResults:
     updatedGraph:    Graph
@@ -220,6 +222,39 @@ class LayoutAlgorithms:
 
         self.logger.info(f'Spring layout successfully applied. {layoutMethod=} {iterations=} optimalNodeDistance={k}')
 
+    def _centerPositions(self, positionDictionary: dict) -> dict:
+        """
+        Shifts the layout positions so their centroid is at (0, 0).
+
+        networkx forceatlas2_layout does not center its output around the
+        origin, which causes layouts to drift off-screen when mapped relative
+        to layoutCenter.
+
+        Args:
+            positionDictionary: Node-to-(x, y) coordinate mapping from NetworkX
+
+        Returns:
+            A position dictionary centered around (0, 0)
+        """
+        nodeCount: int = len(positionDictionary)
+        if nodeCount == 0:
+            return positionDictionary
+
+        totalX: float = 0.0
+        totalY: float = 0.0
+        for coordinates in positionDictionary.values():
+            totalX += float(coordinates[0])
+            totalY += float(coordinates[1])
+
+        meanX: float = totalX / nodeCount
+        meanY: float = totalY / nodeCount
+
+        centeredPositions: dict = {}
+        for shape, coordinates in positionDictionary.items():
+            centeredPositions[shape] = (float(coordinates[0]) - meanX, float(coordinates[1]) - meanY)
+
+        return centeredPositions
+
     def _repositionTheShapes(self, positionDictionary: dict, selectedLinks: SelectedLinks, frameScale: int, umlFrame: UmlFrame):
         """
 
@@ -232,14 +267,30 @@ class LayoutAlgorithms:
         """
         # Define a center for the layout (e.g., the center of the frame or a fixed point)
         layoutCenter: UmlPosition = self._preferences.layoutCenter
+        centeredPositions: dict = self._centerPositions(positionDictionary=positionDictionary)
 
-        # Update the shape positions
-        for shape, coordinates in positionDictionary.items():
-            newX = layoutCenter.x + int(coordinates[0] * frameScale)
-            newY = layoutCenter.y + int(coordinates[1] * frameScale)
+        computedPositions: dict = {}
+        for shape, coordinates in centeredPositions.items():
+            newX: int = layoutCenter.x + int(coordinates[0] * frameScale)
+            newY: int = layoutCenter.y + int(coordinates[1] * frameScale)
+            computedPositions[shape] = (newX, newY)
 
-            umlClassToPosition: UmlClass = shape
-            umlClassToPosition.position = UmlPosition(x=newX, y=newY)
+        if computedPositions:
+            minX: int = min(pos[0] for pos in computedPositions.values())
+            minY: int = min(pos[1] for pos in computedPositions.values())
+
+            shiftX: int = 0
+            if minX < MINIMUM_FRAME_MARGIN:
+                shiftX = MINIMUM_FRAME_MARGIN - minX
+
+            shiftY: int = 0
+            if minY < MINIMUM_FRAME_MARGIN:
+                shiftY = MINIMUM_FRAME_MARGIN - minY
+
+            # Update the shape positions, shifting right/down so none clip past (0, 0)
+            for shape, position in computedPositions.items():
+                umlClassToPosition: UmlClass = shape
+                umlClassToPosition.position = UmlPosition(x=position[0] + shiftX, y=position[1] + shiftY)
 
         for link in selectedLinks:
             optimalLink: UmlLink = link

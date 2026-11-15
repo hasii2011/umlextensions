@@ -13,6 +13,8 @@ from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import Co
 from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import ValueControlSpecs
 from umlextensions.tools.diagramarranger.configpanels.ValueControlSpec import ValueControlSpec
 
+GRAVITY_CONTROL_INCREMENT:  float = 0.5
+
 JITTER_TOLERANCE_INCREMENT: float = 0.1
 JITTER_TOLERANCE_MIN_VALUE: float = 0.1
 JITTER_TOLERANCE_MAX_VALUE: float = 10.0
@@ -93,6 +95,7 @@ class ForceAtlas2ConfigPanel(BaseConfigPanel):
                     valueLabel='Gravity',
                     spinCallback=self._onGravityChanged,
                     initialValue=p.gravity,
+                    spinnerIncrement=GRAVITY_CONTROL_INCREMENT,
                     controlType=ControlType.SPIN_CTRL_DOUBLE,
                     toolTip='The attraction force on shapes to the center.'
                 ),

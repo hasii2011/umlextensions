@@ -19,7 +19,7 @@ ValueType    = int | float | bool
 
 MIN_VALUE:         int = 0
 MAX_VALUE:         int = 10000
-DEFAULT_INCREMENT: int = 1
+DEFAULT_INCREMENT: float = 1.0
 
 
 class UnknownControlType(Exception):

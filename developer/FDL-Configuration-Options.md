@@ -71,7 +71,7 @@ repulsionForce = 12000
 
 [Randomize]
 minMaxX = 100,1000
-minMaxY = -100,1000
+minMaxY = 100,1000
 
 [EarlyExit]
 minimumTotalDisplacement = 10

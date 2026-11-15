@@ -113,6 +113,8 @@ class SugiyamaLink(LayoutInterfaceLink):
                                             )
             self.addControlPoint(ctrlPoint)
 
+        self.finalizeControlPoints()
+
     def addVirtualNode(self, node: VirtualSugiyamaNode):
         """
         Add a virtual node.

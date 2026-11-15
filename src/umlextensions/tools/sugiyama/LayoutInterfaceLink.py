@@ -4,6 +4,8 @@ from typing import Tuple
 from typing import cast
 
 from umlmodel.enumerations.LinkType import LinkType
+
+from umlshapes.links.UmlAssociation import UmlAssociation
 from umlshapes.links.UmlLink import UmlLink
 
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
@@ -148,10 +150,7 @@ class LayoutInterfaceLink:
             control:  control point to add
             last:     add control right after last
         """
-        # self._oglLink.AddControl(control, last)
-        # pt: Tuple[int, int] = control.position.x, control.position.y
-        pt: Point = Point(x=control.point.x, y=control.point.y)
-        self._umlLink.InsertLineControlPoint(point=pt)
+        self._umlLink.addLineControlPoint(umlPosition=control.position)
 
     def removeControlPoint(self, controlPoint):
         """
@@ -171,8 +170,21 @@ class LayoutInterfaceLink:
 
     def removeAllControlPoints(self):
         """
-        Remove all control points.
+        Remove all intermediate control points and their handles, preserving the two endpoints.
         """
-        # self._umlLink.ResetControlPoints()
         self._umlLink.DeleteControlPoints()
-        # self._umlLink.RemoveAllControlPoints()
+        lineControlPoints: List[Point] = self._umlLink.GetLineControlPoints()
+        if len(lineControlPoints) > 2:
+            firstPoint: Point = lineControlPoints[0]
+            lastPoint:  Point = lineControlPoints[-1]
+            lineControlPoints.clear()
+            lineControlPoints.extend([firstPoint, lastPoint])
+
+    def finalizeControlPoints(self):
+        """
+        Recreate draggable control point handles and reposition association labels
+        after control points have been updated.
+        """
+        self._umlLink.MakeControlPoints()
+        if isinstance(self._umlLink, UmlAssociation):
+            self._umlLink.smartPlaceLabels()

@@ -66,31 +66,52 @@ class OrthogonalConnectorAdapter:
     def diagnosticInformation(self) -> DiagnosticInformation:
         return self._getDiagnosticInformation()
 
-    # noinspection PyTypeChecker
     @classmethod
     def whichConnectorSide(cls, shape: UmlShapeGenre, anchorPosition: Position) -> Side:
+        """
+        Determine which side of the ``shape`` is closest to ``anchorPosition``.
+
+        Uses minimum distance to each of the four edges (with
+        ``ANCHOR_POINT_ADJUSTMENT`` on the right and bottom edges to match OGL's
+        drawn border) rather than exact pixel equality, so ±1 px rounding from
+        ``wx.lib.ogl`` endpoint calculations never fails.
+
+        Args:
+            shape:          The connected UML shape.
+            anchorPosition: The link endpoint coordinates.
+
+        Returns:
+            The ``Side`` of ``shape`` nearest to ``anchorPosition``.
+        """
 
         umlPosition:   UmlPosition   = shape.position
         umlDimensions: UmlDimensions = shape.size
 
-        shapeX: int = umlPosition.x
-        shapeY: int = umlPosition.y
-        shapeWidth: int = umlDimensions.width
+        shapeX:      int = umlPosition.x
+        shapeY:      int = umlPosition.y
+        shapeWidth:  int = umlDimensions.width
+        shapeHeight: int = umlDimensions.height
 
         minX: int = shapeX
         maxX: int = shapeX + shapeWidth - ANCHOR_POINT_ADJUSTMENT
         minY: int = shapeY
+        maxY: int = shapeY + shapeHeight - ANCHOR_POINT_ADJUSTMENT
 
-        if anchorPosition.x == minX and anchorPosition.y >= minY:
+        leftDist:   int = abs(anchorPosition.x - minX)
+        rightDist:  int = abs(anchorPosition.x - maxX)
+        topDist:    int = abs(anchorPosition.y - minY)
+        bottomDist: int = abs(anchorPosition.y - maxY)
+
+        minDist: int = min(leftDist, rightDist, topDist, bottomDist)
+
+        if minDist == leftDist:
             side: Side = Side.LEFT
-        elif anchorPosition.x == maxX and anchorPosition.y >= minY:
+        elif minDist == rightDist:
             side = Side.RIGHT
-        elif anchorPosition.x > minX and anchorPosition.y == minY:
+        elif minDist == topDist:
             side = Side.TOP
-        elif anchorPosition.x > minX and anchorPosition.y >= minY:
-            side = Side.BOTTOM
         else:
-            assert False, 'My algorithm has failed.  boo, hoo hoo'
+            side = Side.BOTTOM
 
         return side
 
