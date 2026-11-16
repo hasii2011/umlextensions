@@ -1,7 +1,8 @@
 
+from typing import Dict
 from typing import List
 from typing import NewType
-from typing import Union
+from typing import Tuple
 from typing import cast
 
 from logging import Logger
@@ -10,33 +11,28 @@ from logging import getLogger
 from copy import copy
 
 from umlmodel.enumerations.LinkType import LinkType
-from umlshapes.ShapeTypes import UmlLinkGenre
+from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.frames.UmlFrame import UmlFrame
-from umlshapes.shapes.UmlNote import UmlNote
-from umlshapes.shapes.UmlClass import UmlClass
-from umlshapes.links.UmlInterface import UmlInterface
-from umlshapes.links.UmlInheritance import UmlInheritance
-
-from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
-from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
-from umlextensions.tools.sugiyama.SugiyamaConstants import H_SPACE
-from umlextensions.tools.sugiyama.SugiyamaConstants import LEFT_MARGIN
-from umlextensions.tools.sugiyama.SugiyamaConstants import UP_MARGIN
-from umlextensions.tools.sugiyama.SugiyamaConstants import V_SPACE
+from umlextensions.tools.sugiyama.SugiyamaPreferences import SugiyamaPreferences
+
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
+
 from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
-from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
+from umlextensions.tools.sugiyama.VirtualNodeInserter import Levels
+from umlextensions.tools.sugiyama.VirtualNodeInserter import NodeList
+from umlextensions.tools.sugiyama.VirtualNodeInserter import Nodes
+from umlextensions.tools.sugiyama.VirtualNodeInserter import VirtualNodeInserter
 
-Nodes    = Union[RealSugiyamaNode, VirtualSugiyamaNode]
-NodeList = NewType('NodeList', List[Nodes])
-Levels   = NewType('Levels', List[NodeList])
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import HierarchicalGraphNodes
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import NonHierarchicalGraphNodes
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import NonHierarchicalGraphLinks
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import SugiyamaGraphBuilder
 
-HierarchicalGraphNode  = Union[RealSugiyamaNode, VirtualSugiyamaNode]
-HierarchicalGraphNodes = NewType('HierarchicalGraphNodes', List[HierarchicalGraphNode])
+NodeIndices = NewType('NodeIndices', List[int])
 
 
 class Sugiyama:
@@ -54,26 +50,37 @@ class Sugiyama:
 
         self.logger: Logger = getLogger(__name__)
 
-        self._extensionsFacade: IExtensionsFacade     = extensionsFacade
-        self._umlFrame:         UmlFrame              = umlFrame
-        self._preferences:      ExtensionsPreferences = ExtensionsPreferences()
+        self._extensionsFacade: IExtensionsFacade   = extensionsFacade
+        self._umlFrame:         UmlFrame            = umlFrame
+        self._preferences:      SugiyamaPreferences = SugiyamaPreferences()
 
-        # Sugiyama nodes and links
-        self.__realSugiyamaNodesList: List[RealSugiyamaNode] = []   # List of all RealSugiyamaNode's
-        self._sugiyamaLinksList:      List[SugiyamaLink]     = []   # List of all SugiyamaLink's
+        self._realSugiyamaNodesList: List[RealSugiyamaNode] = []
+        """
+        List of all RealSugiyamaNodes created from diagram shapes.
+        """
+        self._sugiyamaLinksList: List[SugiyamaLink] = []
+        """
+        List of all SugiyamaLinks created from diagram relations.
+        """
 
-        #  Hierarchy graph
-        #  List of Real and Virtual Sugiyama nodes that take part in hierarchy
-        # self._hierarchyGraphNodesList:    List[Union[RealSugiyamaNode, VirtualSugiyamaNode]] = []
         self._hierarchyGraphNodesList: HierarchicalGraphNodes = HierarchicalGraphNodes([])
-        #  List of Sugiyama nodes that are not in a hierarchy
-        self._nonHierarchyGraphNodesList: List[VirtualSugiyamaNode] = []
-        self._nonHierarchyGraphLinksList: List[SugiyamaLink]        = []
+        """
+        List of Real and Virtual Sugiyama nodes that take part in the hierarchy.
+        """
 
-        #  All nodes of the hierarchy are assigned to a level.
-        #  A level is a list of nodes (real or virtual).
-        # nodeList: NodeList = NodeList([])
-        self._levels: Levels = Levels([])   # List of levels
+        self._nonHierarchyGraphNodesList: NonHierarchicalGraphNodes = NonHierarchicalGraphNodes([])
+        """
+        List of Sugiyama nodes that are not in a hierarchy.
+        """
+        self._nonHierarchyGraphLinksList: NonHierarchicalGraphLinks = NonHierarchicalGraphLinks([])
+        """
+        List of non-hierarchical links between nodes.
+        """
+
+        self._levels: Levels = Levels([])
+        """
+        Ordered list of levels; each level contains real and virtual nodes.
+        """
 
     @property
     def levels(self) -> Levels:
@@ -85,102 +92,28 @@ class Sugiyama:
         levels: Levels = copy(self._levels)
         return levels
 
-    def createInterfaceUmlShapeLayout(self, umlShapes):
+    def buildGraph(self, umlShapes: UmlShapes):
         """
-        Create the interface between oglObjects and Automatic Layout
-        structure. A RealSugiyamaNode is created for each class, and a
-        SugiyamaLink is created for each relation in the UML diagram.
+        Build the internal layout graph representation from canvas UML shapes.
+
+        A RealSugiyamaNode is created for each class and note, and a SugiyamaLink
+        is created for each relation, classifying them as hierarchical or
+        non-hierarchical.
 
         Args:
-            umlShapes:  The UML Shapes on the diagram
+            umlShapes: The UML shapes on the diagram canvas.
         """
-        # Dictionary for oglObjects fast research
-        # Key = OglObject, Value = RealSugiyamaNode
-        dictOgl     = {}                # type: ignore
-        # Dictionary for RealSugiyamaNode that takes part in hierarchy
-        # Key = OglObject, Value = None
-        dictSugiyamaHierarchy = {}      # type: ignore
+        builder: SugiyamaGraphBuilder = SugiyamaGraphBuilder.build(
+            umlShapes=umlShapes,
+            umlFrame=self._umlFrame,
+            horizontalSpacing=self._preferences.horizontalSpacing,
+        )
 
-        def createSugiyamaNode(theOglObject, theDictOgl):
-            """
-            Internal function for creating a RealSugiyamaNode and add it to
-            self.__realSugiyamaNodesList and to dictOgl
-            Args:
-                theOglObject:
-                theDictOgl:
-            """
-            # Create RealSugiyamaNode only if not already done
-            if theOglObject not in theDictOgl:
-                node = RealSugiyamaNode(theOglObject)
-                self.__realSugiyamaNodesList.append(node)
-                theDictOgl[theOglObject] = node
-
-        def addNode2HierarchyGraph(theSugiyamaNode, theDictSugiyamaHierarchy):
-            """
-            Internal function for adding nodes that take part in hierarchy in
-            the __hierarchyGraphNodesList.
-
-            Args:
-                theSugiyamaNode:
-                theDictSugiyamaHierarchy:
-            """
-            if theSugiyamaNode not in theDictSugiyamaHierarchy:
-                theDictSugiyamaHierarchy[theSugiyamaNode] = None
-                self._hierarchyGraphNodesList.append(theSugiyamaNode)
-
-        # For each OglObject or OglLink, create a specific interface
-        for oglObject in umlShapes:
-
-            # Class or Note :
-            if isinstance(oglObject, UmlClass) or isinstance(oglObject, UmlNote):
-                createSugiyamaNode(oglObject, dictOgl)
-            # Links
-            elif isinstance(oglObject, UmlLinkGenre):
-
-                # Get source and destination oglObject
-                srcOglClass = oglObject.sourceShape
-                dstOglClass = oglObject.destinationShape
-
-                # If the classes have not a RealSugiyamaNode attributed yet
-                createSugiyamaNode(srcOglClass, dictOgl)
-                createSugiyamaNode(dstOglClass, dictOgl)
-
-                # Fix relations between nodes
-                link = SugiyamaLink(umlLink=oglObject, umlFrame=self._umlFrame)
-                self._sugiyamaLinksList.append(link)
-                srcSugiyamaNode = dictOgl[srcOglClass]
-                dstSugiyamaNode = dictOgl[dstOglClass]
-
-                link.source      = srcSugiyamaNode
-                link.destination = dstSugiyamaNode
-
-                # If hierarchical link
-                if isinstance(oglObject, UmlInheritance) or isinstance(oglObject, UmlInterface):
-
-                    srcSugiyamaNode.addParent(dstSugiyamaNode, link)
-                    dstSugiyamaNode.addChild(srcSugiyamaNode, link)
-
-                    # Add nodes in list of hierarchical nodes
-                    addNode2HierarchyGraph(srcSugiyamaNode, dictSugiyamaHierarchy)
-                    addNode2HierarchyGraph(dstSugiyamaNode, dictSugiyamaHierarchy)
-
-                # Non-hierarchical links
-                else:
-
-                    # Add link between source and destination interface
-                    srcSugiyamaNode.addNonHierarchicalLink(dstSugiyamaNode, link)
-                    dstSugiyamaNode.addNonHierarchicalLink(srcSugiyamaNode, link)
-
-                    # Add link into non-hierarchical links' list
-                    self._nonHierarchyGraphLinksList.append(link)
-
-        # Create list of non-hierarchical nodes
-
-        # For each class or note
-        for sugiyamaNode in list(dictOgl.values()):
-            # If not in hierarchy
-            if sugiyamaNode not in dictSugiyamaHierarchy:
-                self._nonHierarchyGraphNodesList.append(sugiyamaNode)
+        self._realSugiyamaNodesList      = builder.realNodes
+        self._sugiyamaLinksList          = builder.links
+        self._hierarchyGraphNodesList    = builder.hierarchicalNodes
+        self._nonHierarchyGraphNodesList = builder.nonHierarchicalNodes
+        self._nonHierarchyGraphLinksList = builder.nonHierarchicalLinks
 
     def levelFind(self) -> bool:
         """
@@ -189,11 +122,11 @@ class Sugiyama:
         Returns: `True` if we computed the best, else `False` if there is a
         cycle in hierarchical links
         """
-        nodesList: HierarchicalGraphNodes = self._hierarchyGraphNodesList
+        hierarchicalGraphNodes: HierarchicalGraphNodes = self._hierarchyGraphNodesList
         # Fix nodes indexes corresponding to matrix column and line index
-        nbNodes = len(nodesList)  # Number of nodes in hierarchy
+        nbNodes = len(hierarchicalGraphNodes)  # Number of nodes in hierarchy
         for i in range(nbNodes):
-            nodesList[i].setIndex(i)
+            hierarchicalGraphNodes[i].index = i
         # Initialize the boolean matrix
         #
         # Example of use:
@@ -211,11 +144,11 @@ class Sugiyama:
         matrix = [[0 for el in range(nbNodes)] for el2 in range(nbNodes)]
         # Fill matrix
         # For each node in graph
-        for node in nodesList:
+        for node in hierarchicalGraphNodes:
             # For each father
-            for (father, link) in node.getParents():
+            for (father, link) in node.parents:
                 # Mark relation with a '1' on coordinates[index Son][index Father]
-                matrix[node.getIndex()][father.getIndex()] = 1      # type: ignore
+                matrix[node.index][father.index] = 1
         # Define levels
 
         # Sum each column of the matrix
@@ -230,38 +163,39 @@ class Sugiyama:
                 sumColumns[i] += el
 
         # Index of nodes that are not in any level yet
-        indexNodes = list(range(nbNodes))
+        indexNodes: NodeIndices = NodeIndices(list(range(nbNodes)))
         # While not all nodes have an attributed level
-        # while indexNodes != []:
         while indexNodes:
-            # level = []  # Current level
             level: NodeList = NodeList([])
-            indexNodesNotSel = indexNodes[:]
-            indexNodesSel = []
+            indexNodesNotSel: NodeIndices = NodeIndices(indexNodes[:])
+            indexNodesSel: NodeIndices = NodeIndices([])
 
             # For all nodes that haven't an attributed level
-            for i in indexNodes:
+            candidateIndex: int
+            for candidateIndex in indexNodes:
                 # When the sum of his matrix column is 0, that means he has no
                 # parent or his parents are already in a level
-                if sumColumns[i] == 0:
+                if sumColumns[candidateIndex] == 0:
                     # The node is attributed on the current level
                     # Update the lists of selected nodes
-                    indexNodesSel.append(i)
-                    indexNodesNotSel.remove(i)
+                    indexNodesSel.append(candidateIndex)
+                    indexNodesNotSel.remove(candidateIndex)
             # If no nodes is selected, there is a cycle in hierarchical links
-            # if indexNodesSel == []:
             if not indexNodesSel:
                 return False
 
             # For all the current level's nodes
-            for i in indexNodesSel:
-                level.append(nodesList[i])
+            nodeIndex: int
+            for nodeIndex in indexNodesSel:
+                sugiyamaNode: Nodes = hierarchicalGraphNodes[nodeIndex]
+                level.append(sugiyamaNode)
                 # Update the sum of the columns when we remove the line of the
                 # node in the matrix
-                for j in indexNodesNotSel:
-                    sumColumns[j] -= matrix[j][i]
+                notSelIndex: int
+                for notSelIndex in indexNodesNotSel:
+                    sumColumns[notSelIndex] -= matrix[notSelIndex][nodeIndex]
             # Update the list of the nodes that haven't a level yet
-            indexNodes = indexNodesNotSel[:]
+            indexNodes = NodeIndices(indexNodesNotSel[:])
             # Add the current level to the list
             self._levels.append(level)
 
@@ -270,8 +204,8 @@ class Sugiyama:
             level = self._levels[idx]
             for i in range(len(level)):
                 node = level[i]
-                node.setIndex(i)
-                node.setLevel(idx)
+                node.index = i
+                node.level = idx
 
         # No error
         return True
@@ -281,71 +215,9 @@ class Sugiyama:
         Add a virtual node by level crossed between fathers and sons that are
         separated by more than one level.
         """
-        # Internal function for updating a sons or fathers list
-        def updateLink(nodesList, zLink, newNode):
-            """
-            Find the tuple (node, link2) in nodesList where link == link2 and
-            replace node by newNode.
-            """
-            for i in range(len(nodesList)):
-                (node, link2) = nodesList[i]
-                if zLink == link2:
-                    nodesList[i] = (newNode, zLink)
-                    break
-
-        # Add virtual nodes between a father and one of his sons
-        def addVirtualNodesOnHierarchicalLink(zLink):
-
-            srcNode = zLink.source
-            dstNode = zLink.destination
-            dstNodeLevel = dstNode.getLevel()
-
-            # List of level index between dstNode and srcNode
-            indexLevels = list(range(dstNodeLevel + 1, srcNode.getLevel()))
-
-            # Continue only if there is at least one level between the two
-            # nodes
-            if len(indexLevels) == 0:
-                return
-            # noinspection PyUnusedLocal
-            # For each crossed level, add a virtual node
-            virtualNodes = [VirtualSugiyamaNode() for el in indexLevels]
-
-            # Fix level
-            for i in range(len(virtualNodes)):
-                virtualNode: VirtualSugiyamaNode = virtualNodes[i]
-                virtualNode.setLevel(dstNodeLevel + i + 1)
-
-            # Fix relation between virtual nodes
-            for i in range(len(virtualNodes) - 1):
-                virtualNodes[i].addChild(virtualNodes[i + 1], zLink)
-                virtualNodes[i + 1].addParent(virtualNodes[i], zLink)
-
-            # Fix relations between virtual and real nodes
-            virtualNodes[-1].addChild(srcNode, zLink)
-            virtualNodes[0].addParent(dstNode, zLink)
-
-            updateLink(dstNode.getChildren(), zLink, virtualNodes[0])
-            updateLink(srcNode.getParents(), zLink, virtualNodes[-1])
-
-            # Add virtual nodes in levels
-            for i in range(len(virtualNodes)):
-                level = self._levels[dstNodeLevel + i + 1]
-                level.append(virtualNodes[i])
-                # Fix index of the virtual node
-                level[-1].setIndex(len(level) - 1)
-
-            # Add virtual nodes in link in order bottom to top
-            for i in range(len(virtualNodes) - 1, -1, -1):
-                zLink.addVirtualNode(virtualNodes[i])
-
-        # For all links
         for link in self._sugiyamaLinksList:
-            # If hierarchical link
             if link.linkType == LinkType.INHERITANCE or link.linkType == LinkType.INTERFACE:
-
-                # Add virtual nodes
-                addVirtualNodesOnHierarchicalLink(link)
+                VirtualNodeInserter.insert(link, self._levels, horizontalSpacing=self._preferences.horizontalSpacing)
 
     def barycenter(self):
         """
@@ -397,9 +269,9 @@ class Sugiyama:
         # Dictionary internalNodes externalNodes:
         # Keys are internal respectively external nodes
         # Values :
-        #   - externalNodes : # of zLink to internal nodes
-        internalNodes = {}  # type: ignore
-        externalNodes = {}
+        #   - externalNodes : # of links to internal nodes
+        internalNodes: Dict[Nodes, None]          = {}
+        externalNodes: Dict[RealSugiyamaNode, int] = {}
 
         # Make dictionary of internal nodes
         for node in self._hierarchyGraphNodesList:
@@ -407,16 +279,16 @@ class Sugiyama:
 
         # Make dictionary of external nodes
         for node in self._nonHierarchyGraphNodesList:
-            # Count zLink to internal nodes
+            # Count links to internal nodes
             count = 0
-            for (dstNode, link) in node.getNonHierarchicalLink():
+            for (dstNode, link) in node.nonHierarchicalLinks:
                 if dstNode in internalNodes:
                     count += 1
 
             # Add node to externalNodes
             externalNodes[node] = count
 
-        # If there is no level (no inheritance or realisation) but there are
+        # If there is no level (no inheritance or realization) but there are
         # nodes to put in, create new level
         if not self._levels and externalNodes:
             # Add one level for nodes
@@ -424,10 +296,10 @@ class Sugiyama:
 
         # Function for getting node that has most connections to internal
         # nodes
-        def mostConnection(zExternalNodes):
+        def mostConnection(zExternalNodes: Dict[RealSugiyamaNode, int]) -> RealSugiyamaNode:
 
-            maxNode    = None
-            maxNbLinks = -1
+            maxNode:    RealSugiyamaNode = cast(RealSugiyamaNode, cast(object, None))
+            maxNbLinks: int              = -1
             for (nbLinkNode, nbLinks) in list(zExternalNodes.items()):
                 # If current node has more connections
                 if nbLinks > maxNbLinks:
@@ -438,7 +310,10 @@ class Sugiyama:
         # Function for evaluating best level and best index for an external
         # node
 
-        def bestPos(zExtNode, zInternalNodes):
+        def bestPos(
+            zExtNode:       RealSugiyamaNode,
+            zInternalNodes: Dict[Nodes, None],
+        ) -> Tuple[int | None, int | None]:
             """
             Evaluate average of level of linked nodes
             Args:
@@ -452,15 +327,15 @@ class Sugiyama:
             nodes     = []  # List of connected internal nodes
 
             # For all non-hierarchical links
-            for (zDstNode, zLink) in zExtNode.getNonHierarchicalLink():
+            for (zDstNode, innerLink) in zExtNode.nonHierarchicalLinks:
                 # If node linked to internal nodes
                 if zDstNode in zInternalNodes:
                     # Add connected node to list
                     nodes.append(zDstNode)
-                    # Add level to sum and count number of zLink
-                    summation += zDstNode.getLevel()
+                    # Add level to sum and count number of links
+                    summation += zDstNode.level
                     nb += 1
-            # If no zLink to internal nodes
+            # If no links to internal nodes
             # if nodes == []:
             if not nodes:
                 return None, None
@@ -471,11 +346,11 @@ class Sugiyama:
             bestLevel = None
             # Fix best level on first node
             if nodes:
-                bestLevel = nodes[0].getLevel()
+                bestLevel = nodes[0].level
 
             # For all connected internal nodes
             for connectedInternalNode in nodes:
-                nodeLevel = connectedInternalNode.getLevel()
+                nodeLevel = connectedInternalNode.level
 
                 # If current node is on bestLevel
                 if nodeLevel == bestLevel:
@@ -494,7 +369,7 @@ class Sugiyama:
                     levelNodes = [connectedInternalNode]
 
             # Return average of nodes' level
-            return bestLevel, levelNodes[len(levelNodes) // 2].getIndex()
+            return bestLevel, levelNodes[len(levelNodes) // 2].index
 
         # Function for getting level that has fewer nodes.
         def getLessFilledLevel():
@@ -510,7 +385,11 @@ class Sugiyama:
             return lessLevel
 
         # Function to move a node from internal to external nodes.
-        def moveExternal2Internal(zNode, zInternalNodes, zExternalNodes):
+        def moveExternal2Internal(
+            zNode:          RealSugiyamaNode,
+            zInternalNodes: Dict[Nodes, None],
+            zExternalNodes: Dict[RealSugiyamaNode, int],
+        ):
 
             # Remove node from external nodes
             del zExternalNodes[zNode]
@@ -520,67 +399,67 @@ class Sugiyama:
 
             # For all his linked external nodes, update their counter
             # zExtNode = None   NOT USED
-            for (zDstNode, zLink) in zNode.getNonHierarchicalLink():
-                if zDstNode in zExternalNodes:
+            for (zDstNode, innerLink) in zNode.nonHierarchicalLinks:
+                if isinstance(zDstNode, RealSugiyamaNode) and zDstNode in zExternalNodes:
                     zExternalNodes[zDstNode] += 1
 
         # While there are nodes still not in hierarchy
         while externalNodes:
             # Get external node that has most connections to internalNodes
-            extNode = mostConnection(externalNodes)
+            extNode: RealSugiyamaNode = mostConnection(externalNodes)
 
-            self.logger.info(f'extNode.getName(): `{extNode.getName()}`')
+            self.logger.info(f'extNode.name: `{extNode.name}`')
             # Evaluate best level and index for the node
             (level, index) = bestPos(extNode, internalNodes)
 
             # If node has no connection to internal node
-            if level is None:
+            if level is None or index is None:
                 # Find level that is less filled of nodes
                 level = getLessFilledLevel()
                 index = len(self._levels[level])
 
             # Add node in levels
-            extNode.setLevel(level)
-            extNode.setIndex(index)
+            extNode.level = level
+            extNode.index = index
             self._levels[level].insert(index, extNode)
             # Shift index attributes on right
             for i in range(index + 1, len(self._levels[level])):
-                self._levels[level][i].setIndex(i)
+                self._levels[level][i].index = i
 
             # Move node from external to internal nodes
             moveExternal2Internal(extNode, internalNodes, externalNodes)
 
-    def fixPositions(self):
+    def assignCoordinates(self):
         """
         Compute coordinates for nodes and links.
         """
-        self._fixNodesNeighbors()
-        self._fixNodesPositions()
-        self._fixLinksPositions()
+        self._linkLevelNeighbors()
+        self._assignNodeCoordinates()
+        self._routeLinks()
 
-    def _downBarycenterLevel(self, indexLevel):
+    def _downBarycenterLevel(self, indexLevel: int):
         """
         Compute down barycenter (from sons) for all nodes on level.
 
         Args:
             indexLevel:   The index level
         """
-        level = self._levels[indexLevel]
+        level: NodeList = self._levels[indexLevel]
         for node in level:
             node.downBarycenterIndex()
 
-    def _upBarycenterLevel(self, indexLevel):
+    def _upBarycenterLevel(self, indexLevel: int):
         """
         Compute up barycenter (from parents) for all nodes on level.
 
         @param indexLevel : index of level
         @author Nicolas Dubois
         """
-        level = self._levels[indexLevel]
+        level: NodeList = self._levels[indexLevel]
         for node in level:
             node.upBarycenterIndex()
 
-    def _shiftSameBarycenter(self, indexLevel):
+    def _shiftSameBarycenter(self, indexLevel: int):
         """
         Do a left circular shifting on nodes with same barycenter on a level.
 
@@ -590,29 +469,30 @@ class Sugiyama:
         @param indexLevel : index of level
         @author Nicolas Dubois
         """
-        level = self._levels[indexLevel]
+        level: NodeList = self._levels[indexLevel]
 
         # Save current level
-        levelSaved = level[:]
+        levelSaved: NodeList = NodeList(level[:])
         # Count crossings
-        nbIntersections = self._getNbIntersectAll()
+        nbIntersections: int = self._getNbIntersectAll()
 
         # Shift same barycenter
         for i in range(len(level) - 1):
-            if level[i].getBarycenter() is not None and level[i].getBarycenter() == level[i + 1].getBarycenter():
+            if level[i].barycenter is not None and level[i].barycenter == level[i + 1].barycenter:
 
-                level.insert(i, level.pop(i + 1))
+                shiftedNode: Nodes = level.pop(i + 1)
+                level.insert(i, shiftedNode)
                 # Fix index
-                level[i].setIndex(i)
-                level[i + 1].setIndex(i + 1)
+                level[i].index = i
+                level[i + 1].index = i + 1
 
         # If new order give more intersections, return to old order
         if self._getNbIntersectAll() > nbIntersections:
             self._levels[indexLevel] = levelSaved
             for i in range(len(levelSaved)):
-                levelSaved[i].setIndex(i)
+                levelSaved[i].index = i
 
-    def _sortLevel(self, indexLevel):
+    def _sortLevel(self, indexLevel: int):
         """
         Sort nodes on a level according to pre-calculated barycenter value.
         Nodes that don't have a barycenter value keep their place.
@@ -620,21 +500,22 @@ class Sugiyama:
         Args:
             indexLevel:  index of level in self.__levels to sort
         """
-        level = self._levels[indexLevel]
-        levelCopy = level[:]
+        level:     NodeList = self._levels[indexLevel]
+        levelCopy: NodeList = NodeList(level[:])
 
-        nbIntersect = self._getNbIntersectAll()
+        nbIntersect: int = self._getNbIntersectAll()
 
         # Get list of nodes who have a barycenter value
-        listIndex = []
+        listIndex: NodeIndices = NodeIndices([])
         for i in range(len(levelCopy)):
-            if levelCopy[i].getBarycenter() is not None:
+            if levelCopy[i].barycenter is not None:
                 listIndex.append(i)
 
         # Create list of nodes to sort
-        listNodes = []
-        for i in listIndex:
-            listNodes.append(levelCopy[i])
+        listNodes: NodeList = NodeList([])
+        idx: int
+        for idx in listIndex:
+            listNodes.append(levelCopy[idx])
 
         # Sort list of nodes
         listNodes.sort(key=SugiyamaGlobals.cmpBarycenter)
@@ -645,31 +526,31 @@ class Sugiyama:
 
         # Fix indexes
         for i in range(len(levelCopy)):
-            levelCopy[i].setIndex(i)
+            levelCopy[i].index = i
 
         # If there are more intersections than before, keep original order
-        nbIntersect2 = self._getNbIntersectAll()
+        nbIntersect2: int = self._getNbIntersectAll()
         if nbIntersect < nbIntersect2:
             # Fix indexes
             for i in range(len(level)):
-                level[i].setIndex(i)
+                level[i].index = i
         else:
             # Else set new order
             self._levels[indexLevel] = levelCopy
         # nbIntersect3 = self.__getNbIntersectAll()    NOT USED
 
-    def _getNbIntersectAll(self):
+    def _getNbIntersectAll(self) -> int:
         """
 
         Returns:  The number of intersections between hierarchy relations.
         """
-        count = 0
+        count: int = 0
         for i in range(len(self._levels) - 1):
             count += self._getNbIntersect2Levels(i)
 
         return count
 
-    def _getNbIntersect2Levels(self, upperLevel):
+    def _getNbIntersect2Levels(self, upperLevel: int) -> int:
         """
         The two levels index are [upperLevel] and [upperLevel + 1].
 
@@ -679,30 +560,30 @@ class Sugiyama:
         Returns: The intersections number of hierarchical links between two levels.
         """
         # Get nodes from the level
-        nodes = self._levels[upperLevel]
+        nodes: NodeList = self._levels[upperLevel]
 
         # Count intersect
-        count = 0
+        count: int = 0
 
         # For each node of the layer
         for indFatherL in range(len(nodes) - 1):
             # For each son of the current node
-            for (sonL, link) in nodes[indFatherL].getChildren():
+            for (sonL, link) in nodes[indFatherL].children:
 
                 # Check intersect with all next parents
                 indFatherR = indFatherL + 1
                 while indFatherR < len(nodes):
-                    for (sonR, rLink) in nodes[indFatherR].getChildren():
+                    for (sonR, rLink) in nodes[indFatherR].children:
                         # If intersect
-                        if sonL.getIndex() > sonR.getIndex():
+                        if sonL.index > sonR.index:
                             count += 1
                     indFatherR += 1
 
         return count
 
-    def _fixNodesNeighbors(self):
+    def _linkLevelNeighbors(self):
         """
-        For each node, fix his right neighbor.
+        For each node, link horizontal neighbors within each level row.
 
         @author Nicolas Dubois
         """
@@ -711,32 +592,32 @@ class Sugiyama:
             nbNodes = len(level)
 
             for i in range(nbNodes - 1):
-                level[i + 1].setLeftNode(level[i])
-                level[i].setRightNode(level[i + 1])
+                level[i + 1].leftNode = level[i]
+                level[i].rightNode = level[i + 1]
 
             # For first and last nodes of the level
-            level[0].setLeftNode(None)      # type: ignore
-            level[nbNodes - 1].setRightNode(cast(SugiyamaNode, None))
+            level[0].leftNode = None
+            level[nbNodes - 1].rightNode = None
 
-    def _fixNodesPositions(self):
+    def _assignNodeCoordinates(self):
 
         # Compute start positions packed on left
-        y: int = UP_MARGIN
+        y: int = self._preferences.topMargin
         for level in self._levels:
-            x:         int = LEFT_MARGIN
+            x:         int = self._preferences.leftMargin
             maxHeight: int = 0
 
             for node in level:
-                (width, height) = node.getSize()
-                node.setPosition(x, y)
-                x += width + H_SPACE
+                (width, height) = node.size
+                node.position = (x, y)
+                x += width + self._preferences.horizontalSpacing
                 maxHeight = max(maxHeight, height)
-            y += maxHeight + V_SPACE
+            y += maxHeight + self._preferences.verticalSpacing
 
         if self._preferences.sugiyamaStepByStep is True:
             SugiyamaGlobals.waitKey(self._extensionsFacade, optionalMessage=None)
         else:
-            self.logger.info(f'.__fixNodesPositions() is complete')
+            self.logger.info('._assignNodeCoordinates() is complete')
 
         # While nodes have to be moved
         moved: bool = True
@@ -753,7 +634,7 @@ class Sugiyama:
                         else:
                             self.logger.info(msg)
 
-    def _fixLinksPositions(self):
+    def _routeLinks(self):
         """
         Compute links new positions.
         """

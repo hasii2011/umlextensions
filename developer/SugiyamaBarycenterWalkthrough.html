@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sugiyama Barycenter Crossing Reduction Walkthrough</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    html {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --card-border: #cbd5e1;
+      --border: #cbd5e1;
+      --foreground: #0f172a;
+      --muted-foreground: #475569;
+      --code-foreground: #1e293b;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #e2e8f0;
+      --accent: #0d9488;
+      --warning: #d97706;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-6 m-0 select-none font-sans">
+  <div class="max-w-4xl mx-auto bg-[var(--card)] border border-[var(--card-border)] rounded-lg shadow-sm p-5 space-y-4">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--card-border)]">
+      <div>
+        <h1 class="text-base font-bold text-[var(--foreground)]">Sugiyama Barycenter Crossing Reduction Walkthrough</h1>
+        <p class="text-xs text-[var(--muted-foreground)] font-mono mt-0.5">
+          upBarycenterIndex() &nbsp;|&nbsp; listNodes.sort(key=SugiyamaGlobals.cmpBarycenter) &nbsp;|&nbsp; downBarycenterIndex()
+        </p>
+      </div>
+    </div>
+
+    <!-- Top Controls Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--card-border)] text-xs">
+      <div class="flex items-center gap-1.5">
+        <button id="btnPrev" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] font-medium transition">
+          ◀ Prev
+        </button>
+        <button id="btnPlay" class="px-3 py-1 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-medium transition">
+          ▶ Play
+        </button>
+        <button id="btnNext" class="px-2.5 py-1 rounded border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] font-medium transition">
+          Next ▶
+        </button>
+      </div>
+
+      <!-- Step Dots -->
+      <div id="stepPills" class="flex items-center gap-1"></div>
+
+      <!-- Crossings Counter Badge -->
+      <div class="flex items-center gap-2 font-mono">
+        <span id="phaseBadge" class="px-2 py-0.5 rounded bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)]"></span>
+        <span id="crossingBadge" class="px-2 py-0.5 rounded font-semibold"></span>
+      </div>
+    </div>
+
+    <!-- Formula & Step Explanation Banner -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded bg-[var(--card)] border border-[var(--card-border)] text-xs">
+      <div id="stepTitle" class="font-semibold text-[var(--foreground)]"></div>
+      <div id="stepFormula" class="font-mono text-[var(--code-foreground)] bg-[var(--background)] px-2 py-1 rounded border border-[var(--border)]"></div>
+    </div>
+
+    <!-- Animated Canvas -->
+    <div class="relative w-full">
+      <canvas id="baryCanvas" class="w-full block rounded border border-[var(--card-border)]" height="310"></canvas>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById('baryCanvas');
+      const ctx = canvas.getContext('2d');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnPlay = document.getElementById('btnPlay');
+      const btnNext = document.getElementById('btnNext');
+      const stepPills = document.getElementById('stepPills');
+      const phaseBadge = document.getElementById('phaseBadge');
+      const crossingBadge = document.getElementById('crossingBadge');
+      const stepTitle = document.getElementById('stepTitle');
+      const stepFormula = document.getElementById('stepFormula');
+
+      const SLOT_2 = [0.30, 0.70];
+      const SLOT_3 = [0.20, 0.50, 0.80];
+      const LEVEL_Y = [56, 154, 252];
+
+      const STEPS = [
+        {
+          phase: 'Step 0 / 4: Initial State',
+          title: 'Initial level order after levelFind() — 4 edge crossings',
+          formula: 'L1: [BufferedWriter(idx=0), FileStream(idx=1)]',
+          crossings: 4,
+          activeLevel: -1,
+          highlightDirection: null,
+          nodes: {
+            Stream:         { level: 0, index: 0, slotX: SLOT_3[0], bc: null, calc: '' },
+            Closable:       { level: 0, index: 1, slotX: SLOT_3[1], bc: null, calc: '' },
+            Flushable:      { level: 0, index: 2, slotX: SLOT_3[2], bc: null, calc: '' },
+            BufferedWriter: { level: 1, index: 0, slotX: SLOT_2[0], bc: null, calc: '' },
+            FileStream:     { level: 1, index: 1, slotX: SLOT_2[1], bc: null, calc: '' },
+            LogWriter:      { level: 2, index: 0, slotX: SLOT_3[0], bc: null, calc: '' },
+            CsvWriter:      { level: 2, index: 1, slotX: SLOT_3[1], bc: null, calc: '' },
+            ZipFileStream:  { level: 2, index: 2, slotX: SLOT_3[2], bc: null, calc: '' }
+          }
+        },
+        {
+          phase: 'Step 1 / 4: upBarycenterIndex(L1)',
+          title: 'Downward Sweep: Average PARENT indexes in Level 0 for each Level 1 node',
+          formula: 'BufferedWriter: (1+2)//2 = 1  |  FileStream: 0//1 = 0',
+          crossings: 4,
+          activeLevel: 1,
+          highlightDirection: 'up',
+          nodes: {
+            Stream:         { level: 0, index: 0, slotX: SLOT_3[0], bc: null, calc: 'parent idx=0' },
+            Closable:       { level: 0, index: 1, slotX: SLOT_3[1], bc: null, calc: 'parent idx=1' },
+            Flushable:      { level: 0, index: 2, slotX: SLOT_3[2], bc: null, calc: 'parent idx=2' },
+            BufferedWriter: { level: 1, index: 0, slotX: SLOT_2[0], bc: 1,    calc: 'upBC = (1+2)//2 = 1' },
+            FileStream:     { level: 1, index: 1, slotX: SLOT_2[1], bc: 0,    calc: 'upBC = 0//1 = 0' },
+            LogWriter:      { level: 2, index: 0, slotX: SLOT_3[0], bc: null, calc: '' },
+            CsvWriter:      { level: 2, index: 1, slotX: SLOT_3[1], bc: null, calc: '' },
+            ZipFileStream:  { level: 2, index: 2, slotX: SLOT_3[2], bc: null, calc: '' }
+          }
+        },
+        {
+          phase: 'Step 2 / 4: _sortLevel(L1)',
+          title: 'Sort Level 1 ascending by cmpBarycenter (0 < 1) — L0↔L1 crossings eliminated!',
+          formula: 'listNodes.sort(key=cmpBarycenter) → [FileStream(bc=0), BufferedWriter(bc=1)]',
+          crossings: 2,
+          activeLevel: 1,
+          highlightDirection: 'up',
+          nodes: {
+            Stream:         { level: 0, index: 0, slotX: SLOT_3[0], bc: null, calc: '' },
+            Closable:       { level: 0, index: 1, slotX: SLOT_3[1], bc: null, calc: '' },
+            Flushable:      { level: 0, index: 2, slotX: SLOT_3[2], bc: null, calc: '' },
+            FileStream:     { level: 1, index: 0, slotX: SLOT_2[0], bc: 0,    calc: 'sorted → idx=0' },
+            BufferedWriter: { level: 1, index: 1, slotX: SLOT_2[1], bc: 1,    calc: 'sorted → idx=1' },
+            LogWriter:      { level: 2, index: 0, slotX: SLOT_3[0], bc: null, calc: '' },
+            CsvWriter:      { level: 2, index: 1, slotX: SLOT_3[1], bc: null, calc: '' },
+            ZipFileStream:  { level: 2, index: 2, slotX: SLOT_3[2], bc: null, calc: '' }
+          }
+        },
+        {
+          phase: 'Step 3 / 4: upBarycenterIndex(L2) & Sort',
+          title: 'Downward Sweep to Level 2: Compute upBarycenterIndex from L1 parents & sort L2',
+          formula: 'ZipFileStream: 0//1=0 | LogWriter: 1//1=1 | CsvWriter: 1//1=1 → 0 Crossings!',
+          crossings: 0,
+          activeLevel: 2,
+          highlightDirection: 'up2',
+          nodes: {
+            Stream:         { level: 0, index: 0, slotX: SLOT_3[0], bc: null, calc: '' },
+            Closable:       { level: 0, index: 1, slotX: SLOT_3[1], bc: null, calc: '' },
+            Flushable:      { level: 0, index: 2, slotX: SLOT_3[2], bc: null, calc: '' },
+            FileStream:     { level: 1, index: 0, slotX: SLOT_2[0], bc: 0,    calc: 'parent idx=0' },
+            BufferedWriter: { level: 1, index: 1, slotX: SLOT_2[1], bc: 1,    calc: 'parent idx=1' },
+            ZipFileStream:  { level: 2, index: 0, slotX: SLOT_3[0], bc: 0,    calc: 'upBC=0 → idx=0' },
+            LogWriter:      { level: 2, index: 1, slotX: SLOT_3[1], bc: 1,    calc: 'upBC=1 → idx=1' },
+            CsvWriter:      { level: 2, index: 2, slotX: SLOT_3[2], bc: 1,    calc: 'upBC=1 → idx=2' }
+          }
+        },
+        {
+          phase: 'Step 4 / 4: downBarycenterIndex(L1)',
+          title: 'Upward Sweep: Average CHILD indexes in Level 2 for each Level 1 node',
+          formula: 'FileStream: 0//1 = 0  |  BufferedWriter: (1+2)//2 = 1 (Order confirmed!)',
+          crossings: 0,
+          activeLevel: 1,
+          highlightDirection: 'down',
+          nodes: {
+            Stream:         { level: 0, index: 0, slotX: SLOT_3[0], bc: 0,    calc: 'downBC = 0//1 = 0' },
+            Closable:       { level: 0, index: 1, slotX: SLOT_3[1], bc: 1,    calc: 'downBC = 1//1 = 1' },
+            Flushable:      { level: 0, index: 2, slotX: SLOT_3[2], bc: 1,    calc: 'downBC = 1//1 = 1' },
+            FileStream:     { level: 1, index: 0, slotX: SLOT_2[0], bc: 0,    calc: 'downBC = 0//1 = 0' },
+            BufferedWriter: { level: 1, index: 1, slotX: SLOT_2[1], bc: 1,    calc: 'downBC = (1+2)//2 = 1' },
+            ZipFileStream:  { level: 2, index: 0, slotX: SLOT_3[0], bc: null, calc: 'child idx=0' },
+            LogWriter:      { level: 2, index: 1, slotX: SLOT_3[1], bc: null, calc: 'child idx=1' },
+            CsvWriter:      { level: 2, index: 2, slotX: SLOT_3[2], bc: null, calc: 'child idx=2' }
+          }
+        }
+      ];
+
+      const EDGES = [
+        { child: 'FileStream',     parent: 'Stream',         span: '0-1' },
+        { child: 'BufferedWriter', parent: 'Closable',       span: '0-1' },
+        { child: 'BufferedWriter', parent: 'Flushable',      span: '0-1' },
+        { child: 'LogWriter',      parent: 'BufferedWriter', span: '1-2' },
+        { child: 'CsvWriter',      parent: 'BufferedWriter', span: '1-2' },
+        { child: 'ZipFileStream',  parent: 'FileStream',     span: '1-2' }
+      ];
+
+      let currentStep = 0;
+      let prevNodesState = JSON.parse(JSON.stringify(STEPS[0].nodes));
+      let animProgress = 1;
+      let animFrameId = null;
+      let playTimer = null;
+
+      function buildStepPills() {
+        stepPills.innerHTML = '';
+        STEPS.forEach((_, idx) => {
+          const btn = document.createElement('button');
+          btn.textContent = idx;
+          btn.className = 'w-6 h-6 rounded text-xs font-mono transition border ' +
+            (idx === currentStep
+              ? 'bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)] font-bold'
+              : 'bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]');
+          btn.addEventListener('click', () => {
+            stopAutoPlay();
+            goToStep(idx);
+          });
+          stepPills.appendChild(btn);
+        });
+      }
+
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function getInterpolatedPositions() {
+        const targetNodes = STEPS[currentStep].nodes;
+        const t = easeInOutCubic(animProgress);
+        const result = {};
+        for (const name of Object.keys(targetNodes)) {
+          const startX = prevNodesState[name] ? prevNodesState[name].slotX : targetNodes[name].slotX;
+          const endX = targetNodes[name].slotX;
+          result[name] = {
+            ...targetNodes[name],
+            currSlotX: startX + (endX - startX) * t
+          };
+        }
+        return result;
+      }
+
+      function segmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+        function ccw(ax, ay, bx, by, cx, cy) {
+          return (cy - ay) * (bx - ax) > (by - ay) * (cx - ax);
+        }
+        if ((x1 === x3 && y1 === y3) || (x1 === x4 && y1 === y4) ||
+            (x2 === x3 && y2 === y3) || (x2 === x4 && y2 === y4)) {
+          return false;
+        }
+        return (ccw(x1, y1, x3, y3, x4, y4) !== ccw(x2, y2, x3, y3, x4, y4)) &&
+               (ccw(x1, y1, x2, y2, x3, y3) !== ccw(x1, y1, x2, y2, x4, y4));
+      }
+
+      function draw() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const width = rect.width || 780;
+        const height = 310;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const isLight = !document.documentElement.classList.contains('dark');
+        const cs = getComputedStyle(document.documentElement);
+        const fgColor = cs.getPropertyValue('--foreground').trim() || (isLight ? '#0f172a' : '#f8fafc');
+        const mutedColor = cs.getPropertyValue('--muted-foreground').trim() || (isLight ? '#475569' : '#94a3b8');
+        const borderColor = cs.getPropertyValue('--border').trim() || (isLight ? '#cbd5e1' : '#334155');
+
+        ctx.clearRect(0, 0, width, height);
+
+        const stepData = STEPS[currentStep];
+        const nodes = getInterpolatedPositions();
+
+        const bandHeight = 72;
+        for (let lvl = 0; lvl < 3; lvl++) {
+          const cy = LEVEL_Y[lvl];
+          const isActive = stepData.activeLevel === lvl;
+          ctx.fillStyle = isActive
+            ? (isLight ? 'rgba(59, 130, 246, 0.10)' : 'rgba(59, 130, 246, 0.18)')
+            : (lvl % 2 === 0
+                ? (isLight ? 'rgba(148, 163, 184, 0.10)' : 'rgba(148, 163, 184, 0.06)')
+                : (isLight ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.11)'));
+          ctx.strokeStyle = isActive ? '#3b82f6' : borderColor;
+          ctx.lineWidth = isActive ? 1.5 : 1;
+          ctx.beginPath();
+          ctx.roundRect(8, cy - bandHeight / 2, width - 16, bandHeight, 6);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = isActive ? '#2563eb' : mutedColor;
+          ctx.font = 'bold 11px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`Level ${lvl}`, 16, cy - bandHeight / 2 + 16);
+        }
+
+        const nodeW = Math.min(144, Math.max(108, (width - 110) / 3.4));
+        const nodeH = 44;
+
+        const coords = {};
+        for (const [name, n] of Object.entries(nodes)) {
+          const usableW = width - 70;
+          const x = 55 + n.currSlotX * usableW;
+          const y = LEVEL_Y[n.level];
+          coords[name] = { x, y };
+        }
+
+        const edgeSegments = EDGES.map(e => {
+          const c = coords[e.child];
+          const p = coords[e.parent];
+          return {
+            ...e,
+            x1: c.x,
+            y1: c.y - nodeH / 2,
+            x2: p.x,
+            y2: p.y + nodeH / 2,
+            crossing: false
+          };
+        });
+
+        for (let i = 0; i < edgeSegments.length; i++) {
+          for (let j = i + 1; j < edgeSegments.length; j++) {
+            if (edgeSegments[i].span === edgeSegments[j].span) {
+              if (segmentsIntersect(
+                edgeSegments[i].x1, edgeSegments[i].y1, edgeSegments[i].x2, edgeSegments[i].y2,
+                edgeSegments[j].x1, edgeSegments[j].y1, edgeSegments[j].x2, edgeSegments[j].y2
+              )) {
+                edgeSegments[i].crossing = true;
+                edgeSegments[j].crossing = true;
+              }
+            }
+          }
+        }
+
+        edgeSegments.forEach(seg => {
+          const isHighlightedSpan =
+            (stepData.highlightDirection === 'up' && seg.span === '0-1') ||
+            (stepData.highlightDirection === 'up2' && seg.span === '1-2') ||
+            (stepData.highlightDirection === 'down' && seg.span === '1-2');
+
+          ctx.save();
+          if (seg.crossing) {
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2.4;
+          } else if (isHighlightedSpan) {
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 2.4;
+          } else {
+            ctx.strokeStyle = isLight ? '#64748b' : '#94a3b8';
+            ctx.lineWidth = 1.6;
+          }
+
+          ctx.beginPath();
+          ctx.moveTo(seg.x1, seg.y1);
+          ctx.lineTo(seg.x2, seg.y2);
+          ctx.stroke();
+
+          const angle = Math.atan2(seg.y2 - seg.y1, seg.x2 - seg.x1);
+          const headLen = 8;
+          ctx.beginPath();
+          ctx.moveTo(seg.x2, seg.y2);
+          ctx.lineTo(
+            seg.x2 - headLen * Math.cos(angle - Math.PI / 6),
+            seg.y2 - headLen * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.lineTo(
+            seg.x2 - headLen * Math.cos(angle + Math.PI / 6),
+            seg.y2 - headLen * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.closePath();
+          ctx.fillStyle = isLight ? '#ffffff' : '#1e293b';
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        for (const [name, n] of Object.entries(nodes)) {
+          const { x, y } = coords[name];
+          const hasBc = n.bc !== null;
+
+          ctx.save();
+          ctx.fillStyle = hasBc
+            ? (isLight ? '#dbeafe' : '#1e3a8a')
+            : (isLight ? '#ffffff' : '#1e293b');
+          ctx.strokeStyle = hasBc ? '#2563eb' : (isLight ? '#475569' : '#64748b');
+          ctx.lineWidth = hasBc ? 2.2 : 1.5;
+
+          ctx.beginPath();
+          ctx.roundRect(x - nodeW / 2, y - nodeH / 2, nodeW, nodeH, 6);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = fgColor;
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(name, x, y - 5);
+
+          ctx.font = '10px monospace';
+          const subLabel = hasBc ? `idx=${n.index} | bc=${n.bc}` : `idx=${n.index} | bc=None`;
+          ctx.fillStyle = hasBc ? (isLight ? '#1d4ed8' : '#93c5fd') : mutedColor;
+          ctx.fillText(subLabel, x, y + 11);
+
+          if (n.calc) {
+            ctx.font = 'bold 10px monospace';
+            const tagW = ctx.measureText(n.calc).width + 10;
+            const tagH = 16;
+            const tagX = x - tagW / 2;
+            const tagY = y + nodeH / 2 + 3;
+
+            ctx.fillStyle = isLight ? '#fef3c7' : '#78350f';
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(tagX, tagY, tagW, tagH, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = isLight ? '#92400e' : '#fde68a';
+            ctx.fillText(n.calc, x, tagY + 11.5);
+          }
+
+          ctx.restore();
+        }
+      }
+
+      function updateHeader() {
+        const s = STEPS[currentStep];
+        phaseBadge.textContent = s.phase;
+        stepTitle.textContent = s.title;
+        stepFormula.textContent = s.formula;
+
+        if (s.crossings > 0) {
+          crossingBadge.textContent = `Crossings: ${s.crossings}`;
+          crossingBadge.className = 'px-2 py-0.5 rounded font-semibold bg-red-500/15 text-red-600 border border-red-500/30';
+        } else {
+          crossingBadge.textContent = 'Crossings: 0 ✓';
+          crossingBadge.className = 'px-2 py-0.5 rounded font-semibold bg-emerald-500/15 text-emerald-600 border border-emerald-500/30';
+        }
+        buildStepPills();
+      }
+
+      function goToStep(nextIdx) {
+        if (nextIdx < 0 || nextIdx >= STEPS.length) return;
+        prevNodesState = getInterpolatedPositions();
+        for (const k of Object.keys(prevNodesState)) {
+          prevNodesState[k].slotX = prevNodesState[k].currSlotX;
+        }
+        currentStep = nextIdx;
+        updateHeader();
+
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        const startTime = performance.now();
+        const duration = 650;
+        animProgress = 0;
+
+        function tick(now) {
+          animProgress = Math.min(1, (now - startTime) / duration);
+          draw();
+          if (animProgress < 1) {
+            animFrameId = requestAnimationFrame(tick);
+          }
+        }
+        animFrameId = requestAnimationFrame(tick);
+      }
+
+      function stopAutoPlay() {
+        if (playTimer) {
+          clearInterval(playTimer);
+          playTimer = null;
+          btnPlay.textContent = '▶ Play';
+        }
+      }
+
+      btnPrev.addEventListener('click', () => {
+        stopAutoPlay();
+        goToStep((currentStep - 1 + STEPS.length) % STEPS.length);
+      });
+
+      btnNext.addEventListener('click', () => {
+        stopAutoPlay();
+        goToStep((currentStep + 1) % STEPS.length);
+      });
+
+      btnPlay.addEventListener('click', () => {
+        if (playTimer) {
+          stopAutoPlay();
+        } else {
+          btnPlay.textContent = '⏸ Pause';
+          if (currentStep === STEPS.length - 1) {
+            goToStep(0);
+          } else {
+            goToStep(currentStep + 1);
+          }
+          playTimer = setInterval(() => {
+            if (currentStep < STEPS.length - 1) {
+              goToStep(currentStep + 1);
+            } else {
+              stopAutoPlay();
+            }
+          }, 2200);
+        }
+      });
+
+      window.addEventListener('resize', draw);
+      window.addEventListener('themechange', draw);
+
+      updateHeader();
+      draw();
+    })();
+  </script>
+</body>
+</html>

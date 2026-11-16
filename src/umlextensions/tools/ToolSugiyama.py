@@ -59,7 +59,7 @@ class ToolSugiyama(BaseToolExtension):
         initialPositions: InitialPositions = self._recordInitialPositions(selectedUmlShapes=selectedUmlShapes, umlFrame=umlFrame)
 
         sugiyama: Sugiyama = Sugiyama(extensionsFacade=self._extensionsFacade, umlFrame=umlFrame)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=selectedUmlShapes)
+        sugiyama.buildGraph(umlShapes=selectedUmlShapes)
 
         sugiyama.levelFind()
         sugiyama.addVirtualNodes()
@@ -69,7 +69,7 @@ class ToolSugiyama(BaseToolExtension):
         self.logger.info(f'Number of hierarchical intersections: {sugiyama._getNbIntersectAll()}')
 
         sugiyama.addNonHierarchicalNodes()
-        sugiyama.fixPositions()
+        sugiyama.assignCoordinates()
 
         self._submitShapesMovedCommand(initialPositions=initialPositions, umlFrame=umlFrame)
 

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sugiyama Levels, NodeList, and Nodes Data Structure Diagram</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    html {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --card-border: #cbd5e1;
+      --foreground: #0f172a;
+      --muted-foreground: #475569;
+      --primary: #2563eb;
+      --accent: #0d9488;
+      --chart-1: #2563eb;
+      --warning: #d97706;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-6 m-0 select-none font-sans">
+  <div class="max-w-4xl mx-auto bg-[var(--card)] border border-[var(--card-border)] rounded-lg shadow-sm p-5 space-y-4">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--card-border)]">
+      <div>
+        <h1 class="text-base font-bold text-[var(--foreground)]">Sugiyama Layered Graph Data Structures</h1>
+        <p class="text-xs text-[var(--muted-foreground)] font-mono mt-0.5">
+          Levels = NewType('Levels', List[NodeList]) &nbsp;|&nbsp; NodeList = NewType('NodeList', List[Nodes]) &nbsp;|&nbsp; Nodes = RealSugiyamaNode | VirtualSugiyamaNode
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 text-xs">
+        <span class="flex items-center gap-1.5 text-[var(--muted-foreground)]">
+          <span class="inline-block w-3.5 h-3.5 rounded-sm border-2" style="border-color: var(--chart-1); background: color-mix(in srgb, var(--chart-1) 18%, transparent);"></span>
+          RealSugiyamaNode
+        </span>
+        <span class="flex items-center gap-1.5 text-[var(--muted-foreground)]">
+          <span class="inline-block w-3.5 h-3.5 rounded-full border-2" style="border-color: var(--warning); background: color-mix(in srgb, var(--warning) 20%, transparent);"></span>
+          VirtualSugiyamaNode
+        </span>
+        <label class="flex items-center gap-1.5 cursor-pointer text-[var(--muted-foreground)]">
+          <input id="toggleHoriz" type="checkbox" checked class="accent-[var(--primary)]" />
+          leftNode / rightNode
+        </label>
+        <label class="flex items-center gap-1.5 cursor-pointer text-[var(--muted-foreground)]">
+          <input id="toggleVert" type="checkbox" checked class="accent-[var(--primary)]" />
+          parents / children
+        </label>
+      </div>
+    </div>
+
+    <!-- Main SVG Diagram -->
+    <div class="w-full">
+      <svg id="diagram" viewBox="0 0 680 315" height="360" preserveAspectRatio="xMidYMid meet" class="w-full block"></svg>
+    </div>
+
+    <!-- Live Inspector Footer -->
+    <div id="inspector" class="pt-3 border-t border-[var(--card-border)] text-xs font-mono flex flex-col gap-1 text-[var(--muted-foreground)]">
+      <div id="inspExpr" class="text-[var(--foreground)] font-semibold">Click or hover any node to inspect its pointers</div>
+      <div id="inspDetails">Levels = List[NodeList]  |  NodeList = List[Nodes]</div>
+    </div>
+  </div>
+
+  <script>
+    const levelsData = [
+      {
+        level: 0,
+        y: 48,
+        nodes: [
+          { id: 'Root', label: 'Root', isVirtual: false, level: 0, index: 0, x: 345, parents: [], children: ['Layer1B', 'V1', 'V2', 'Layer1A'] }
+        ]
+      },
+      {
+        level: 1,
+        y: 122,
+        nodes: [
+          { id: 'Layer1B', label: 'Layer1B', isVirtual: false, level: 1, index: 0, x: 210, parents: ['Root'], children: [] },
+          { id: 'V1', label: 'V1', isVirtual: true, level: 1, index: 1, x: 325, parents: ['Root'], children: ['V3'] },
+          { id: 'V2', label: 'V2', isVirtual: true, level: 1, index: 2, x: 415, parents: ['Root'], children: ['Layer2'] },
+          { id: 'Layer1A', label: 'Layer1A', isVirtual: false, level: 1, index: 3, x: 535, parents: ['Root'], children: ['Layer2'] }
+        ]
+      },
+      {
+        level: 2,
+        y: 196,
+        nodes: [
+          { id: 'V3', label: 'V3', isVirtual: true, level: 2, index: 0, x: 325, parents: ['V1'], children: ['Leaf'] },
+          { id: 'Layer2', label: 'Layer2', isVirtual: false, level: 2, index: 1, x: 475, parents: ['V2', 'Layer1A'], children: ['Leaf'] }
+        ]
+      },
+      {
+        level: 3,
+        y: 270,
+        nodes: [
+          { id: 'Leaf', label: 'Leaf', isVirtual: false, level: 3, index: 0, x: 400, parents: ['V3', 'Layer2'], children: [] }
+        ]
+      }
+    ];
+
+    const nodeById = {};
+    levelsData.forEach(row => {
+      row.nodes.forEach((n, idx) => {
+        n.y = row.y;
+        n.leftNode = idx > 0 ? row.nodes[idx - 1].id : null;
+        n.rightNode = idx < row.nodes.length - 1 ? row.nodes[idx + 1].id : null;
+        nodeById[n.id] = n;
+      });
+    });
+
+    const vEdges = [
+      ['Root', 'Layer1B'],
+      ['Root', 'V1'],
+      ['Root', 'V2'],
+      ['Root', 'Layer1A'],
+      ['V1', 'V3'],
+      ['V2', 'Layer2'],
+      ['Layer1A', 'Layer2'],
+      ['V3', 'Leaf'],
+      ['Layer2', 'Leaf']
+    ];
+
+    let activeId = 'V1';
+    const svg = document.getElementById('diagram');
+    const toggleHoriz = document.getElementById('toggleHoriz');
+    const toggleVert = document.getElementById('toggleVert');
+    const inspExpr = document.getElementById('inspExpr');
+    const inspDetails = document.getElementById('inspDetails');
+
+    function render() {
+      const showH = toggleHoriz.checked;
+      const showV = toggleVert.checked;
+      const active = activeId ? nodeById[activeId] : null;
+
+      let html = `
+        <defs>
+          <marker id="arrowV" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--muted-foreground)" />
+          </marker>
+          <marker id="arrowVActive" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--primary)" />
+          </marker>
+          <marker id="arrowH" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent)" />
+          </marker>
+        </defs>
+      `;
+
+      // Outer Levels bracket on left
+      html += `
+        <text x="10" y="18" font-size="12" font-weight="700" fill="var(--foreground)" font-family="monospace">Levels</text>
+        <path d="M 24 28 L 14 28 L 14 288 L 24 288" fill="none" stroke="var(--primary)" stroke-width="2" />
+      `;
+
+      // Draw each NodeList row band
+      levelsData.forEach(row => {
+        const bandY = row.y - 25;
+        html += `
+          <rect x="125" y="${bandY}" width="540" height="50" rx="6"
+                fill="#f8fafc" stroke="var(--card-border)" stroke-width="1" />
+          <text x="30" y="${row.y + 4}" font-size="12" font-family="monospace" font-weight="600" fill="var(--foreground)">
+            levels[${row.level}]
+          </text>
+          <text x="135" y="${row.y - 11}" font-size="10" font-family="monospace" fill="var(--muted-foreground)">
+            NodeList
+          </text>
+        `;
+      });
+
+      // Vertical parent/child edges
+      if (showV) {
+        vEdges.forEach(([pId, cId]) => {
+          const p = nodeById[pId];
+          const c = nodeById[cId];
+          const isHighlighted = active && (active.id === pId || active.id === cId);
+          const stroke = isHighlighted ? 'var(--primary)' : 'var(--muted-foreground)';
+          const opacity = isHighlighted ? '0.95' : '0.35';
+          const width = isHighlighted ? '2' : '1.25';
+          const marker = isHighlighted ? 'url(#arrowVActive)' : 'url(#arrowV)';
+          html += `
+            <line x1="${p.x}" y1="${p.y + 16}" x2="${c.x}" y2="${c.y - 18}"
+                  stroke="${stroke}" stroke-opacity="${opacity}" stroke-width="${width}"
+                  stroke-dasharray="${p.isVirtual || c.isVirtual ? '4 2' : 'none'}"
+                  marker-end="${marker}" />
+          `;
+        });
+      }
+
+      // Horizontal leftNode / rightNode pointers within each NodeList
+      if (showH) {
+        levelsData.forEach(row => {
+          for (let i = 0; i < row.nodes.length - 1; i++) {
+            const left = row.nodes[i];
+            const right = row.nodes[i + 1];
+            const leftEdge = left.x + (left.isVirtual ? 18 : 44);
+            const rightEdge = right.x - (right.isVirtual ? 18 : 44);
+            const isHighlighted = active && (active.id === left.id || active.id === right.id);
+            const opacity = isHighlighted ? '0.95' : '0.45';
+            html += `
+              <line x1="${leftEdge + 4}" y1="${row.y}" x2="${rightEdge - 4}" y2="${row.y}"
+                    stroke="var(--accent)" stroke-opacity="${opacity}" stroke-width="${isHighlighted ? 2 : 1.3}"
+                    marker-start="url(#arrowH)" marker-end="url(#arrowH)" />
+            `;
+          }
+        });
+      }
+
+      // Draw Nodes
+      levelsData.forEach(row => {
+        row.nodes.forEach(n => {
+          const isSel = active && active.id === n.id;
+          const strokeWidth = isSel ? 2.6 : 1.6;
+          if (n.isVirtual) {
+            html += `
+              <g class="cursor-pointer" data-id="${n.id}">
+                <circle cx="${n.x}" cy="${n.y}" r="16"
+                        fill="color-mix(in srgb, var(--warning) ${isSel ? '34%' : '18%'}, var(--card))"
+                        stroke="var(--warning)" stroke-width="${strokeWidth}" />
+                <text x="${n.x}" y="${n.y + 4}" text-anchor="middle" font-size="11" font-weight="700" font-family="monospace" fill="var(--foreground)">
+                  ${n.label}
+                </text>
+                <text x="${n.x + 22}" y="${n.y - 10}" text-anchor="start" font-size="9.5" font-family="monospace" fill="var(--muted-foreground)">
+                  [${n.index}]
+                </text>
+              </g>
+            `;
+          } else {
+            const w = 86;
+            const h = 30;
+            html += `
+              <g class="cursor-pointer" data-id="${n.id}">
+                <rect x="${n.x - w / 2}" y="${n.y - h / 2}" width="${w}" height="${h}" rx="5"
+                      fill="color-mix(in srgb, var(--chart-1) ${isSel ? '32%' : '16%'}, var(--card))"
+                      stroke="var(--chart-1)" stroke-width="${strokeWidth}" />
+                <text x="${n.x}" y="${n.y + 4}" text-anchor="middle" font-size="12" font-weight="700" font-family="monospace" fill="var(--foreground)">
+                  ${n.label}
+                </text>
+                <text x="${n.x + w / 2 - 4}" y="${n.y - h / 2 + 9}" text-anchor="end" font-size="9.5" font-family="monospace" fill="var(--muted-foreground)">
+                  [${n.index}]
+                </text>
+              </g>
+            `;
+          }
+        });
+      });
+
+      svg.innerHTML = html;
+
+      if (active) {
+        const typeName = active.isVirtual ? 'VirtualSugiyamaNode' : 'RealSugiyamaNode';
+        inspExpr.textContent = `levels[${active.level}][${active.index}] -> ${typeName}("${active.label}")`;
+        inspDetails.textContent = `leftNode=${active.leftNode ?? 'None'} | rightNode=${active.rightNode ?? 'None'} | parents=[${active.parents.join(', ')}] | children=[${active.children.join(', ')}]`;
+      }
+
+      svg.querySelectorAll('g[data-id]').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          activeId = el.getAttribute('data-id');
+          render();
+        });
+        el.addEventListener('click', () => {
+          activeId = el.getAttribute('data-id');
+          render();
+        });
+      });
+    }
+
+    toggleHoriz.addEventListener('change', render);
+    toggleVert.addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>

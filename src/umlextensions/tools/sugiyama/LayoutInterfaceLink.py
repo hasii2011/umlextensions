@@ -1,6 +1,6 @@
 
 from typing import List
-from typing import Tuple
+
 from typing import cast
 
 from umlmodel.enumerations.LinkType import LinkType
@@ -11,6 +11,7 @@ from umlshapes.links.UmlLink import UmlLink
 from umlshapes.shapes.UmlLineControlPoint import UmlLineControlPoint
 from wx import Point
 
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutPosition
 from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
@@ -40,8 +41,18 @@ class LayoutInterfaceLink:
             umlLink:
         """
         self._umlLink: UmlLink = umlLink
-        self._srcNode: SyntheticNode = cast(SyntheticNode, None)
-        self._dstNode: SyntheticNode = cast(SyntheticNode, None)
+        self._srcNode: SyntheticNode = cast(SyntheticNode, cast(object, None))
+        self._dstNode: SyntheticNode = cast(SyntheticNode, cast(object, None))
+
+    @property
+    def umlLink(self) -> UmlLink:
+        """
+        Return the underlying UML link.
+
+        Returns:
+            The wrapped UmlLink instance.
+        """
+        return self._umlLink
 
     @property
     def linkType(self) -> LinkType:
@@ -88,85 +99,68 @@ class LayoutInterfaceLink:
         """
         self._dstNode = node
 
-    def setSrcAnchorPos(self, x: int, y: int):
+    @property
+    def sourcePosition(self) -> LayoutPosition:
         """
-        Set anchor position (absolute coordinates) on source class.
+        Get the source endpoint position in absolute coordinates.
+
+        Returns: LayoutPosition of the source end
+        """
+        umLink: UmlLink = self._umlLink
+        x1: int
+        y1: int
+        x1, y1, _, _ = umLink.GetEnds()
+        return LayoutPosition(x=x1, y=y1)
+
+    @sourcePosition.setter
+    def sourcePosition(self, pos: LayoutPosition):
+        """
+        Set the source endpoint position in absolute coordinates.
 
         Args:
-            x:
-            y:
+            pos: New source LayoutPosition
         """
         umLink: UmlLink = self._umlLink
-        x1, y1, x2, y2 = umLink.GetEnds()
+        x2: int
+        y2: int
+        _, _, x2, y2 = umLink.GetEnds()
+        umLink.SetEnds(x1=pos.x, y1=pos.y, x2=x2, y2=y2)
 
-        umLink.SetEnds(x1=x, y1=y, x2=x2, y2=y2)
-        # self._umlLink.sourceAnchor.SetPosition(x, y)
-
-    def setDestAnchorPos(self, x: int, y: int):
+    @property
+    def destinationPosition(self) -> LayoutPosition:
         """
-        Set anchor position (absolute coordinates) on destination class.
+        Get the destination endpoint position in absolute coordinates.
+
+        Returns: LayoutPosition of the destination end
+        """
+        umLink: UmlLink = self._umlLink
+        x2: int
+        y2: int
+        _, _, x2, y2 = umLink.GetEnds()
+        return LayoutPosition(x=x2, y=y2)
+
+    @destinationPosition.setter
+    def destinationPosition(self, pos: LayoutPosition):
+        """
+        Set the destination endpoint position in absolute coordinates.
 
         Args:
-            x:
-            y:
+            pos: New destination LayoutPosition
         """
         umLink: UmlLink = self._umlLink
-        x1, y1, x2, y2 = umLink.GetEnds()
+        x1: int
+        y1: int
+        x1, y1, _, _ = umLink.GetEnds()
+        umLink.SetEnds(x1=x1, y1=y1, x2=pos.x, y2=pos.y)
 
-        umLink.SetEnds(x1=x1, y1=y1, x2=x, y2=y)
-
-        # self._umlLink.destinationAnchor.SetPosition(x, y)
-
-    def getSrcAnchorPos(self):
-        """
-        Get anchor position (absolute coordinates) on source class.
-
-        Returns:    (int, int) : tuple with (x, y) coordinates
-        """
-        umLink: UmlLink = self._umlLink
-        x1, y1, x2, y2 = umLink.GetEnds()
-
-        return x1, y1
-        # return self._umlLink.sourceAnchor.GetPosition()
-
-    def getDestAnchorPos(self):
-        """
-        Return anchor position (absolute coordinates) on destination class.
-
-        Returns:  (int, int) : tuple with (x, y) coordinates
-        """
-        umLink: UmlLink = self._umlLink
-        x1, y1, x2, y2 = umLink.GetEnds()
-
-        return x2, y2
-
-    # noinspection PyUnusedLocal
-    def addControlPoint(self, control: UmlLineControlPoint, last=None):
+    def addControlPoint(self, control: UmlLineControlPoint):
         """
         Add a control point. If the parameter last present, add a point right after last.
-        TODO: the 'last' parameter is used by no one
 
         Args:
             control:  control point to add
-            last:     add control right after last
         """
         self._umlLink.addLineControlPoint(umlPosition=control.position)
-
-    def removeControlPoint(self, controlPoint):
-        """
-        Remove a control point.
-
-        TODO:  This is not used by the Sugiyama algorithm
-
-        Args:
-            controlPoint: control point to remove
-        """
-        umlLink: UmlLink = self._umlLink
-
-        controlPoints: List[UmlLineControlPoint] = umlLink.GetLineControlPoints()
-        controlPoints.remove(controlPoint)
-
-        # self._umlLink.Remove(controlPoint)
 
     def removeAllControlPoints(self):
         """

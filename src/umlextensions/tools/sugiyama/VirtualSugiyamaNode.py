@@ -1,5 +1,6 @@
 
 from typing import Tuple
+from typing import Optional
 
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 
@@ -10,42 +11,33 @@ class VirtualSugiyamaNode(SugiyamaNode):
     will not be visible on the diagram.  It is used to reserve space
     for the links drawing.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, horizontalSpacing: Optional[int] = None):
+        super().__init__(horizontalSpacing=horizontalSpacing)
 
         self.__position: Tuple[int, int] = (0, 0)
         self.__size:     Tuple[int, int] = (1, 1)
 
-    def setSize(self, width: int, height: int):
-        """
-        Set the size of the node.
-
-        Args:
-            width: Size
-            height: Size
-        """
-        self.__size = (width, height)
-
-    def getSize(self) -> Tuple[int, int]:
+    @property
+    def size(self) -> Tuple[int, int]:
         """
         Get size of node.
 
         Returns: A tuple (int, int) : (width, height)
-
         """
         return self.__size
 
-    def setPosition(self, x: int, y: int):
+    @size.setter
+    def size(self, newSize: Tuple[int, int]):
         """
-        Set node position.
+        Set the size of the node.
 
         Args:
-            x: position in absolute coordinates
-            y: position in absolute coordinates
+            newSize: (width, height) size tuple
         """
-        self.__position = (x, y)
+        self.__size = newSize
 
-    def getPosition(self) -> Tuple[int, int]:
+    @property
+    def position(self) -> Tuple[int, int]:
         """
         Get node position.
 
@@ -53,5 +45,15 @@ class VirtualSugiyamaNode(SugiyamaNode):
         """
         return self.__position
 
+    @position.setter
+    def position(self, pos: Tuple[int, int]):
+        """
+        Set node position.
+
+        Args:
+            pos: (x, y) position in absolute coordinates
+        """
+        self.__position = pos
+
     def __repr__(self):
-        return f'VirtualSugiyamaNode level: {self.getLevel()}'
+        return f'VirtualSugiyamaNode level: {self.level}'

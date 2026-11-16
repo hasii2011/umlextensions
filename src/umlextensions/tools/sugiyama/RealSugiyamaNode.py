@@ -1,7 +1,11 @@
 
 from typing import Tuple
+from typing import Optional
 
-from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutPosition
+from umlshapes.ShapeTypes import UmlShape
+
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutPosition
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutSize
 from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
 
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
@@ -11,97 +15,102 @@ from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
 
 class RealSugiyamaNode(SugiyamaNode):
     """
-    RealSugiyamaNode: A RealSugiyamaNode object is a node of the Sugiyama
-    graph associated to an OglObject of the UML diagram, which can be a
-    class or a note.
-
-    For more information, see ../ToSugiyama.py
-
-    Instantiated by: ../ToSugiyama.py
-
-    :author: Nicolas Dubois
-    :contact: nicdub@gmx.ch
-    :version: $Revision: 1.4 $
+    A real node in the Sugiyama layout graph associated with an actual UML
+    shape (such as a class or note) in the diagram.
     """
-    def __init__(self, oglObject):
+    def __init__(self, umlShape: UmlShape, horizontalSpacing: Optional[int] = None):
         """
+        Initialize a real Sugiyama node wrapping the given UML shape.
 
         Args:
-            oglObject: oglObject: diagram class or note
+            umlShape:          The UML shape (such as a class or note) to wrap for layout.
+            horizontalSpacing: Optional minimum horizontal clearance buffer. If omitted,
+                               defaults to SugiyamaPreferences().horizontalSpacing.
         """
-        super().__init__()
+        super().__init__(horizontalSpacing=horizontalSpacing)
 
-        self.__aLayoutNode = LayoutInterfaceNode(oglObject)
+        self._layoutInterfaceNode: LayoutInterfaceNode = LayoutInterfaceNode(umlShape)
 
-    def getSize(self) -> Tuple[int, int]:
+    @property
+    def size(self) -> Tuple[int, int]:
         """
         Get the size of the node.
 
         Returns: (int, int) : tuple (width, height)
         """
-        return self.__aLayoutNode.size
+        layoutSize: LayoutSize = self._layoutInterfaceNode.size
+        return layoutSize.width, layoutSize.height
 
-    def setPosition(self, xCoord: int, yCoord: int):
-        """
-        Set node position.
-
-        Args:
-            xCoord:  x position in absolute coordinates
-            yCoord:  y position in absolute coordinates
-        """
-        self.__aLayoutNode.position = LayoutPosition(x=xCoord, y=yCoord)
-
-    def getPosition(self) -> Tuple[int, int]:
+    @property
+    def position(self) -> Tuple[int, int]:
         """
         Get node position.
 
         Returns: (int, int) : tuple (x, y) in absolute coordinates
         """
-        return self.__aLayoutNode.position.x, self.__aLayoutNode.position.y
+        return self._layoutInterfaceNode.position.x, self._layoutInterfaceNode.position.y
 
-    def getName(self) -> str:
+    @position.setter
+    def position(self, pos: Tuple[int, int]):
         """
-        The name of the OglObject.
+        Set node position.
 
-        Returns:  Name of the UML Shape
+        Args:
+            pos: (x, y) position in absolute coordinates
         """
-        return self.__aLayoutNode.name
+        xCoord: int
+        yCoord: int
+        xCoord, yCoord = pos
+        self._layoutInterfaceNode.position = LayoutPosition(x=xCoord, y=yCoord)
+
+    @property
+    def name(self) -> str:
+        """
+        The name of the underlying UML shape.
+
+        Returns: Name of the UML shape.
+        """
+        return self._layoutInterfaceNode.name
 
     def fixAnchorPos(self):
         """
-        Fix the positions of the anchor points.
+        Fix the positions of the link endpoints.
 
-        The anchor points are placed according to parent and child positions.
+        The link endpoints are placed according to parent and child positions.
         Before calling this method, be sure you have set the indices of all
-        parent and children (see setIndex).
+        parent and children (see index property).
 
         """
         # Get position and size of node
-        (width, height) = self.getSize()
-        (x, y) = self.getPosition()
+        (width, height) = self.size
+        (x, y) = self.position
 
-        # Fix all children anchors position
+        # Fix all children endpoints position
         # Sort child list to eliminate crossing
-        children: SugiyamaVertexEdges = self.getChildren()
+        children: SugiyamaVertexEdges = self.children
         children.sort(key=SugiyamaGlobals.cmpIndex)
 
         nChildren: int = len(children)
         # For all children
         for i in range(nChildren):
             (child, link) = children[i]
-            # Fix anchors coordinates
-            link.setDestAnchorPos(x + width * (i + 1) // (nChildren + 1), y + height)
+            # Fix destination coordinates
+            destX: int = x + width * (i + 1) // (nChildren + 1)
+            destY: int = y + height
+            link.destinationPosition = LayoutPosition(x=destX, y=destY)
 
-        # Parent anchors position
+        # Parent endpoints position
         # Sort parents list to eliminate crossing
-        parents: SugiyamaVertexEdges = self.getParents()
+        parents: SugiyamaVertexEdges = self.parents
         parents.sort(key=SugiyamaGlobals.cmpIndex)
         nParents: int = len(parents)
         # For all parents
         for i in range(nParents):
             (parent, link) = parents[i]
-            # Fix anchors coordinates
-            link.setSrcAnchorPos(x + width * (i + 1) // (nParents + 1), y)
+            # Fix source coordinates
+            srcX: int = x + width * (i + 1) // (nParents + 1)
+            srcY: int = y
+            link.sourcePosition = LayoutPosition(x=srcX, y=srcY)
 
     def __repr__(self) -> str:
-        return f'RealSugiyamaNode name: {self.getName()} level: {self.getLevel()}'
+        return f'RealSugiyamaNode name: {self.name} level: {self.level}'
