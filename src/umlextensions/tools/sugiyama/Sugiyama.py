@@ -416,7 +416,7 @@ class Sugiyama:
             # Add node to externalNodes
             externalNodes[node] = count
 
-        # If there is no level (no inheritance or realisation) but there are
+        # If there is no level (no inheritance or realization) but there are
         # nodes to put in, create new level
         if not self._levels and externalNodes:
             # Add one level for nodes
@@ -715,7 +715,7 @@ class Sugiyama:
                 level[i].setRightNode(level[i + 1])
 
             # For first and last nodes of the level
-            level[0].setLeftNode(None)      # type: ignore
+            level[0].setLeftNode(cast(SugiyamaNode, cast(object, None)))
             level[nbNodes - 1].setRightNode(cast(SugiyamaNode, None))
 
     def _fixNodesPositions(self):

@@ -90,7 +90,7 @@ class SugiyamaNode:
         """
         Get position of node.
 
-        This function has to be implemented.  Should be a 'pass'  But Pycharm complains
+        This function has to be implemented.  Should be a 'pass'  But PyCharm complains
         at method self.__pushToRight()
 
         Returns:    (int, int): tuple (x, y) is absolute coordinates
@@ -350,7 +350,7 @@ class SugiyamaNode:
 
         For reading this value, use getBarycenter()
         """
-        parentsAndChildren: SugiyamaVertexEdges = cast(SugiyamaVertexEdges, self.__parents + self.__children)
+        parentsAndChildren: SugiyamaVertexEdges = self.__parents + self.__children
         self.__barycenter = self.__getAverageX(parentsAndChildren)
 
     def getBarycenter(self) -> int:
