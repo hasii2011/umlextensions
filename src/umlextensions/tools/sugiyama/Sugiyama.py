@@ -193,7 +193,7 @@ class Sugiyama:
         # Fix nodes indexes corresponding to matrix column and line index
         nbNodes = len(nodesList)  # Number of nodes in hierarchy
         for i in range(nbNodes):
-            nodesList[i].setIndex(i)
+            nodesList[i].index = i
         # Initialize the boolean matrix
         #
         # Example of use:
@@ -213,9 +213,9 @@ class Sugiyama:
         # For each node in graph
         for node in nodesList:
             # For each father
-            for (father, link) in node.getParents():
+            for (father, link) in node.parents:
                 # Mark relation with a '1' on coordinates[index Son][index Father]
-                matrix[node.getIndex()][father.getIndex()] = 1      # type: ignore
+                matrix[node.index][father.index] = 1      # type: ignore
         # Define levels
 
         # Sum each column of the matrix
@@ -270,8 +270,8 @@ class Sugiyama:
             level = self._levels[idx]
             for i in range(len(level)):
                 node = level[i]
-                node.setIndex(i)
-                node.setLevel(idx)
+                node.index = i
+                node.level = idx
 
         # No error
         return True
@@ -298,10 +298,10 @@ class Sugiyama:
 
             srcNode = zLink.source
             dstNode = zLink.destination
-            dstNodeLevel = dstNode.getLevel()
+            dstNodeLevel = dstNode.level
 
             # List of level index between dstNode and srcNode
-            indexLevels = list(range(dstNodeLevel + 1, srcNode.getLevel()))
+            indexLevels = list(range(dstNodeLevel + 1, srcNode.level))
 
             # Continue only if there is at least one level between the two
             # nodes
@@ -314,7 +314,7 @@ class Sugiyama:
             # Fix level
             for i in range(len(virtualNodes)):
                 virtualNode: VirtualSugiyamaNode = virtualNodes[i]
-                virtualNode.setLevel(dstNodeLevel + i + 1)
+                virtualNode.level = dstNodeLevel + i + 1
 
             # Fix relation between virtual nodes
             for i in range(len(virtualNodes) - 1):
@@ -325,15 +325,15 @@ class Sugiyama:
             virtualNodes[-1].addChild(srcNode, zLink)
             virtualNodes[0].addParent(dstNode, zLink)
 
-            updateLink(dstNode.getChildren(), zLink, virtualNodes[0])
-            updateLink(srcNode.getParents(), zLink, virtualNodes[-1])
+            updateLink(dstNode.children, zLink, virtualNodes[0])
+            updateLink(srcNode.parents, zLink, virtualNodes[-1])
 
             # Add virtual nodes in levels
             for i in range(len(virtualNodes)):
                 level = self._levels[dstNodeLevel + i + 1]
                 level.append(virtualNodes[i])
                 # Fix index of the virtual node
-                level[-1].setIndex(len(level) - 1)
+                level[-1].index = len(level) - 1
 
             # Add virtual nodes in link in order bottom to top
             for i in range(len(virtualNodes) - 1, -1, -1):
@@ -409,7 +409,7 @@ class Sugiyama:
         for node in self._nonHierarchyGraphNodesList:
             # Count zLink to internal nodes
             count = 0
-            for (dstNode, link) in node.getNonHierarchicalLink():
+            for (dstNode, link) in node.nonHierarchicalLinks:
                 if dstNode in internalNodes:
                     count += 1
 
@@ -452,13 +452,13 @@ class Sugiyama:
             nodes     = []  # List of connected internal nodes
 
             # For all non-hierarchical links
-            for (zDstNode, zLink) in zExtNode.getNonHierarchicalLink():
+            for (zDstNode, zLink) in zExtNode.nonHierarchicalLinks:
                 # If node linked to internal nodes
                 if zDstNode in zInternalNodes:
                     # Add connected node to list
                     nodes.append(zDstNode)
                     # Add level to sum and count number of zLink
-                    summation += zDstNode.getLevel()
+                    summation += zDstNode.level
                     nb += 1
             # If no zLink to internal nodes
             # if nodes == []:
@@ -471,11 +471,11 @@ class Sugiyama:
             bestLevel = None
             # Fix best level on first node
             if nodes:
-                bestLevel = nodes[0].getLevel()
+                bestLevel = nodes[0].level
 
             # For all connected internal nodes
             for connectedInternalNode in nodes:
-                nodeLevel = connectedInternalNode.getLevel()
+                nodeLevel = connectedInternalNode.level
 
                 # If current node is on bestLevel
                 if nodeLevel == bestLevel:
@@ -494,7 +494,7 @@ class Sugiyama:
                     levelNodes = [connectedInternalNode]
 
             # Return average of nodes' level
-            return bestLevel, levelNodes[len(levelNodes) // 2].getIndex()
+            return bestLevel, levelNodes[len(levelNodes) // 2].index
 
         # Function for getting level that has fewer nodes.
         def getLessFilledLevel():
@@ -520,7 +520,7 @@ class Sugiyama:
 
             # For all his linked external nodes, update their counter
             # zExtNode = None   NOT USED
-            for (zDstNode, zLink) in zNode.getNonHierarchicalLink():
+            for (zDstNode, zLink) in zNode.nonHierarchicalLinks:
                 if zDstNode in zExternalNodes:
                     zExternalNodes[zDstNode] += 1
 
@@ -529,7 +529,7 @@ class Sugiyama:
             # Get external node that has most connections to internalNodes
             extNode = mostConnection(externalNodes)
 
-            self.logger.info(f'extNode.getName(): `{extNode.getName()}`')
+            self.logger.info(f'extNode.name: `{extNode.name}`')
             # Evaluate best level and index for the node
             (level, index) = bestPos(extNode, internalNodes)
 
@@ -540,12 +540,12 @@ class Sugiyama:
                 index = len(self._levels[level])
 
             # Add node in levels
-            extNode.setLevel(level)
-            extNode.setIndex(index)
+            extNode.level = level
+            extNode.index = index
             self._levels[level].insert(index, extNode)
             # Shift index attributes on right
             for i in range(index + 1, len(self._levels[level])):
-                self._levels[level][i].setIndex(i)
+                self._levels[level][i].index = i
 
             # Move node from external to internal nodes
             moveExternal2Internal(extNode, internalNodes, externalNodes)
@@ -599,18 +599,18 @@ class Sugiyama:
 
         # Shift same barycenter
         for i in range(len(level) - 1):
-            if level[i].getBarycenter() is not None and level[i].getBarycenter() == level[i + 1].getBarycenter():
+            if level[i].barycenter is not None and level[i].barycenter == level[i + 1].barycenter:
 
                 level.insert(i, level.pop(i + 1))
                 # Fix index
-                level[i].setIndex(i)
-                level[i + 1].setIndex(i + 1)
+                level[i].index = i
+                level[i + 1].index = i + 1
 
         # If new order give more intersections, return to old order
         if self._getNbIntersectAll() > nbIntersections:
             self._levels[indexLevel] = levelSaved
             for i in range(len(levelSaved)):
-                levelSaved[i].setIndex(i)
+                levelSaved[i].index = i
 
     def _sortLevel(self, indexLevel):
         """
@@ -628,7 +628,7 @@ class Sugiyama:
         # Get list of nodes who have a barycenter value
         listIndex = []
         for i in range(len(levelCopy)):
-            if levelCopy[i].getBarycenter() is not None:
+            if levelCopy[i].barycenter is not None:
                 listIndex.append(i)
 
         # Create list of nodes to sort
@@ -645,14 +645,14 @@ class Sugiyama:
 
         # Fix indexes
         for i in range(len(levelCopy)):
-            levelCopy[i].setIndex(i)
+            levelCopy[i].index = i
 
         # If there are more intersections than before, keep original order
         nbIntersect2 = self._getNbIntersectAll()
         if nbIntersect < nbIntersect2:
             # Fix indexes
             for i in range(len(level)):
-                level[i].setIndex(i)
+                level[i].index = i
         else:
             # Else set new order
             self._levels[indexLevel] = levelCopy
@@ -687,14 +687,14 @@ class Sugiyama:
         # For each node of the layer
         for indFatherL in range(len(nodes) - 1):
             # For each son of the current node
-            for (sonL, link) in nodes[indFatherL].getChildren():
+            for (sonL, link) in nodes[indFatherL].children:
 
                 # Check intersect with all next parents
                 indFatherR = indFatherL + 1
                 while indFatherR < len(nodes):
-                    for (sonR, rLink) in nodes[indFatherR].getChildren():
+                    for (sonR, rLink) in nodes[indFatherR].children:
                         # If intersect
-                        if sonL.getIndex() > sonR.getIndex():
+                        if sonL.index > sonR.index:
                             count += 1
                     indFatherR += 1
 
@@ -711,12 +711,12 @@ class Sugiyama:
             nbNodes = len(level)
 
             for i in range(nbNodes - 1):
-                level[i + 1].setLeftNode(level[i])
-                level[i].setRightNode(level[i + 1])
+                level[i + 1].leftNode = level[i]
+                level[i].rightNode = level[i + 1]
 
             # For first and last nodes of the level
-            level[0].setLeftNode(cast(SugiyamaNode, cast(object, None)))
-            level[nbNodes - 1].setRightNode(cast(SugiyamaNode, None))
+            level[0].leftNode = cast(SugiyamaNode, cast(object, None))
+            level[nbNodes - 1].rightNode = cast(SugiyamaNode, None)
 
     def _fixNodesPositions(self):
 
@@ -727,8 +727,8 @@ class Sugiyama:
             maxHeight: int = 0
 
             for node in level:
-                (width, height) = node.getSize()
-                node.setPosition(x, y)
+                (width, height) = node.size
+                node.position = (x, y)
                 x += width + H_SPACE
                 maxHeight = max(maxHeight, height)
             y += maxHeight + V_SPACE

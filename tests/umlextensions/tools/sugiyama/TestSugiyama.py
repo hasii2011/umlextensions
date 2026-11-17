@@ -170,8 +170,8 @@ class TestSugiyama(UnitTestBaseW):
             prevEndX: int = -1
             node:     Nodes
             for node in levelRow:
-                posX, posY = node.getPosition()
-                width, height = node.getSize()
+                posX, posY = node.position
+                width, height = node.size
                 self.assertGreaterEqual(posX, 0)
                 self.assertGreaterEqual(posY, 0)
                 self.assertGreater(posX, prevEndX)

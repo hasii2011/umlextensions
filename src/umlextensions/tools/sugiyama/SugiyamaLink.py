@@ -53,11 +53,11 @@ class SugiyamaLink(LayoutInterfaceLink):
         # For all virtual nodes, add control points to pass through
         for virtualNode in self.__virtualNodes:
             #  ~ print "Virtual node"
-            (xVNode, yVNode) = virtualNode.getPosition()
+            (xVNode, yVNode) = virtualNode.position
             # If link goes to up-left
             if x > xVNode:
                 # Find the first real node on the right of the virtual node
-                neighbor = virtualNode.getRightNode()
+                neighbor = virtualNode.rightNode
                 #
                 # Don't like embedded imports, but need to avoid cyclical dependency
                 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
@@ -65,17 +65,17 @@ class SugiyamaLink(LayoutInterfaceLink):
                 while isinstance(neighbor, VirtualSugiyamaNode) and neighbor is not None:
 
                     # Try next neighbor
-                    neighbor = neighbor.getRightNode()
+                    neighbor = neighbor.rightNode
 
                 # If real node found
                 if neighbor is not None:
-                    # ctrlPoint = ControlPoint(xVNode, neighbor.getPosition()[1] + neighbor.getSize()[1])
+                    # ctrlPoint = ControlPoint(xVNode, neighbor.position[1] + neighbor.size[1])
                     ctrlPoint = UmlLineControlPoint(umlFrame=self._umlFrame,
                                                     umlLink=self._umlLink,
                                                     controlPointType=UmlLineControlPointType.LINE_POINT,
                                                     size=SUGIYAMA_CONTROL_POINT_SIZE,
                                                     x=xVNode,
-                                                    y=neighbor.getPosition()[1] + neighbor.getSize()[1]
+                                                    y=neighbor.position[1] + neighbor.size[1]
                                                     )
                     self.addControlPoint(ctrlPoint)
 
@@ -84,23 +84,23 @@ class SugiyamaLink(LayoutInterfaceLink):
                 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
                 # Find the first real node on the left of the virtual node
-                neighbor = virtualNode.getLeftNode()
+                neighbor = virtualNode.leftNode
                 while isinstance(neighbor, VirtualSugiyamaNode) and neighbor is not None:
 
                     # Try next neighbor
-                    neighbor = neighbor.getLeftNode()
+                    neighbor = neighbor.leftNode
 
                 # If real node found
                 if neighbor is not None:
                     # def __init__(self, x: int, y: int, parent=None):
 
-                    # ctrlPoint = ControlPoint(xVNode, neighbor.getPosition()[1] + neighbor.getSize()[1])
+                    # ctrlPoint = ControlPoint(xVNode, neighbor.position[1] + neighbor.size[1])
                     ctrlPoint = UmlLineControlPoint(umlFrame=self._umlFrame,
                                                     umlLink=self._umlLink,
                                                     controlPointType=UmlLineControlPointType.LINE_POINT,
                                                     size=SUGIYAMA_CONTROL_POINT_SIZE,
                                                     x=xVNode,
-                                                    y=neighbor.getPosition()[1] + neighbor.getSize()[1]
+                                                    y=neighbor.position[1] + neighbor.size[1]
                                                     )
                     self.addControlPoint(ctrlPoint)
 

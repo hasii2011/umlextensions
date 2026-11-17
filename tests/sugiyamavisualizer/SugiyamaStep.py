@@ -325,21 +325,21 @@ class SugiyamaStepper:
                     height:   int = VIRTUAL_NODE_DISPLAY_SIZE
                 else:
                     realNode: RealSugiyamaNode = cast(RealSugiyamaNode, node)
-                    nodeName = realNode.getName()
-                    width, height = realNode.getSize()
+                    nodeName = realNode.name
+                    width, height = realNode.size
 
                 if usePreviewPositions:
                     posX: int = xCoord
                     posY: int = yCoord
                 else:
-                    posX, posY = node.getPosition()
+                    posX, posY = node.position
 
-                rawIndex: Optional[int] = node.getIndex()
+                rawIndex: Optional[int] = node.index
                 nodeIndex: int = -1
                 if rawIndex is not None:
                     nodeIndex = rawIndex
 
-                rawBarycenter: Optional[float] = node.getBarycenter()
+                rawBarycenter: Optional[float] = node.barycenter
                 barycenterVal: float = 0.0
                 if rawBarycenter is not None:
                     barycenterVal = float(rawBarycenter)

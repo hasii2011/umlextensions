@@ -47,14 +47,14 @@ class SugiyamaGlobals:
         Returns:
         """
         sugiyamaNode: SugiyamaNode = aTuple[0]
-        l: SugiyamaNode = sugiyamaNode.getLeftNode()
-        r: SugiyamaNode = sugiyamaNode.getRightNode()
+        l: SugiyamaNode = sugiyamaNode.leftNode
+        r: SugiyamaNode = sugiyamaNode.rightNode
 
         if l is None or r is None:
             return 0
         else:
-            SugiyamaGlobals.clsLogger.info(f' l.getIndex(): {l.getIndex()}  r.getIndex(): {r.getIndex()}')
-            return cmp(l.getIndex(), r.getIndex())
+            SugiyamaGlobals.clsLogger.info(f' l.index: {l.index}  r.index: {r.index}')
+            return cmp(l.index, r.index)
 
     @staticmethod
     def cmpBarycenter(theNode: SugiyamaNode) -> int:
@@ -65,13 +65,13 @@ class SugiyamaGlobals:
 
         Returns: The return value from cmp()
         """
-        xNode: SugiyamaNode = theNode.getLeftNode()
-        yNode: SugiyamaNode = theNode.getRightNode()
+        xNode: SugiyamaNode = theNode.leftNode
+        yNode: SugiyamaNode = theNode.rightNode
 
         if xNode is None or yNode is None:
             return 0
         else:
-            return cmp(xNode.getBarycenter(), yNode.getBarycenter())
+            return cmp(xNode.barycenter, yNode.barycenter)
 
     @staticmethod
     def waitKey(extensionsFacade: IExtensionsFacade, optionalMessage: str | None):
