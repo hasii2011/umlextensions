@@ -2,6 +2,8 @@
 Tabular inspector panel for Sugiyama layout phases, levels, and link metrics.
 """
 
+from typing import List
+
 from wx import BORDER_SUNKEN
 from wx import FONTFAMILY_SWISS
 from wx import FONTSTYLE_NORMAL
@@ -18,8 +20,9 @@ from wx import Window
 
 from wx.lib.sized_controls import SizedPanel
 
-from tests.sugiyamavisualizer.SugiyamaDataSet import SugiyamaDataSet
-from tests.sugiyamavisualizer.SugiyamaDataSet import SugiyamaEdgeSpec
+from tests.sugiyamavisualizer.SugiyamaStep import SugiyamaLinkSnapshot
+from tests.sugiyamavisualizer.SugiyamaStep import SugiyamaNodeSnapshot
+from tests.sugiyamavisualizer.SugiyamaStep import SugiyamaStepSnapshot
 
 INSPECTOR_FONT_SIZE: int = 12
 
@@ -73,34 +76,54 @@ class SugiyamaInspectorPanel(SizedPanel):
         self._linksList.AppendColumn('Control Pts', width=100)
         self._notebook.AddPage(self._linksList, 'Links')
 
-    def showDataSet(self, dataSet: SugiyamaDataSet):
+    def showStep(self, snapshot: SugiyamaStepSnapshot, totalSteps: int, presetName: str):
         """
-        Populate the Overview and Links tabs for the selected preset dataset.
+        Populate Overview, Levels, and Links tabs from a SugiyamaStepSnapshot.
 
         Args:
-            dataSet: The active preset dataset.
+            snapshot: Active step snapshot.
+            totalSteps: Total number of steps in the current preset run.
+            presetName: Name of the active preset dataset.
         """
         summary: str = (
-            f'Preset: {dataSet.name}\n\n'
-            f'{dataSet.description}\n\n'
-            f'Nodes: {len(dataSet.nodes)}\n'
-            f'Edges: {len(dataSet.edges)}\n'
-            f'Phase: Initial (unlaid)'
+            f'Preset: {presetName}\n'
+            f'Step: {snapshot.stepIndex} / {totalSteps - 1}\n'
+            f'Phase: {snapshot.phaseName}\n\n'
+            f'{snapshot.description}\n\n'
+            f'Levels: {len(snapshot.levels)}\n'
+            f'Virtual Nodes: {snapshot.virtualNodeCount}\n'
+            f'Hierarchical Crossings: {snapshot.crossingCount}'
         )
         self._overviewText.SetValue(summary)
 
         self._levelsList.DeleteAllItems()
+        levelRowIdx: int = 0
+        levelRow:    List[SugiyamaNodeSnapshot]
+        for levelRow in snapshot.levels:
+            nodeSnap: SugiyamaNodeSnapshot
+            for nodeSnap in levelRow:
+                nodeType: str = 'Real'
+                if nodeSnap.isVirtual:
+                    nodeType = 'Virtual'
+                self._levelsList.InsertItem(levelRowIdx, str(nodeSnap.level))
+                self._levelsList.SetItem(levelRowIdx, 1, str(nodeSnap.index))
+                self._levelsList.SetItem(levelRowIdx, 2, nodeSnap.name)
+                self._levelsList.SetItem(levelRowIdx, 3, nodeType)
+                self._levelsList.SetItem(levelRowIdx, 4, f'{nodeSnap.barycenter:.2f}')
+                levelRowIdx += 1
+
         self._linksList.DeleteAllItems()
-
-        rowIndex: int = 0
-        edgeSpec: SugiyamaEdgeSpec
-        for edgeSpec in dataSet.edges:
-            isHierarchical: str = 'Yes'
-            if edgeSpec.linkType.name != 'INHERITANCE' and edgeSpec.linkType.name != 'INTERFACE':
-                isHierarchical = 'No'
-
-            self._linksList.InsertItem(rowIndex, edgeSpec.sourceName)
-            self._linksList.SetItem(rowIndex, 1, edgeSpec.targetName)
-            self._linksList.SetItem(rowIndex, 2, isHierarchical)
-            self._linksList.SetItem(rowIndex, 3, '2')
-            rowIndex += 1
+        linkRowIdx: int = 0
+        linkSnap:   SugiyamaLinkSnapshot
+        for linkSnap in snapshot.links:
+            isHierarchicalStr: str = 'No'
+            if linkSnap.isHierarchical:
+                isHierarchicalStr = 'Yes'
+            ptCount: int = 2
+            if len(linkSnap.controlPoints) > 0:
+                ptCount = len(linkSnap.controlPoints)
+            self._linksList.InsertItem(linkRowIdx, linkSnap.sourceName)
+            self._linksList.SetItem(linkRowIdx, 1, linkSnap.targetName)
+            self._linksList.SetItem(linkRowIdx, 2, isHierarchicalStr)
+            self._linksList.SetItem(linkRowIdx, 3, str(ptCount))
+            linkRowIdx += 1

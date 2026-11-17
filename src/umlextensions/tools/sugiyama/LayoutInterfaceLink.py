@@ -1,6 +1,6 @@
 
 from typing import List
-from typing import Tuple
+
 from typing import cast
 
 from umlmodel.enumerations.LinkType import LinkType
@@ -42,6 +42,16 @@ class LayoutInterfaceLink:
         self._umlLink: UmlLink = umlLink
         self._srcNode: SyntheticNode = cast(SyntheticNode, None)
         self._dstNode: SyntheticNode = cast(SyntheticNode, None)
+
+    @property
+    def umlLink(self) -> UmlLink:
+        """
+        Return the underlying UML link.
+
+        Returns:
+            The wrapped UmlLink instance.
+        """
+        return self._umlLink
 
     @property
     def linkType(self) -> LinkType:
