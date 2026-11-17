@@ -40,8 +40,8 @@ class LayoutInterfaceLink:
             umlLink:
         """
         self._umlLink: UmlLink = umlLink
-        self._srcNode: SyntheticNode = cast(SyntheticNode, None)
-        self._dstNode: SyntheticNode = cast(SyntheticNode, None)
+        self._srcNode: SyntheticNode = cast(SyntheticNode, cast(object, None))
+        self._dstNode: SyntheticNode = cast(SyntheticNode, cast(object, None))
 
     @property
     def umlLink(self) -> UmlLink:
@@ -150,15 +150,12 @@ class LayoutInterfaceLink:
 
         return x2, y2
 
-    # noinspection PyUnusedLocal
-    def addControlPoint(self, control: UmlLineControlPoint, last=None):
+    def addControlPoint(self, control: UmlLineControlPoint):
         """
         Add a control point. If the parameter last present, add a point right after last.
-        TODO: the 'last' parameter is used by no one
 
         Args:
             control:  control point to add
-            last:     add control right after last
         """
         self._umlLink.addLineControlPoint(umlPosition=control.position)
 
