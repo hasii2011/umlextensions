@@ -5,6 +5,7 @@ from abc import abstractmethod
 
 from typing import cast
 from typing import NewType
+from typing import Optional
 from typing import Tuple
 from typing import List
 from typing import TYPE_CHECKING
@@ -13,8 +14,9 @@ from umlextensions.tools.sugiyama.SugiyamaConstants import H_SPACE
 if TYPE_CHECKING:
     from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
 
-SugiyamaVertexEdge  = NewType("SugiyamaVertexEdge",  Tuple['SugiyamaNode', 'SugiyamaLink'])
-SugiyamaVertexEdges = NewType("SugiyamaVertexEdges", List[SugiyamaVertexEdge])
+SugiyamaVertexEdge   = NewType("SugiyamaVertexEdge",  Tuple['SugiyamaNode', 'SugiyamaLink'])
+SugiyamaVertexEdges  = NewType("SugiyamaVertexEdges", List[SugiyamaVertexEdge])
+OptionalSugiyamaNode = Optional['SugiyamaNode']
 
 BALANCE_MOVE_THRESHOLD: int = 3
 
@@ -34,19 +36,19 @@ class SugiyamaNode(ABC):
         # on indexes or x coordinate. For more information, see function
         # getBarycenter()
         self.__barycenter: int = cast(int, None)
-        self.__index: int | None = None
+        self.__index: int = cast(int, cast(object, None))
         """
         Index position on the level
         """
-        self.__level: int | None = None
+        self.__level: int = cast(int, cast(object, None))
         """
         Index of level
         """
-        self.__leftNode: SugiyamaNode | None = None
+        self.__leftNode: OptionalSugiyamaNode = None
         """
         Node direct on the left on the same level
         """
-        self.__rightNode = None
+        self.__rightNode: OptionalSugiyamaNode = None
         """
         Node direct on the right on the same level
         """
@@ -139,7 +141,7 @@ class SugiyamaNode(ABC):
         return self.__links
 
     @property
-    def level(self) -> int | None:
+    def level(self) -> int:
         """
         Get level index.
 
@@ -158,7 +160,7 @@ class SugiyamaNode(ABC):
         self.__level = level
 
     @property
-    def index(self) -> int | None:
+    def index(self) -> int:
         """
         Get index of node.
 
@@ -177,17 +179,16 @@ class SugiyamaNode(ABC):
         self.__index = index
 
     @property
-    def leftNode(self) -> 'SugiyamaNode':
+    def leftNode(self) -> OptionalSugiyamaNode:
         """
-        TODO: Fix this on 3.11 when allowed to return self
         Get the left neighbor node.
 
         Returns:    left neighbor
         """
-        return self.__leftNode  # type: ignore
+        return self.__leftNode
 
     @leftNode.setter
-    def leftNode(self, node: 'SugiyamaNode'):
+    def leftNode(self, node: OptionalSugiyamaNode):
         """
         Set the left neighbor node.
 
@@ -197,17 +198,16 @@ class SugiyamaNode(ABC):
         self.__leftNode = node
 
     @property
-    def rightNode(self) -> 'SugiyamaNode':
+    def rightNode(self) -> OptionalSugiyamaNode:
         """
-        TODO: Fix this on 3.11 when allowed to return self
         Get the right neighbor node.
 
         Returns:    right neighbor
         """
-        return self.__rightNode     # type: ignore
+        return self.__rightNode
 
     @rightNode.setter
-    def rightNode(self, node: 'SugiyamaNode'):
+    def rightNode(self, node: OptionalSugiyamaNode):
         """
         Set the right neighbor node.
 

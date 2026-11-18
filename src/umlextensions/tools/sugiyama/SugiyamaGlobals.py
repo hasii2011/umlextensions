@@ -12,6 +12,7 @@ from wx import MessageBox
 from wx import Yield as wxYield
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
+from umlextensions.tools.sugiyama.SugiyamaNode import OptionalSugiyamaNode
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 
 
@@ -47,8 +48,8 @@ class SugiyamaGlobals:
         Returns:
         """
         sugiyamaNode: SugiyamaNode = aTuple[0]
-        l: SugiyamaNode = sugiyamaNode.leftNode
-        r: SugiyamaNode = sugiyamaNode.rightNode
+        l: OptionalSugiyamaNode = sugiyamaNode.leftNode
+        r: OptionalSugiyamaNode = sugiyamaNode.rightNode
 
         if l is None or r is None:
             return 0
@@ -65,8 +66,8 @@ class SugiyamaGlobals:
 
         Returns: The return value from cmp()
         """
-        xNode: SugiyamaNode = theNode.leftNode
-        yNode: SugiyamaNode = theNode.rightNode
+        xNode: OptionalSugiyamaNode = theNode.leftNode
+        yNode: OptionalSugiyamaNode = theNode.rightNode
 
         if xNode is None or yNode is None:
             return 0
