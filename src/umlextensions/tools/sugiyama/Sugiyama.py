@@ -66,21 +66,33 @@ class Sugiyama:
         self._umlFrame:         UmlFrame              = umlFrame
         self._preferences:      ExtensionsPreferences = ExtensionsPreferences()
 
-        # Sugiyama nodes and links
-        self._realSugiyamaNodesList: List[RealSugiyamaNode] = []   # List of all RealSugiyamaNode's
-        self._sugiyamaLinksList:     List[SugiyamaLink]     = []   # List of all SugiyamaLink's
+        self._realSugiyamaNodesList: List[RealSugiyamaNode] = []
+        """
+        List of all RealSugiyamaNodes created from diagram shapes.
+        """
+        self._sugiyamaLinksList: List[SugiyamaLink] = []
+        """
+        List of all SugiyamaLinks created from diagram relations.
+        """
 
-        #  Hierarchy graph
-        #  List of Real and Virtual Sugiyama nodes that take part in hierarchy
         self._hierarchyGraphNodesList: HierarchicalGraphNodes = HierarchicalGraphNodes([])
-        #  List of Sugiyama nodes that are not in a hierarchy
-        self._nonHierarchyGraphNodesList: NonHierarchicalGraphNodes = NonHierarchicalGraphNodes([])
-        self._nonHierarchyGraphLinksList: NonHierarchicalGraphLinks = NonHierarchicalGraphLinks([])
+        """
+        List of Real and Virtual Sugiyama nodes that take part in the hierarchy.
+        """
 
-        #  All nodes of the hierarchy are assigned to a level.
-        #  A level is a list of nodes (real or virtual).
-        # nodeList: NodeList = NodeList([])
-        self._levels: Levels = Levels([])   # List of levels
+        self._nonHierarchyGraphNodesList: NonHierarchicalGraphNodes = NonHierarchicalGraphNodes([])
+        """
+        List of Sugiyama nodes that are not in a hierarchy.
+        """
+        self._nonHierarchyGraphLinksList: NonHierarchicalGraphLinks = NonHierarchicalGraphLinks([])
+        """
+        List of non-hierarchical links between nodes.
+        """
+
+        self._levels: Levels = Levels([])
+        """
+        Ordered list of levels; each level contains real and virtual nodes.
+        """
 
     @property
     def levels(self) -> Levels:

@@ -1,7 +1,10 @@
 
 from typing import Tuple
 
+from umlshapes.ShapeTypes import UmlShape
+
 from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutPosition
+from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutSize
 from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
 
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
@@ -11,27 +14,19 @@ from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
 
 class RealSugiyamaNode(SugiyamaNode):
     """
-    RealSugiyamaNode: A RealSugiyamaNode object is a node of the Sugiyama
-    graph associated to an OglObject of the UML diagram, which can be a
-    class or a note.
-
-    For more information, see ../ToSugiyama.py
-
-    Instantiated by: ../ToSugiyama.py
-
-    :author: Nicolas Dubois
-    :contact: nicdub@gmx.ch
-    :version: $Revision: 1.4 $
+    A real node in the Sugiyama layout graph associated with an actual UML
+    shape (such as a class or note) in the diagram.
     """
-    def __init__(self, oglObject):
+    def __init__(self, umlShape: UmlShape):
         """
+        Initialize a real Sugiyama node wrapping the given UML shape.
 
         Args:
-            oglObject: oglObject: diagram class or note
+            umlShape: The UML shape (such as a class or note) to wrap for layout.
         """
         super().__init__()
 
-        self.__aLayoutNode = LayoutInterfaceNode(oglObject)
+        self._layoutInterfaceNode: LayoutInterfaceNode = LayoutInterfaceNode(umlShape)
 
     @property
     def size(self) -> Tuple[int, int]:
@@ -40,7 +35,8 @@ class RealSugiyamaNode(SugiyamaNode):
 
         Returns: (int, int) : tuple (width, height)
         """
-        return self.__aLayoutNode.size
+        layoutSize: LayoutSize = self._layoutInterfaceNode.size
+        return layoutSize.width, layoutSize.height
 
     @property
     def position(self) -> Tuple[int, int]:
@@ -49,7 +45,7 @@ class RealSugiyamaNode(SugiyamaNode):
 
         Returns: (int, int) : tuple (x, y) in absolute coordinates
         """
-        return self.__aLayoutNode.position.x, self.__aLayoutNode.position.y
+        return self._layoutInterfaceNode.position.x, self._layoutInterfaceNode.position.y
 
     @position.setter
     def position(self, pos: Tuple[int, int]):
@@ -62,16 +58,16 @@ class RealSugiyamaNode(SugiyamaNode):
         xCoord: int
         yCoord: int
         xCoord, yCoord = pos
-        self.__aLayoutNode.position = LayoutPosition(x=xCoord, y=yCoord)
+        self._layoutInterfaceNode.position = LayoutPosition(x=xCoord, y=yCoord)
 
     @property
     def name(self) -> str:
         """
-        The name of the OglObject.
+        The name of the underlying UML shape.
 
-        Returns:  Name of the UML Shape
+        Returns: Name of the UML shape.
         """
-        return self.__aLayoutNode.name
+        return self._layoutInterfaceNode.name
 
     def fixAnchorPos(self):
         """

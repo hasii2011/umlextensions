@@ -20,11 +20,6 @@ class SugiyamaLink(LayoutInterfaceLink):
     """
     SugiyamaLink: link of the Sugiyama graph.
 
-    Instantiated by: ../ToSugiyama.py
-
-    :author: Nicolas Dubois
-    :contact: nicdub@gmx.ch
-    :version: $Revision: 1.4 $
     """
     def __init__(self, umlLink, umlFrame: UmlFrame):
         """
