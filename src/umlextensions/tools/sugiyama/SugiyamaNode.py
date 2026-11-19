@@ -3,7 +3,6 @@
 from abc import ABC
 from abc import abstractmethod
 
-from typing import cast
 from typing import NewType
 from typing import Optional
 from typing import Tuple
@@ -19,6 +18,8 @@ SugiyamaVertexEdges  = NewType("SugiyamaVertexEdges", List[SugiyamaVertexEdge])
 OptionalSugiyamaNode = Optional['SugiyamaNode']
 
 BALANCE_MOVE_THRESHOLD: int = 3
+UNASSIGNED_INDEX:       int = -1
+UNASSIGNED_LEVEL:       int = -1
 
 
 class SugiyamaNode(ABC):
@@ -35,12 +36,12 @@ class SugiyamaNode(ABC):
         # Current barycenter value of the link, this value can be computed
         # on indexes or x coordinate. For more information, see function
         # getBarycenter()
-        self.__barycenter: int = cast(int, None)
-        self.__index: int = cast(int, cast(object, None))
+        self.__barycenter: Optional[int] = None
+        self.__index: int = UNASSIGNED_INDEX
         """
         Index position on the level
         """
-        self.__level: int = cast(int, cast(object, None))
+        self.__level: int = UNASSIGNED_LEVEL
         """
         Index of level
         """
@@ -102,7 +103,7 @@ class SugiyamaNode(ABC):
         """
         pass
 
-    def addParent(self, parent: "SugiyamaNode", link: 'SugiyamaLink'):
+    def addParent(self, parent: 'SugiyamaNode', link: 'SugiyamaLink'):
         """
         Update parent list
 
@@ -110,7 +111,7 @@ class SugiyamaNode(ABC):
             parent:  The parent
             link:   Link between self and parent
         """
-        sugiyamaData: SugiyamaVertexEdge = cast(SugiyamaVertexEdge, (parent, link))
+        sugiyamaData: SugiyamaVertexEdge = SugiyamaVertexEdge((parent, link))
         self.__parents.append(sugiyamaData)
 
     @property
@@ -219,7 +220,7 @@ class SugiyamaNode(ABC):
         self.__rightNode = node
 
     @property
-    def barycenter(self) -> int:
+    def barycenter(self) -> Optional[int]:
         """
         Return the pre-computed barycenter value of the node.
 
@@ -304,11 +305,12 @@ class SugiyamaNode(ABC):
         nodeList = self.__parents + self.__children
         if len(nodeList) == 0:
             # ~ print self.__index, "none"
-            self.__barycenter = cast(int, None)
+            self.__barycenter = None
         else:
             summation = 0
             for (node, link) in nodeList:
-                summation += node.barycenter
+                if node.barycenter is not None:
+                    summation += node.barycenter
             # ~ print self.__index, float(sum) / len(nodeList)
             self.__barycenter = summation // len(nodeList)
 
@@ -346,13 +348,13 @@ class SugiyamaNode(ABC):
         Returns:    max x coordinate
         """
         if self.__rightNode is None:
-            return cast(int, None)
+            return 0
         else:
             xRightNode = self.__rightNode.position[0]
             widthSelfNode = self.size[0]
             return xRightNode - widthSelfNode - H_SPACE
 
-    def addChild(self, child, link):
+    def addChild(self, child: 'SugiyamaNode', link: 'SugiyamaLink'):
         """
         Add a child.
 
@@ -360,7 +362,7 @@ class SugiyamaNode(ABC):
             child:  The child
             link:   Its Link
         """
-        sugiyamaData: SugiyamaVertexEdge = cast(SugiyamaVertexEdge, (child, link))
+        sugiyamaData: SugiyamaVertexEdge = SugiyamaVertexEdge((child, link))
         self.__children.append(sugiyamaData)
 
     def addNonHierarchicalLink(self, node: 'SugiyamaNode', link: 'SugiyamaLink'):
@@ -401,7 +403,7 @@ class SugiyamaNode(ABC):
         """
         pass
 
-    def __getAverageIndex(self, nodeList) -> int:
+    def __getAverageIndex(self, nodeList: SugiyamaVertexEdges) -> Optional[int]:
         """
         Compute the average of indices position on all the given nodes.
 
@@ -411,14 +413,14 @@ class SugiyamaNode(ABC):
         Returns:  None if nodeList is empty.  float or None : Average of indexes position
         """
         if len(nodeList) == 0:
-            return cast(int, None)
+            return None
         else:
             summation = 0
             for (node, link) in nodeList:
                 summation += node.index
             return summation // len(nodeList)
 
-    def __getAverageX(self, nodeList: SugiyamaVertexEdges) -> int:
+    def __getAverageX(self, nodeList: SugiyamaVertexEdges) -> Optional[int]:
         """
         Compute the average of x coordinates on all the given nodes.
 
@@ -429,7 +431,7 @@ class SugiyamaNode(ABC):
                     None if nodeList is empty.
         """
         if len(nodeList) == 0:
-            return cast(int, None)
+            return None
         else:
             summation: int = 0
             for (node, link) in nodeList:
