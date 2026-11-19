@@ -36,6 +36,7 @@ from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdge
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
+from umlextensions.tools.sugiyama.VirtualNodeInserter import VirtualNodeInserter
 
 from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
 
@@ -412,7 +413,7 @@ class TestSugiyama(UnitTestBaseW):
         vertexEdges: SugiyamaVertexEdges = SugiyamaVertexEdges([edgeA, edgeB])
 
         replacementNode: VirtualSugiyamaNode = VirtualSugiyamaNode()
-        Sugiyama._updateLink(
+        VirtualNodeInserter.updateLink(
             vertexEdges=vertexEdges,
             targetLink=linkA,
             replacementNode=replacementNode,
@@ -425,7 +426,7 @@ class TestSugiyama(UnitTestBaseW):
 
     def testUpdateLinkNoMatchLeavesEdgesUnchanged(self):
         """
-        _updateLink should not modify any edges when the target link is not in the list.
+        VirtualNodeInserter.updateLink should not modify any edges when the target link is not in the list.
         """
         umlShapes, umlClasses, umlLinks = self._buildGraph(
             nodeSpecs=[
@@ -446,7 +447,7 @@ class TestSugiyama(UnitTestBaseW):
         vertexEdges: SugiyamaVertexEdges = SugiyamaVertexEdges([edge])
 
         replacementNode: VirtualSugiyamaNode = VirtualSugiyamaNode()
-        Sugiyama._updateLink(
+        VirtualNodeInserter.updateLink(
             vertexEdges=vertexEdges,
             targetLink=unrelatedLink,
             replacementNode=replacementNode,
@@ -457,7 +458,7 @@ class TestSugiyama(UnitTestBaseW):
 
     def testAddVirtualNodesOnHierarchicalLinkSingleSpanNoVirtualNodes(self):
         """
-        _addVirtualNodesOnHierarchicalLink should not insert virtual nodes when span is <= 1 level.
+        VirtualNodeInserter.insert should not insert virtual nodes when span is <= 1 level.
         """
         umlShapes, umlClasses, umlLinks = self._buildGraph(
             nodeSpecs=[
@@ -480,15 +481,19 @@ class TestSugiyama(UnitTestBaseW):
         childNode.addParent(parentNode, hierarchicalLink)
 
         levels: Levels = Levels([NodeList([parentNode]), NodeList([childNode])])
-        Sugiyama._addVirtualNodesOnHierarchicalLink(hierarchicalLink=hierarchicalLink, levels=levels)
+        virtualNodes: List[VirtualSugiyamaNode] = VirtualNodeInserter.insert(
+            hierarchicalLink=hierarchicalLink,
+            levels=levels,
+        )
 
+        self.assertEqual(len(virtualNodes), 0)
         self.assertEqual(len(levels[0]), 1)
         self.assertEqual(len(levels[1]), 1)
         self.assertEqual(self._countVirtualNodes(levels), 0)
 
     def testAddVirtualNodesOnHierarchicalLinkMultiLevelSpanInsertsVirtualNodes(self):
         """
-        _addVirtualNodesOnHierarchicalLink should insert VirtualSugiyamaNodes across all intermediate levels
+        VirtualNodeInserter.insert should insert VirtualSugiyamaNodes across all intermediate levels
         and wire the child/parent chains to the endpoints.
         """
         umlShapes, umlClasses, umlLinks = self._buildGraph(
@@ -518,7 +523,12 @@ class TestSugiyama(UnitTestBaseW):
             NodeList([grandChildNode]),
         ])
 
-        Sugiyama._addVirtualNodesOnHierarchicalLink(hierarchicalLink=hierarchicalLink, levels=levels)
+        virtualNodes: List[VirtualSugiyamaNode] = VirtualNodeInserter.insert(
+            hierarchicalLink=hierarchicalLink,
+            levels=levels,
+        )
+
+        self.assertEqual(len(virtualNodes), 2)
 
         # Levels 1 and 2 should each receive 1 virtual node
         self.assertEqual(len(levels[1]), 1)
@@ -558,6 +568,60 @@ class TestSugiyama(UnitTestBaseW):
         self.assertEqual(grandChildNode.parents[0][0], virtualNode2)
 
         # Virtual nodes count
+        self.assertEqual(self._countVirtualNodes(levels), 2)
+
+    def testVirtualNodeInserterStepByStepLifecycle(self):
+        """
+        VirtualNodeInserter internal step methods should execute the lifecycle independently.
+        """
+        umlShapes, umlClasses, umlLinks = self._buildGraph(
+            nodeSpecs=[
+                ('RootNode', 100, 50),
+                ('LeafNode', 100, 350),
+            ],
+            edgeSpecs=[
+                ('LeafNode', 'RootNode', LinkType.INHERITANCE),
+            ],
+        )
+        rootNode: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['RootNode'])
+        leafNode: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['LeafNode'])
+        rootNode.level = 0
+        leafNode.level = 3
+
+        hierarchicalLink: SugiyamaLink = SugiyamaLink(umlLink=umlLinks[0], umlFrame=self._diagramFrame)
+        hierarchicalLink.source = leafNode
+        hierarchicalLink.destination = rootNode
+        rootNode.addChild(leafNode, hierarchicalLink)
+        leafNode.addParent(rootNode, hierarchicalLink)
+
+        levels: Levels = Levels([
+            NodeList([rootNode]),
+            NodeList([]),
+            NodeList([]),
+            NodeList([leafNode]),
+        ])
+
+        inserter: VirtualNodeInserter = VirtualNodeInserter(
+            hierarchicalLink=hierarchicalLink,
+            levels=levels,
+        )
+        self.assertEqual(len(inserter.virtualNodes), 0)
+
+        hasCreated: bool = inserter._createVirtualNodes()
+        self.assertTrue(hasCreated)
+        self.assertEqual(len(inserter.virtualNodes), 2)
+        self.assertEqual(inserter.virtualNodes[0].level, 1)
+        self.assertEqual(inserter.virtualNodes[1].level, 2)
+
+        inserter._connectVirtualChain()
+        self.assertEqual(rootNode.children[0][0], inserter.virtualNodes[0])
+        self.assertEqual(leafNode.parents[0][0], inserter.virtualNodes[1])
+
+        inserter._registerInLevels()
+        self.assertEqual(len(levels[1]), 1)
+        self.assertEqual(len(levels[2]), 1)
+
+        inserter._attachToLink()
         self.assertEqual(self._countVirtualNodes(levels), 2)
 
 

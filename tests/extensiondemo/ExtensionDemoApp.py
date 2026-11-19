@@ -21,7 +21,7 @@ from tests.extensiondemo.ExtensionFrame import ExtensionFrame
 from codeallybasic.UnitTestBase import UnitTestBase
 from codeallybasic.UnitTestBase import JSON_LOGGING_CONFIG_FILENAME
 
-__version__ = "3.0.0"
+__version__ = '3.0.0'
 
 class ExtensionDemoApp(App):
 
@@ -80,11 +80,11 @@ class ExtensionDemoApp(App):
 @command()
 @version_option(version=f'{__version__}', message='%(version)s')
 @option('-i', '--input-file', required=False, help='The input .xml file to preload on startup.')
-def commandHandler(input_file: str):
+def commandHandler(input_file: str = ''):
 
     extensionDemoApp: ExtensionDemoApp
 
-    if input_file == '':
+    if input_file == '' or input_file is None:
         extensionDemoApp = ExtensionDemoApp(redirect=False)
     else:
         extensionDemoApp = ExtensionDemoApp(redirect=False, createEmptyProject=False)

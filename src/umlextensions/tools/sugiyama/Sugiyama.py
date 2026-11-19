@@ -33,15 +33,13 @@ from umlextensions.tools.sugiyama.SugiyamaConstants import UP_MARGIN
 from umlextensions.tools.sugiyama.SugiyamaConstants import V_SPACE
 
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
-from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
-from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdge
-from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
+
 from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
-
-Nodes    = Union[RealSugiyamaNode, VirtualSugiyamaNode]
-NodeList = NewType('NodeList', List[Nodes])
-Levels   = NewType('Levels', List[NodeList])
+from umlextensions.tools.sugiyama.VirtualNodeInserter import Levels
+from umlextensions.tools.sugiyama.VirtualNodeInserter import NodeList
+from umlextensions.tools.sugiyama.VirtualNodeInserter import Nodes
+from umlextensions.tools.sugiyama.VirtualNodeInserter import VirtualNodeInserter
 
 HierarchicalGraphNode     = Union[RealSugiyamaNode, VirtualSugiyamaNode]
 HierarchicalGraphNodes    = NewType('HierarchicalGraphNodes', List[HierarchicalGraphNode])
@@ -109,7 +107,7 @@ class Sugiyama:
 
     def createInterfaceUmlShapeLayout(self, umlShapes):
         """
-        Create the interface between oglObjects and Automatic Layout
+        Create the interface between umlShapes and the automatic layout
         structure. A RealSugiyamaNode is created for each class, and a
         SugiyamaLink is created for each relation in the UML diagram.
 
@@ -306,7 +304,7 @@ class Sugiyama:
         """
         for link in self._sugiyamaLinksList:
             if link.linkType == LinkType.INHERITANCE or link.linkType == LinkType.INTERFACE:
-                self._addVirtualNodesOnHierarchicalLink(link, self._levels)
+                VirtualNodeInserter.insert(link, self._levels)
 
     def barycenter(self):
         """
@@ -525,95 +523,6 @@ class Sugiyama:
         self._fixNodesNeighbors()
         self._fixNodesPositions()
         self._fixLinksPositions()
-
-    @classmethod
-    def _updateLink(
-        cls,
-        vertexEdges: SugiyamaVertexEdges,
-        targetLink: SugiyamaLink,
-        replacementNode: Nodes,
-    ):
-        """
-        Replace the connected node for a specific link within an edge list.
-
-        Searches the vertex edge list for an entry matching the given link
-        and updates its connected node to the replacement node.
-
-        Args:
-            vertexEdges: List of (node, link) edges to search (e.g. node.children or node.parents).
-            targetLink: The SugiyamaLink to match.
-            replacementNode: The new node (typically a VirtualSugiyamaNode) to associate with the link.
-        """
-        for i in range(len(vertexEdges)):
-
-            connectedNode: SugiyamaNode
-            link:          SugiyamaLink
-
-            connectedNode, link = vertexEdges[i]
-            if targetLink == link:
-                vertexEdges[i] = SugiyamaVertexEdge((replacementNode, targetLink))
-                break
-
-    @classmethod
-    def _addVirtualNodesOnHierarchicalLink(
-        cls,
-        hierarchicalLink: SugiyamaLink,
-        levels: Levels,
-    ):
-        """
-        Insert virtual nodes on a hierarchical link spanning multiple levels.
-
-        When a hierarchical link connects a source and destination separated by
-        more than one level, this method creates a VirtualSugiyamaNode for each
-        crossed level.  It wires the parent/child relationships along the link, registers
-        the virtual nodes in their corresponding levels, and attaches them to the link.
-
-        Args:
-            hierarchicalLink: The hierarchical SugiyamaLink to split with virtual nodes.
-            levels: The hierarchy levels structure where virtual nodes are registered.
-        """
-        srcNode: SugiyamaNode = hierarchicalLink.source
-        dstNode: SugiyamaNode = hierarchicalLink.destination
-        dstNodeLevel: int = dstNode.level
-
-        # Intermediate level indices between destination and source
-        indexLevels: List[int] = list(range(dstNodeLevel + 1, srcNode.level))
-
-        # Continue only if there is at least one intermediate level between the nodes
-        if not indexLevels:
-            return
-
-        # Create a virtual node for each crossed level
-        virtualNodes: List[VirtualSugiyamaNode] = [VirtualSugiyamaNode() for _ in indexLevels]
-
-        # Assign intermediate levels to each virtual node
-        for i in range(len(virtualNodes)):
-
-            virtualNode: VirtualSugiyamaNode = virtualNodes[i]
-            virtualNode.level = dstNodeLevel + i + 1
-
-        # Chain relations between adjacent virtual nodes
-        for i in range(len(virtualNodes) - 1):
-
-            virtualNodes[i].addChild(virtualNodes[i + 1], hierarchicalLink)
-            virtualNodes[i + 1].addParent(virtualNodes[i], hierarchicalLink)
-
-        # Wire the virtual chain ends to the real source and destination nodes
-        virtualNodes[-1].addChild(srcNode, hierarchicalLink)
-        virtualNodes[0].addParent(dstNode, hierarchicalLink)
-
-        cls._updateLink(dstNode.children, hierarchicalLink, virtualNodes[0])
-        cls._updateLink(srcNode.parents, hierarchicalLink, virtualNodes[-1])
-
-        # Register virtual nodes in their respective level rows
-        for i in range(len(virtualNodes)):
-            level: NodeList = levels[dstNodeLevel + i + 1]
-            level.append(virtualNodes[i])
-            level[-1].index = len(level) - 1
-
-        # Attach virtual nodes to the link ordered from bottom to top
-        for i in range(len(virtualNodes) - 1, -1, -1):
-            hierarchicalLink.addVirtualNode(virtualNodes[i])
 
     def _downBarycenterLevel(self, indexLevel: int):
         """
