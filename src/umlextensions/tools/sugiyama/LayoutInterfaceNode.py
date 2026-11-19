@@ -1,19 +1,9 @@
 
-from dataclasses import dataclass
-
 from umlshapes.types.UmlDimensions import UmlDimensions
 from umlshapes.types.UmlPosition import UmlPosition
 
-@dataclass
-class LayoutPosition:
-    x: int
-    y: int
-
-
-@dataclass
-class LayoutSize:
-    width:  int
-    height: int
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutPosition
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutSize
 
 
 class LayoutInterfaceNode:

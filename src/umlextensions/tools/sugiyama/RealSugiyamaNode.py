@@ -3,8 +3,8 @@ from typing import Tuple
 
 from umlshapes.ShapeTypes import UmlShape
 
-from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutPosition
-from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutSize
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutPosition
+from umlextensions.tools.sugiyama.LayoutGeometry import LayoutSize
 from umlextensions.tools.sugiyama.LayoutInterfaceNode import LayoutInterfaceNode
 
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
@@ -71,9 +71,9 @@ class RealSugiyamaNode(SugiyamaNode):
 
     def fixAnchorPos(self):
         """
-        Fix the positions of the anchor points.
+        Fix the positions of the link endpoints.
 
-        The anchor points are placed according to parent and child positions.
+        The link endpoints are placed according to parent and child positions.
         Before calling this method, be sure you have set the indices of all
         parent and children (see index property).
 
@@ -82,7 +82,7 @@ class RealSugiyamaNode(SugiyamaNode):
         (width, height) = self.size
         (x, y) = self.position
 
-        # Fix all children anchors position
+        # Fix all children endpoints position
         # Sort child list to eliminate crossing
         children: SugiyamaVertexEdges = self.children
         children.sort(key=SugiyamaGlobals.cmpIndex)
@@ -91,10 +91,12 @@ class RealSugiyamaNode(SugiyamaNode):
         # For all children
         for i in range(nChildren):
             (child, link) = children[i]
-            # Fix anchors coordinates
-            link.setDestAnchorPos(x + width * (i + 1) // (nChildren + 1), y + height)
+            # Fix destination coordinates
+            destX: int = x + width * (i + 1) // (nChildren + 1)
+            destY: int = y + height
+            link.destinationPosition = LayoutPosition(x=destX, y=destY)
 
-        # Parent anchors position
+        # Parent endpoints position
         # Sort parents list to eliminate crossing
         parents: SugiyamaVertexEdges = self.parents
         parents.sort(key=SugiyamaGlobals.cmpIndex)
@@ -102,8 +104,10 @@ class RealSugiyamaNode(SugiyamaNode):
         # For all parents
         for i in range(nParents):
             (parent, link) = parents[i]
-            # Fix anchors coordinates
-            link.setSrcAnchorPos(x + width * (i + 1) // (nParents + 1), y)
+            # Fix source coordinates
+            srcX: int = x + width * (i + 1) // (nParents + 1)
+            srcY: int = y
+            link.sourcePosition = LayoutPosition(x=srcX, y=srcY)
 
     def __repr__(self) -> str:
         return f'RealSugiyamaNode name: {self.name} level: {self.level}'

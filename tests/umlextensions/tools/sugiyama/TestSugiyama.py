@@ -31,7 +31,11 @@ from umlextensions.tools.sugiyama.Sugiyama import Levels
 from umlextensions.tools.sugiyama.Sugiyama import NodeList
 from umlextensions.tools.sugiyama.Sugiyama import Nodes
 from umlextensions.tools.sugiyama.Sugiyama import Sugiyama
+from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
+from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
+from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdge
+from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaVertexEdges
 
 from tests.extensiondemo.ExtensionsFacade import ExtensionsFacade
 
@@ -379,6 +383,182 @@ class TestSugiyama(UnitTestBaseW):
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
         sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
         self.assertFalse(sugiyama.levelFind())
+
+    def testUpdateLinkMatchesAndReplacesNode(self):
+        """
+        _updateLink should replace the node matching the target link while preserving other edges.
+        """
+        umlShapes, umlClasses, umlLinks = self._buildGraph(
+            nodeSpecs=[
+                ('SourceClass', 100, 100),
+                ('DestClassA', 300, 100),
+                ('DestClassB', 500, 100),
+            ],
+            edgeSpecs=[
+                ('SourceClass', 'DestClassA', LinkType.INHERITANCE),
+                ('SourceClass', 'DestClassB', LinkType.INHERITANCE),
+            ],
+        )
+        sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
+        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+
+        nodeA: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['DestClassA'])
+        nodeB: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['DestClassB'])
+        linkA: SugiyamaLink     = SugiyamaLink(umlLink=umlLinks[0], umlFrame=self._diagramFrame)
+        linkB: SugiyamaLink     = SugiyamaLink(umlLink=umlLinks[1], umlFrame=self._diagramFrame)
+
+        edgeA: SugiyamaVertexEdge = SugiyamaVertexEdge((nodeA, linkA))
+        edgeB: SugiyamaVertexEdge = SugiyamaVertexEdge((nodeB, linkB))
+        vertexEdges: SugiyamaVertexEdges = SugiyamaVertexEdges([edgeA, edgeB])
+
+        replacementNode: VirtualSugiyamaNode = VirtualSugiyamaNode()
+        Sugiyama._updateLink(
+            vertexEdges=vertexEdges,
+            targetLink=linkA,
+            replacementNode=replacementNode,
+        )
+
+        self.assertEqual(vertexEdges[0][0], replacementNode)
+        self.assertEqual(vertexEdges[0][1], linkA)
+        self.assertEqual(vertexEdges[1][0], nodeB)
+        self.assertEqual(vertexEdges[1][1], linkB)
+
+    def testUpdateLinkNoMatchLeavesEdgesUnchanged(self):
+        """
+        _updateLink should not modify any edges when the target link is not in the list.
+        """
+        umlShapes, umlClasses, umlLinks = self._buildGraph(
+            nodeSpecs=[
+                ('SourceClass', 100, 100),
+                ('DestClass', 300, 100),
+                ('UnrelatedClass', 500, 100),
+            ],
+            edgeSpecs=[
+                ('SourceClass', 'DestClass', LinkType.INHERITANCE),
+                ('SourceClass', 'UnrelatedClass', LinkType.ASSOCIATION),
+            ],
+        )
+        node: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['DestClass'])
+        targetLink: SugiyamaLink = SugiyamaLink(umlLink=umlLinks[0], umlFrame=self._diagramFrame)
+        unrelatedLink: SugiyamaLink = SugiyamaLink(umlLink=umlLinks[1], umlFrame=self._diagramFrame)
+
+        edge: SugiyamaVertexEdge = SugiyamaVertexEdge((node, targetLink))
+        vertexEdges: SugiyamaVertexEdges = SugiyamaVertexEdges([edge])
+
+        replacementNode: VirtualSugiyamaNode = VirtualSugiyamaNode()
+        Sugiyama._updateLink(
+            vertexEdges=vertexEdges,
+            targetLink=unrelatedLink,
+            replacementNode=replacementNode,
+        )
+
+        self.assertEqual(vertexEdges[0][0], node)
+        self.assertEqual(vertexEdges[0][1], targetLink)
+
+    def testAddVirtualNodesOnHierarchicalLinkSingleSpanNoVirtualNodes(self):
+        """
+        _addVirtualNodesOnHierarchicalLink should not insert virtual nodes when span is <= 1 level.
+        """
+        umlShapes, umlClasses, umlLinks = self._buildGraph(
+            nodeSpecs=[
+                ('ParentClass', 100, 100),
+                ('ChildClass', 100, 250),
+            ],
+            edgeSpecs=[
+                ('ChildClass', 'ParentClass', LinkType.INHERITANCE),
+            ],
+        )
+        parentNode: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['ParentClass'])
+        childNode: RealSugiyamaNode  = RealSugiyamaNode(umlShape=umlClasses['ChildClass'])
+        parentNode.level = 0
+        childNode.level  = 1
+
+        hierarchicalLink: SugiyamaLink = SugiyamaLink(umlLink=umlLinks[0], umlFrame=self._diagramFrame)
+        hierarchicalLink.source      = childNode
+        hierarchicalLink.destination = parentNode
+        parentNode.addChild(childNode, hierarchicalLink)
+        childNode.addParent(parentNode, hierarchicalLink)
+
+        levels: Levels = Levels([NodeList([parentNode]), NodeList([childNode])])
+        Sugiyama._addVirtualNodesOnHierarchicalLink(hierarchicalLink=hierarchicalLink, levels=levels)
+
+        self.assertEqual(len(levels[0]), 1)
+        self.assertEqual(len(levels[1]), 1)
+        self.assertEqual(self._countVirtualNodes(levels), 0)
+
+    def testAddVirtualNodesOnHierarchicalLinkMultiLevelSpanInsertsVirtualNodes(self):
+        """
+        _addVirtualNodesOnHierarchicalLink should insert VirtualSugiyamaNodes across all intermediate levels
+        and wire the child/parent chains to the endpoints.
+        """
+        umlShapes, umlClasses, umlLinks = self._buildGraph(
+            nodeSpecs=[
+                ('GrandParent', 100, 80),
+                ('GrandChild', 100, 380),
+            ],
+            edgeSpecs=[
+                ('GrandChild', 'GrandParent', LinkType.INHERITANCE),
+            ],
+        )
+        grandParentNode: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['GrandParent'])
+        grandChildNode: RealSugiyamaNode  = RealSugiyamaNode(umlShape=umlClasses['GrandChild'])
+        grandParentNode.level = 0
+        grandChildNode.level  = 3
+
+        hierarchicalLink: SugiyamaLink = SugiyamaLink(umlLink=umlLinks[0], umlFrame=self._diagramFrame)
+        hierarchicalLink.source      = grandChildNode
+        hierarchicalLink.destination = grandParentNode
+        grandParentNode.addChild(grandChildNode, hierarchicalLink)
+        grandChildNode.addParent(grandParentNode, hierarchicalLink)
+
+        levels: Levels = Levels([
+            NodeList([grandParentNode]),
+            NodeList([]),
+            NodeList([]),
+            NodeList([grandChildNode]),
+        ])
+
+        Sugiyama._addVirtualNodesOnHierarchicalLink(hierarchicalLink=hierarchicalLink, levels=levels)
+
+        # Levels 1 and 2 should each receive 1 virtual node
+        self.assertEqual(len(levels[1]), 1)
+        self.assertEqual(len(levels[2]), 1)
+
+        node1: Nodes = levels[1][0]
+        node2: Nodes = levels[2][0]
+        self.assertIsInstance(node1, VirtualSugiyamaNode)
+        self.assertIsInstance(node2, VirtualSugiyamaNode)
+        assert isinstance(node1, VirtualSugiyamaNode)
+        assert isinstance(node2, VirtualSugiyamaNode)
+
+        virtualNode1: VirtualSugiyamaNode = node1
+        virtualNode2: VirtualSugiyamaNode = node2
+
+        # Verify level and index attributes
+        self.assertEqual(virtualNode1.level, 1)
+        self.assertEqual(virtualNode1.index, 0)
+        self.assertEqual(virtualNode2.level, 2)
+        self.assertEqual(virtualNode2.index, 0)
+
+        # Verify parent / child relationships along the virtual chain
+        # virtualNode1: parent is grandParentNode, child is virtualNode2
+        self.assertEqual(len(virtualNode1.parents), 1)
+        self.assertEqual(virtualNode1.parents[0][0], grandParentNode)
+        self.assertEqual(len(virtualNode1.children), 1)
+        self.assertEqual(virtualNode1.children[0][0], virtualNode2)
+
+        # virtualNode2: parent is virtualNode1, child is grandChildNode
+        self.assertEqual(len(virtualNode2.parents), 1)
+        self.assertEqual(virtualNode2.parents[0][0], virtualNode1)
+        self.assertEqual(len(virtualNode2.children), 1)
+        self.assertEqual(virtualNode2.children[0][0], grandChildNode)
+
+        # Real nodes endpoints updated via _updateLink
+        self.assertEqual(grandParentNode.children[0][0], virtualNode1)
+        self.assertEqual(grandChildNode.parents[0][0], virtualNode2)
+
+        # Virtual nodes count
+        self.assertEqual(self._countVirtualNodes(levels), 2)
 
 
 if __name__ == '__main__':

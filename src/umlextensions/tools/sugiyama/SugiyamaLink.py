@@ -43,14 +43,14 @@ class SugiyamaLink(LayoutInterfaceLink):
         self.removeAllControlPoints()
 
         # Current x coordinate of the link
-        x = self.getSrcAnchorPos()[0]
+        currentX: int = self.sourcePosition.x
 
         # For all virtual nodes, add control points to pass through
         for virtualNode in self.__virtualNodes:
             #  ~ print "Virtual node"
             (xVNode, yVNode) = virtualNode.position
             # If link goes to up-left
-            if x > xVNode:
+            if currentX > xVNode:
                 # Find the first real node on the right of the virtual node
                 neighbor = virtualNode.rightNode
                 #
