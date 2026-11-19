@@ -32,45 +32,16 @@ class SugiyamaNode(ABC):
     """
     def __init__(self):
         """
+        Initialize Sugiyama node level, index, neighbor, and link state.
         """
-        # Current barycenter value of the link, this value can be computed
-        # on indexes or x coordinate. For more information, see function
-        # getBarycenter()
-        self.__barycenter: Optional[int] = None
-        self.__index: int = UNASSIGNED_INDEX
-        """
-        Index position on the level
-        """
-        self.__level: int = UNASSIGNED_LEVEL
-        """
-        Index of level
-        """
-        self.__leftNode: OptionalSugiyamaNode = None
-        """
-        Node direct on the left on the same level
-        """
-        self.__rightNode: OptionalSugiyamaNode = None
-        """
-        Node direct on the right on the same level
-        """
-        # parents and sons
-        # ================
-        #
-        # A child is derived from a parent. There is a hierarchical link,
-        # Realization or Inheritance, from source to parent.
-        # Each node can have parents and children.
-        self.__parents: SugiyamaVertexEdges = SugiyamaVertexEdges([])
-        """
-        List of parents
-        """
-        self.__children: SugiyamaVertexEdges = SugiyamaVertexEdges([])
-        """
-        List of children : [(SugiyamaNode, SugiyamaLink), ...]
-        """
-        self.__links:    SugiyamaVertexEdges = SugiyamaVertexEdges([])
-        """
-        List of non-hierarchical links : [(SugiyamaNode, SugiyamaLink), ...]
-        """
+        self._barycenter: Optional[int]        = None
+        self._index:      int                  = UNASSIGNED_INDEX
+        self._level:      int                  = UNASSIGNED_LEVEL
+        self._leftNode:   OptionalSugiyamaNode = None
+        self._rightNode:  OptionalSugiyamaNode = None
+        self._parents:    SugiyamaVertexEdges  = SugiyamaVertexEdges([])
+        self._children:   SugiyamaVertexEdges  = SugiyamaVertexEdges([])
+        self._links:      SugiyamaVertexEdges  = SugiyamaVertexEdges([])
 
     @property
     @abstractmethod
@@ -112,43 +83,47 @@ class SugiyamaNode(ABC):
             link:   Link between self and parent
         """
         sugiyamaData: SugiyamaVertexEdge = SugiyamaVertexEdge((parent, link))
-        self.__parents.append(sugiyamaData)
+        self._parents.append(sugiyamaData)
 
     @property
     def parents(self) -> SugiyamaVertexEdges:
         """
-        Return list of parents
+        List of parent nodes connected via hierarchical links (Inheritance or Realization).
 
-        Returns:  list of parents
+        Returns:
+            List of (SugiyamaNode, SugiyamaLink) tuples for this node's parents.
         """
-        return self.__parents
+        return self._parents
 
     @property
     def children(self) -> SugiyamaVertexEdges:
         """
-        Get list of children.
+        List of child nodes derived from this node via hierarchical links (Inheritance or Realization).
 
-        Returns:  The list of children
+        Returns:
+            List of (SugiyamaNode, SugiyamaLink) tuples for this node's children.
         """
-        return self.__children
+        return self._children
 
     @property
     def nonHierarchicalLinks(self) -> SugiyamaVertexEdges:
         """
-        Get non-hierarchical links, ie not parent or child relationship
+        List of non-hierarchical links (not a parent or child relationship).
 
-        Returns: [(SugiyamaNode, SugiyamaLink), ...] : list of tuple
+        Returns:
+            List of (SugiyamaNode, SugiyamaLink) tuples.
         """
-        return self.__links
+        return self._links
 
     @property
     def level(self) -> int:
         """
-        Get level index.
+        Index of the hierarchical level containing this node.
 
-        Returns:    level index
+        Returns:
+            Level index.
         """
-        return self.__level
+        return self._level
 
     @level.setter
     def level(self, level: int):
@@ -158,16 +133,17 @@ class SugiyamaNode(ABC):
         Args:
             level:   level index
         """
-        self.__level = level
+        self._level = level
 
     @property
     def index(self) -> int:
         """
-        Get index of node.
+        Index position of this node on its level.
 
-        Returns:    index of node
+        Returns:
+            Index of node within its level.
         """
-        return self.__index
+        return self._index
 
     @index.setter
     def index(self, index: int):
@@ -177,16 +153,17 @@ class SugiyamaNode(ABC):
         Args:
             index: index of node
         """
-        self.__index = index
+        self._index = index
 
     @property
     def leftNode(self) -> OptionalSugiyamaNode:
         """
-        Get the left neighbor node.
+        Node directly to the left on the same level.
 
-        Returns:    left neighbor
+        Returns:
+            Left neighbor node, or None if leftmost.
         """
-        return self.__leftNode
+        return self._leftNode
 
     @leftNode.setter
     def leftNode(self, node: OptionalSugiyamaNode):
@@ -196,16 +173,17 @@ class SugiyamaNode(ABC):
         Args:
             node:   left neighbor
         """
-        self.__leftNode = node
+        self._leftNode = node
 
     @property
     def rightNode(self) -> OptionalSugiyamaNode:
         """
-        Get the right neighbor node.
+        Node directly to the right on the same level.
 
-        Returns:    right neighbor
+        Returns:
+            Right neighbor node, or None if rightmost.
         """
-        return self.__rightNode
+        return self._rightNode
 
     @rightNode.setter
     def rightNode(self, node: OptionalSugiyamaNode):
@@ -217,12 +195,13 @@ class SugiyamaNode(ABC):
         Args:
             node: right neighbor
         """
-        self.__rightNode = node
+        self._rightNode = node
 
     @property
     def barycenter(self) -> Optional[int]:
         """
-        Return the pre-computed barycenter value of the node.
+        Current pre-computed barycenter value of the node (computed from
+        neighbor indexes or x coordinates).
 
         The barycenter value is computed when you call one of the following
         function:
@@ -240,7 +219,7 @@ class SugiyamaNode(ABC):
 
         Returns:   float: barycenter value
         """
-        return self.__barycenter
+        return self._barycenter
 
     def balance(self) -> bool:
         """
@@ -272,13 +251,13 @@ class SugiyamaNode(ABC):
         if wantedXPos > x:
 
             # If there is a right neighbor
-            if self.__rightNode is not None:
+            if self._rightNode is not None:
                 # Check max x coord according to right neighbor
                 xMax = self.getXMax()
 
                 # If right node is to close, try to push it
                 if wantedXPos > xMax:
-                    self.__rightNode.__pushToRight(
+                    self._rightNode.__pushToRight(
                         (wantedXPos - xMax) * nbFathersAndSons,
                         nbFathersAndSons)
 
@@ -302,17 +281,17 @@ class SugiyamaNode(ABC):
 
         @author Nicolas Dubois
         """
-        nodeList = self.__parents + self.__children
+        nodeList = self._parents + self._children
         if len(nodeList) == 0:
             # ~ print self.__index, "none"
-            self.__barycenter = None
+            self._barycenter = None
         else:
             summation = 0
             for (node, link) in nodeList:
                 if node.barycenter is not None:
                     summation += node.barycenter
             # ~ print self.__index, float(sum) / len(nodeList)
-            self.__barycenter = summation // len(nodeList)
+            self._barycenter = summation // len(nodeList)
 
     def upBarycenterX(self):
         """
@@ -320,7 +299,7 @@ class SugiyamaNode(ABC):
 
         For reading this value, use getBarycenter()
         """
-        self.__barycenter = self.__getAverageX(self.__parents)
+        self._barycenter = self.__getAverageX(self._parents)
 
     def downBarycenterX(self):
         """
@@ -328,7 +307,7 @@ class SugiyamaNode(ABC):
 
         For reading this value, use getBarycenter()
         """
-        self.__barycenter = self.__getAverageX(self.__children)
+        self._barycenter = self.__getAverageX(self._children)
 
     def barycenterX(self):
         """
@@ -336,8 +315,8 @@ class SugiyamaNode(ABC):
 
         For reading this value, use getBarycenter()
         """
-        parentsAndChildren: SugiyamaVertexEdges = SugiyamaVertexEdges(self.__parents + self.__children)
-        self.__barycenter = self.__getAverageX(parentsAndChildren)
+        parentsAndChildren: SugiyamaVertexEdges = SugiyamaVertexEdges(self._parents + self._children)
+        self._barycenter = self.__getAverageX(parentsAndChildren)
 
     def getXMax(self) -> int:
         """
@@ -347,10 +326,10 @@ class SugiyamaNode(ABC):
 
         Returns:    max x coordinate
         """
-        if self.__rightNode is None:
+        if self._rightNode is None:
             return 0
         else:
-            xRightNode = self.__rightNode.position[0]
+            xRightNode = self._rightNode.position[0]
             widthSelfNode = self.size[0]
             return xRightNode - widthSelfNode - H_SPACE
 
@@ -363,7 +342,7 @@ class SugiyamaNode(ABC):
             link:   Its Link
         """
         sugiyamaData: SugiyamaVertexEdge = SugiyamaVertexEdge((child, link))
-        self.__children.append(sugiyamaData)
+        self._children.append(sugiyamaData)
 
     def addNonHierarchicalLink(self, node: 'SugiyamaNode', link: 'SugiyamaLink'):
         """
@@ -374,7 +353,7 @@ class SugiyamaNode(ABC):
             link:   link between the two nodes
         """
         vertexEdge: SugiyamaVertexEdge = SugiyamaVertexEdge((node, link))
-        self.__links.append(vertexEdge)
+        self._links.append(vertexEdge)
 
     def upBarycenterIndex(self):
         """
@@ -383,7 +362,7 @@ class SugiyamaNode(ABC):
         For reading this value, use getBarycenter()
 
         """
-        self.__barycenter = self.__getAverageIndex(self.__parents)
+        self._barycenter = self.__getAverageIndex(self._parents)
 
     def downBarycenterIndex(self):
         """
@@ -392,7 +371,7 @@ class SugiyamaNode(ABC):
         For reading this value, use getBarycenter()
 
         """
-        self.__barycenter = self.__getAverageIndex(self.__children)
+        self._barycenter = self.__getAverageIndex(self._children)
 
     def fixAnchorPos(self):
         """
@@ -492,11 +471,11 @@ class SugiyamaNode(ABC):
         # If the node has to be moved to the right
         if xDelta > 0:
             # If the node has a right neighbor
-            if self.__rightNode is not None:
+            if self._rightNode is not None:
                 xMax = self.getXMax()
                 # If we need more place, try to push the right neighbor
                 if xMax < x + xDelta:
-                    self.__rightNode.__pushToRight(
+                    self._rightNode.__pushToRight(
                         (x + xDelta - xMax) * nbLinks, nbLinks)
                 # Fix the new position
                 self.position = (min(x + xDelta, self.getXMax()), y)

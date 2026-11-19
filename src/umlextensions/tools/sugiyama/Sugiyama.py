@@ -40,9 +40,11 @@ Nodes    = Union[RealSugiyamaNode, VirtualSugiyamaNode]
 NodeList = NewType('NodeList', List[Nodes])
 Levels   = NewType('Levels', List[NodeList])
 
-HierarchicalGraphNode  = Union[RealSugiyamaNode, VirtualSugiyamaNode]
-HierarchicalGraphNodes = NewType('HierarchicalGraphNodes', List[HierarchicalGraphNode])
-NodeIndices            = NewType('NodeIndices', List[int])
+HierarchicalGraphNode     = Union[RealSugiyamaNode, VirtualSugiyamaNode]
+HierarchicalGraphNodes    = NewType('HierarchicalGraphNodes', List[HierarchicalGraphNode])
+NonHierarchicalGraphNodes = NewType('NonHierarchicalGraphNodes', List[RealSugiyamaNode])
+NonHierarchicalGraphLinks = NewType('NonHierarchicalGraphLinks', List[SugiyamaLink])
+NodeIndices               = NewType('NodeIndices', List[int])
 
 
 class Sugiyama:
@@ -65,16 +67,15 @@ class Sugiyama:
         self._preferences:      ExtensionsPreferences = ExtensionsPreferences()
 
         # Sugiyama nodes and links
-        self.__realSugiyamaNodesList: List[RealSugiyamaNode] = []   # List of all RealSugiyamaNode's
-        self._sugiyamaLinksList:      List[SugiyamaLink]     = []   # List of all SugiyamaLink's
+        self._realSugiyamaNodesList: List[RealSugiyamaNode] = []   # List of all RealSugiyamaNode's
+        self._sugiyamaLinksList:     List[SugiyamaLink]     = []   # List of all SugiyamaLink's
 
         #  Hierarchy graph
         #  List of Real and Virtual Sugiyama nodes that take part in hierarchy
-        # self._hierarchyGraphNodesList:    List[Union[RealSugiyamaNode, VirtualSugiyamaNode]] = []
         self._hierarchyGraphNodesList: HierarchicalGraphNodes = HierarchicalGraphNodes([])
         #  List of Sugiyama nodes that are not in a hierarchy
-        self._nonHierarchyGraphNodesList: List[RealSugiyamaNode] = []
-        self._nonHierarchyGraphLinksList: List[SugiyamaLink]     = []
+        self._nonHierarchyGraphNodesList: NonHierarchicalGraphNodes = NonHierarchicalGraphNodes([])
+        self._nonHierarchyGraphLinksList: NonHierarchicalGraphLinks = NonHierarchicalGraphLinks([])
 
         #  All nodes of the hierarchy are assigned to a level.
         #  A level is a list of nodes (real or virtual).
@@ -118,7 +119,7 @@ class Sugiyama:
             # Create RealSugiyamaNode only if not already done
             if theOglObject not in theDictOgl:
                 node = RealSugiyamaNode(theOglObject)
-                self.__realSugiyamaNodesList.append(node)
+                self._realSugiyamaNodesList.append(node)
                 theDictOgl[theOglObject] = node
 
         def addNode2HierarchyGraph(theSugiyamaNode, theDictSugiyamaHierarchy):
