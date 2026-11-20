@@ -59,7 +59,7 @@ class ToolSugiyama(BaseToolExtension):
         initialPositions: InitialPositions = self._recordInitialPositions(selectedUmlShapes=selectedUmlShapes, umlFrame=umlFrame)
 
         sugiyama: Sugiyama = Sugiyama(extensionsFacade=self._extensionsFacade, umlFrame=umlFrame)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=selectedUmlShapes)
+        sugiyama.buildGraph(umlShapes=selectedUmlShapes)
 
         sugiyama.levelFind()
         sugiyama.addVirtualNodes()

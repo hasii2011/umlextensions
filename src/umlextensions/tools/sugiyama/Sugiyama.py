@@ -3,7 +3,6 @@ from typing import Dict
 from typing import List
 from typing import NewType
 from typing import Tuple
-from typing import Union
 from typing import cast
 
 from logging import Logger
@@ -12,14 +11,8 @@ from logging import getLogger
 from copy import copy
 
 from umlmodel.enumerations.LinkType import LinkType
-from umlshapes.ShapeTypes import UmlLinkGenre
+from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.frames.UmlFrame import UmlFrame
-
-from umlshapes.shapes.UmlNote import UmlNote
-from umlshapes.shapes.UmlClass import UmlClass
-
-from umlshapes.links.UmlInterface import UmlInterface
-from umlshapes.links.UmlInheritance import UmlInheritance
 
 from umlextensions.ExtensionsPreferences import ExtensionsPreferences
 
@@ -35,17 +28,17 @@ from umlextensions.tools.sugiyama.SugiyamaConstants import V_SPACE
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
 
 from umlextensions.tools.sugiyama.RealSugiyamaNode import RealSugiyamaNode
-from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 from umlextensions.tools.sugiyama.VirtualNodeInserter import Levels
 from umlextensions.tools.sugiyama.VirtualNodeInserter import NodeList
 from umlextensions.tools.sugiyama.VirtualNodeInserter import Nodes
 from umlextensions.tools.sugiyama.VirtualNodeInserter import VirtualNodeInserter
 
-HierarchicalGraphNode     = Union[RealSugiyamaNode, VirtualSugiyamaNode]
-HierarchicalGraphNodes    = NewType('HierarchicalGraphNodes', List[HierarchicalGraphNode])
-NonHierarchicalGraphNodes = NewType('NonHierarchicalGraphNodes', List[RealSugiyamaNode])
-NonHierarchicalGraphLinks = NewType('NonHierarchicalGraphLinks', List[SugiyamaLink])
-NodeIndices               = NewType('NodeIndices', List[int])
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import HierarchicalGraphNodes
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import NonHierarchicalGraphNodes
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import NonHierarchicalGraphLinks
+from umlextensions.tools.sugiyama.SugiyamaGraphBuilder import SugiyamaGraphBuilder
+
+NodeIndices = NewType('NodeIndices', List[int])
 
 
 class Sugiyama:
@@ -105,102 +98,27 @@ class Sugiyama:
         levels: Levels = copy(self._levels)
         return levels
 
-    def createInterfaceUmlShapeLayout(self, umlShapes):
+    def buildGraph(self, umlShapes: UmlShapes):
         """
-        Create the interface between umlShapes and the automatic layout
-        structure. A RealSugiyamaNode is created for each class, and a
-        SugiyamaLink is created for each relation in the UML diagram.
+        Build the internal layout graph representation from canvas UML shapes.
+
+        A RealSugiyamaNode is created for each class and note, and a SugiyamaLink
+        is created for each relation, classifying them as hierarchical or
+        non-hierarchical.
 
         Args:
-            umlShapes:  The UML Shapes on the diagram
+            umlShapes: The UML shapes on the diagram canvas.
         """
-        # Dictionary for oglObjects fast research
-        # Key = OglObject, Value = RealSugiyamaNode
-        dictOgl     = {}                # type: ignore
-        # Dictionary for RealSugiyamaNode that takes part in hierarchy
-        # Key = OglObject, Value = None
-        dictSugiyamaHierarchy = {}      # type: ignore
+        builder: SugiyamaGraphBuilder = SugiyamaGraphBuilder.build(
+            umlShapes=umlShapes,
+            umlFrame=self._umlFrame,
+        )
 
-        def createSugiyamaNode(theOglObject, theDictOgl):
-            """
-            Internal function for creating a RealSugiyamaNode and add it to
-            self.__realSugiyamaNodesList and to dictOgl
-            Args:
-                theOglObject:
-                theDictOgl:
-            """
-            # Create RealSugiyamaNode only if not already done
-            if theOglObject not in theDictOgl:
-                node = RealSugiyamaNode(theOglObject)
-                self._realSugiyamaNodesList.append(node)
-                theDictOgl[theOglObject] = node
-
-        def addNode2HierarchyGraph(theSugiyamaNode, theDictSugiyamaHierarchy):
-            """
-            Internal function for adding nodes that take part in hierarchy in
-            the __hierarchyGraphNodesList.
-
-            Args:
-                theSugiyamaNode:
-                theDictSugiyamaHierarchy:
-            """
-            if theSugiyamaNode not in theDictSugiyamaHierarchy:
-                theDictSugiyamaHierarchy[theSugiyamaNode] = None
-                self._hierarchyGraphNodesList.append(theSugiyamaNode)
-
-        # For each OglObject or OglLink, create a specific interface
-        for oglObject in umlShapes:
-
-            # Class or Note :
-            if isinstance(oglObject, UmlClass) or isinstance(oglObject, UmlNote):
-                createSugiyamaNode(oglObject, dictOgl)
-            # Links
-            elif isinstance(oglObject, UmlLinkGenre):
-
-                # Get source and destination oglObject
-                srcOglClass = oglObject.sourceShape
-                dstOglClass = oglObject.destinationShape
-
-                # If the classes have not a RealSugiyamaNode attributed yet
-                createSugiyamaNode(srcOglClass, dictOgl)
-                createSugiyamaNode(dstOglClass, dictOgl)
-
-                # Fix relations between nodes
-                link = SugiyamaLink(umlLink=oglObject, umlFrame=self._umlFrame)
-                self._sugiyamaLinksList.append(link)
-                srcSugiyamaNode = dictOgl[srcOglClass]
-                dstSugiyamaNode = dictOgl[dstOglClass]
-
-                link.source      = srcSugiyamaNode
-                link.destination = dstSugiyamaNode
-
-                # If hierarchical link
-                if isinstance(oglObject, UmlInheritance) or isinstance(oglObject, UmlInterface):
-
-                    srcSugiyamaNode.addParent(dstSugiyamaNode, link)
-                    dstSugiyamaNode.addChild(srcSugiyamaNode, link)
-
-                    # Add nodes in list of hierarchical nodes
-                    addNode2HierarchyGraph(srcSugiyamaNode, dictSugiyamaHierarchy)
-                    addNode2HierarchyGraph(dstSugiyamaNode, dictSugiyamaHierarchy)
-
-                # Non-hierarchical links
-                else:
-
-                    # Add link between source and destination interface
-                    srcSugiyamaNode.addNonHierarchicalLink(dstSugiyamaNode, link)
-                    dstSugiyamaNode.addNonHierarchicalLink(srcSugiyamaNode, link)
-
-                    # Add link into non-hierarchical links' list
-                    self._nonHierarchyGraphLinksList.append(link)
-
-        # Create list of non-hierarchical nodes
-
-        # For each class or note
-        for sugiyamaNode in list(dictOgl.values()):
-            # If not in hierarchy
-            if sugiyamaNode not in dictSugiyamaHierarchy:
-                self._nonHierarchyGraphNodesList.append(sugiyamaNode)
+        self._realSugiyamaNodesList      = builder.realNodes
+        self._sugiyamaLinksList          = builder.links
+        self._hierarchyGraphNodesList    = builder.hierarchicalNodes
+        self._nonHierarchyGraphNodesList = builder.nonHierarchicalNodes
+        self._nonHierarchyGraphLinksList = builder.nonHierarchicalLinks
 
     def levelFind(self) -> bool:
         """

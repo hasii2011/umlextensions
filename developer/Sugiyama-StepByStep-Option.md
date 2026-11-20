@@ -23,7 +23,7 @@ Mirroring `DcelStep` in the `orthogonal` project, each immutable `SugiyamaStep` 
 
 ### Emission Points in `Sugiyama`
 
-1. After `createInterfaceUmlShapeLayout()` (initial state).
+1. After `buildGraph()` (initial state).
 2. After `levelFind()` (initial level assignments).
 3. After `addVirtualNodes()` (virtual nodes inserted for multi-level links).
 4. Inside `barycenter()` after each `_downBarycenterLevel()` / `_upBarycenterLevel()` pass (showing crossing count changes).

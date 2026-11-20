@@ -171,12 +171,12 @@ class SugiyamaStepper:
         self._steps.append(self._snapshotInitial(stepIndex=0))
 
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._extensionsFacade)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+        sugiyama.buildGraph(umlShapes=umlShapes)
         self._steps.append(
             self._snapshotFromSugiyama(
                 sugiyama=sugiyama,
                 stepIndex=1,
-                phaseName='createInterfaceUmlShapeLayout',
+                phaseName='buildGraph',
                 description='Wrapped UML classes and links into RealSugiyamaNode and SugiyamaLink objects.',
                 usePreviewPositions=False
             )

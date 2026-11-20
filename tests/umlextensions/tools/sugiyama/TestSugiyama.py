@@ -149,7 +149,7 @@ class TestSugiyama(UnitTestBaseW):
             Tuple of (Sugiyama instance, levelFind success flag).
         """
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+        sugiyama.buildGraph(umlShapes=umlShapes)
         ok: bool = sugiyama.levelFind()
         if not ok:
             return sugiyama, False
@@ -282,7 +282,7 @@ class TestSugiyama(UnitTestBaseW):
             ],
         )
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+        sugiyama.buildGraph(umlShapes=umlShapes)
         self.assertTrue(sugiyama.levelFind())
         sugiyama.addVirtualNodes()
 
@@ -353,7 +353,7 @@ class TestSugiyama(UnitTestBaseW):
             ],
         )
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+        sugiyama.buildGraph(umlShapes=umlShapes)
         self.assertTrue(sugiyama.levelFind())
         sugiyama.addVirtualNodes()
         sugiyama.barycenter()
@@ -382,7 +382,7 @@ class TestSugiyama(UnitTestBaseW):
             ],
         )
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+        sugiyama.buildGraph(umlShapes=umlShapes)
         self.assertFalse(sugiyama.levelFind())
 
     def testUpdateLinkMatchesAndReplacesNode(self):
@@ -401,7 +401,7 @@ class TestSugiyama(UnitTestBaseW):
             ],
         )
         sugiyama: Sugiyama = Sugiyama(umlFrame=self._diagramFrame, extensionsFacade=self._facade)
-        sugiyama.createInterfaceUmlShapeLayout(umlShapes=umlShapes)
+        sugiyama.buildGraph(umlShapes=umlShapes)
 
         nodeA: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['DestClassA'])
         nodeB: RealSugiyamaNode = RealSugiyamaNode(umlShape=umlClasses['DestClassB'])
