@@ -2,7 +2,7 @@
 
 ## Context
 
-`umlextensions` already has a `sugiyamaStepByStep` boolean preference (`src/umlextensions/ExtensionsPreferences.py`) and a `SugiyamaGlobals.waitKey()` helper (`src/umlextensions/tools/sugiyama/SugiyamaGlobals.py`). Currently, when `sugiyamaStepByStep` is `True`, `Sugiyama._fixNodesPositions()` pauses after initial left-packed placement and after each `node.balance()` move by popping up a modal `wx.MessageBox` and calling `extensionsFacade.refreshFrame()`.
+`umlextensions` already has a `sugiyamaStepByStep` boolean preference (`src/umlextensions/ExtensionsPreferences.py`) and a `SugiyamaGlobals.waitKey()` helper (`src/umlextensions/tools/sugiyama/SugiyamaGlobals.py`). Currently, when `sugiyamaStepByStep` is `True`, `Sugiyama._assignNodeCoordinates()` pauses after initial left-packed placement and after each `node.balance()` move by popping up a modal `wx.MessageBox` and calling `extensionsFacade.refreshFrame()`.
 
 While this works for basic debugging inside `umldiagrammer`, a modal `MessageBox` blocks forward/backward scrubbing and does not capture intermediate states from earlier phases (such as `levelFind()`, `addVirtualNodes()`, or individual `barycenter()` sweeps).
 
@@ -14,7 +14,7 @@ Instead of replacing `SugiyamaGlobals.waitKey()` right away, we can add an optio
 
 Mirroring `DcelStep` in the `orthogonal` project, each immutable `SugiyamaStep` snapshot would record:
 
-- **Phase / Operation Name**: e.g. `initial`, `levelFind`, `addVirtualNodes`, `barycenter_down`, `barycenter_up`, `addNonHierarchicalNodes`, `packLeft`, `balanceMove`, `fixLinksPositions`.
+- **Phase / Operation Name**: e.g. `initial`, `levelFind`, `addVirtualNodes`, `barycenter_down`, `barycenter_up`, `addNonHierarchicalNodes`, `packLeft`, `balanceMove`, `routeLinks`.
 - **Description**: Human-readable summary of what changed in that step (e.g., which level was swept or which node moved).
 - **Levels Snapshot**: Ordered node IDs/names per level (`RealSugiyamaNode` and `VirtualSugiyamaNode`), including each node's `index`, `level`, and `barycenter`.
 - **Node Positions & Sizes**: `(x, y)` and `(width, height)` for every real and virtual node at that instant.
@@ -28,8 +28,8 @@ Mirroring `DcelStep` in the `orthogonal` project, each immutable `SugiyamaStep` 
 3. After `addVirtualNodes()` (virtual nodes inserted for multi-level links).
 4. Inside `barycenter()` after each `_downBarycenterLevel()` / `_upBarycenterLevel()` pass (showing crossing count changes).
 5. After `addNonHierarchicalNodes()`.
-6. Inside `_fixNodesPositions()` after left-packing and after each `node.balance()` move (as a non-blocking alternative to `SugiyamaGlobals.waitKey()`).
-7. After `_fixLinksPositions()` (final anchor and control-point placement).
+6. Inside `_assignNodeCoordinates()` after left-packing and after each `node.balance()` move (as a non-blocking alternative to `SugiyamaGlobals.waitKey()`).
+7. After `_routeLinks()` (final anchor and control-point placement).
 
 ## Benefits for the Sugiyama Visualizer
 

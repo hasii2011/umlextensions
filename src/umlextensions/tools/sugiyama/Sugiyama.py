@@ -434,13 +434,13 @@ class Sugiyama:
             # Move node from external to internal nodes
             moveExternal2Internal(extNode, internalNodes, externalNodes)
 
-    def fixPositions(self):
+    def assignCoordinates(self):
         """
         Compute coordinates for nodes and links.
         """
-        self._fixNodesNeighbors()
-        self._fixNodesPositions()
-        self._fixLinksPositions()
+        self._linkLevelNeighbors()
+        self._assignNodeCoordinates()
+        self._routeLinks()
 
     def _downBarycenterLevel(self, indexLevel: int):
         """
@@ -586,9 +586,9 @@ class Sugiyama:
 
         return count
 
-    def _fixNodesNeighbors(self):
+    def _linkLevelNeighbors(self):
         """
-        For each node, fix his right neighbor.
+        For each node, link horizontal neighbors within each level row.
 
         @author Nicolas Dubois
         """
@@ -604,7 +604,7 @@ class Sugiyama:
             level[0].leftNode = None
             level[nbNodes - 1].rightNode = None
 
-    def _fixNodesPositions(self):
+    def _assignNodeCoordinates(self):
 
         # Compute start positions packed on left
         y: int = UP_MARGIN
@@ -622,7 +622,7 @@ class Sugiyama:
         if self._preferences.sugiyamaStepByStep is True:
             SugiyamaGlobals.waitKey(self._extensionsFacade, optionalMessage=None)
         else:
-            self.logger.info(f'.__fixNodesPositions() is complete')
+            self.logger.info('._assignNodeCoordinates() is complete')
 
         # While nodes have to be moved
         moved: bool = True
@@ -639,7 +639,7 @@ class Sugiyama:
                         else:
                             self.logger.info(msg)
 
-    def _fixLinksPositions(self):
+    def _routeLinks(self):
         """
         Compute links new positions.
         """

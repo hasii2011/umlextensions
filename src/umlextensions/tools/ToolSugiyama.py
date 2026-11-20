@@ -69,7 +69,7 @@ class ToolSugiyama(BaseToolExtension):
         self.logger.info(f'Number of hierarchical intersections: {sugiyama._getNbIntersectAll()}')
 
         sugiyama.addNonHierarchicalNodes()
-        sugiyama.fixPositions()
+        sugiyama.assignCoordinates()
 
         self._submitShapesMovedCommand(initialPositions=initialPositions, umlFrame=umlFrame)
 

@@ -216,12 +216,12 @@ class SugiyamaStepper:
         )
 
         sugiyama.addNonHierarchicalNodes()
-        sugiyama.fixPositions()
+        sugiyama.assignCoordinates()
         self._steps.append(
             self._snapshotFromSugiyama(
                 sugiyama=sugiyama,
                 stepIndex=5,
-                phaseName='fixPositions',
+                phaseName='assignCoordinates',
                 description='Placed non-hierarchical nodes, balanced coordinates, and computed link control points.',
                 usePreviewPositions=False
             )
@@ -392,7 +392,7 @@ class SugiyamaStepper:
             srcName: str = cast(UmlClass, sLink.umlLink.sourceShape).modelClass.name
             dstName: str = cast(UmlClass, sLink.umlLink.destinationShape).modelClass.name
             pts:     List[Tuple[int, int]] = []
-            if not usePreviewPositions and phaseName == 'fixPositions':
+            if not usePreviewPositions and phaseName == 'assignCoordinates':
                 rawPts = sLink.umlLink.GetLineControlPoints()
                 if rawPts is not None:
                     for pt in rawPts:

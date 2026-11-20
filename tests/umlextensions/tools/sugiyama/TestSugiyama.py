@@ -156,7 +156,7 @@ class TestSugiyama(UnitTestBaseW):
         sugiyama.addVirtualNodes()
         sugiyama.barycenter()
         sugiyama.addNonHierarchicalNodes()
-        sugiyama.fixPositions()
+        sugiyama.assignCoordinates()
         return sugiyama, True
 
     def _assertNoLevelOverlap(self, levels: Levels):
@@ -293,7 +293,7 @@ class TestSugiyama(UnitTestBaseW):
         self.assertGreaterEqual(initialCrossings, 1)
         self.assertEqual(finalCrossings, 0)
         sugiyama.addNonHierarchicalNodes()
-        sugiyama.fixPositions()
+        sugiyama.assignCoordinates()
         self._assertNoLevelOverlap(sugiyama.levels)
 
     def testMultiLevelSpanVirtualNodesAndControlPoints(self):
@@ -364,7 +364,7 @@ class TestSugiyama(UnitTestBaseW):
         totalAfter: int = sum(len(row) for row in sugiyama.levels)
         self.assertEqual(totalAfter, 5)
 
-        sugiyama.fixPositions()
+        sugiyama.assignCoordinates()
         self._assertNoLevelOverlap(sugiyama.levels)
 
     def testCycleDetectionReturnsFalse(self):
