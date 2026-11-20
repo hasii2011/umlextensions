@@ -25,6 +25,7 @@ from umlextensions.ui.preferences.ArrangerPanel import ArrangerPanel
 from umlextensions.ui.preferences.ExtensionsPanel import ExtensionsPanel
 from umlextensions.ui.preferences.FeaturesPanel import FeaturesPanel
 from umlextensions.ui.preferences.ShapeLayoutPanel import ShapeLayoutPanel
+from umlextensions.ui.preferences.SugiyamaPanel import SugiyamaPanel
 from umlextensions.ui.preferences.TooltipPanel import TooltipPanel
 
 
@@ -78,12 +79,14 @@ class DlgExtensionsPreferences(SizedDialog):
         extensionsPanel:  ExtensionsPanel  = ExtensionsPanel(book)
         featuresPanel:    FeaturesPanel    = FeaturesPanel(book)
         shapeLayoutPanel: ShapeLayoutPanel = ShapeLayoutPanel(book)
+        sugiyamaPanel:    SugiyamaPanel    = SugiyamaPanel(book)
         arrangerPanel:    ArrangerPanel    = ArrangerPanel(book)
         tooltipPanel:     TooltipPanel     = TooltipPanel(book)
 
         book.AddPage(extensionsPanel,  text=extensionsPanel.name,  select=True)
         book.AddPage(featuresPanel,    text=featuresPanel.name,    select=False)
         book.AddPage(shapeLayoutPanel, text=shapeLayoutPanel.name, select=False)
+        book.AddPage(sugiyamaPanel,    text=sugiyamaPanel.name,    select=False)
         book.AddPage(arrangerPanel,    text=arrangerPanel.name,    select=False)
         book.AddPage(tooltipPanel,     text=tooltipPanel.name,     select=False)
 

@@ -14,16 +14,10 @@ from umlmodel.enumerations.LinkType import LinkType
 from umlshapes.ShapeTypes import UmlShapes
 from umlshapes.frames.UmlFrame import UmlFrame
 
-from umlextensions.ExtensionsPreferences import ExtensionsPreferences
-
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
 from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
-
-from umlextensions.tools.sugiyama.SugiyamaConstants import H_SPACE
-from umlextensions.tools.sugiyama.SugiyamaConstants import LEFT_MARGIN
-from umlextensions.tools.sugiyama.SugiyamaConstants import UP_MARGIN
-from umlextensions.tools.sugiyama.SugiyamaConstants import V_SPACE
+from umlextensions.tools.sugiyama.SugiyamaPreferences import SugiyamaPreferences
 
 from umlextensions.tools.sugiyama.SugiyamaGlobals import SugiyamaGlobals
 
@@ -56,9 +50,9 @@ class Sugiyama:
 
         self.logger: Logger = getLogger(__name__)
 
-        self._extensionsFacade: IExtensionsFacade     = extensionsFacade
-        self._umlFrame:         UmlFrame              = umlFrame
-        self._preferences:      ExtensionsPreferences = ExtensionsPreferences()
+        self._extensionsFacade: IExtensionsFacade   = extensionsFacade
+        self._umlFrame:         UmlFrame            = umlFrame
+        self._preferences:      SugiyamaPreferences = SugiyamaPreferences()
 
         self._realSugiyamaNodesList: List[RealSugiyamaNode] = []
         """
@@ -112,6 +106,7 @@ class Sugiyama:
         builder: SugiyamaGraphBuilder = SugiyamaGraphBuilder.build(
             umlShapes=umlShapes,
             umlFrame=self._umlFrame,
+            horizontalSpacing=self._preferences.horizontalSpacing,
         )
 
         self._realSugiyamaNodesList      = builder.realNodes
@@ -222,7 +217,7 @@ class Sugiyama:
         """
         for link in self._sugiyamaLinksList:
             if link.linkType == LinkType.INHERITANCE or link.linkType == LinkType.INTERFACE:
-                VirtualNodeInserter.insert(link, self._levels)
+                VirtualNodeInserter.insert(link, self._levels, horizontalSpacing=self._preferences.horizontalSpacing)
 
     def barycenter(self):
         """
@@ -607,17 +602,17 @@ class Sugiyama:
     def _assignNodeCoordinates(self):
 
         # Compute start positions packed on left
-        y: int = UP_MARGIN
+        y: int = self._preferences.topMargin
         for level in self._levels:
-            x:         int = LEFT_MARGIN
+            x:         int = self._preferences.leftMargin
             maxHeight: int = 0
 
             for node in level:
                 (width, height) = node.size
                 node.position = (x, y)
-                x += width + H_SPACE
+                x += width + self._preferences.horizontalSpacing
                 maxHeight = max(maxHeight, height)
-            y += maxHeight + V_SPACE
+            y += maxHeight + self._preferences.verticalSpacing
 
         if self._preferences.sugiyamaStepByStep is True:
             SugiyamaGlobals.waitKey(self._extensionsFacade, optionalMessage=None)

@@ -1,5 +1,6 @@
 from typing import List
 from typing import NewType
+from typing import Optional
 from typing import Union
 
 from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
@@ -24,18 +25,20 @@ class VirtualNodeInserter:
     them to the link.
     """
 
-    def __init__(self, hierarchicalLink: SugiyamaLink, levels: Levels):
+    def __init__(self, hierarchicalLink: SugiyamaLink, levels: Levels, horizontalSpacing: Optional[int] = None):
         """
         Initialize the inserter with the hierarchical link and the hierarchy levels.
 
         Args:
-            hierarchicalLink: The hierarchical SugiyamaLink to split with virtual nodes.
-            levels: The hierarchy levels structure where virtual nodes are registered.
+            hierarchicalLink:  The hierarchical SugiyamaLink to split with virtual nodes.
+            levels:            The hierarchy levels structure where virtual nodes are registered.
+            horizontalSpacing: Optional minimum horizontal clearance buffer for virtual nodes.
         """
-        self._link: SugiyamaLink = hierarchicalLink
-        self._levels: Levels = levels
-        self._srcNode: SugiyamaNode = hierarchicalLink.source
-        self._dstNode: SugiyamaNode = hierarchicalLink.destination
+        self._link:              SugiyamaLink  = hierarchicalLink
+        self._levels:            Levels        = levels
+        self._srcNode:           SugiyamaNode  = hierarchicalLink.source
+        self._dstNode:           SugiyamaNode  = hierarchicalLink.destination
+        self._horizontalSpacing: Optional[int] = horizontalSpacing
         self._virtualNodes: List[VirtualSugiyamaNode] = []
 
     @property
@@ -49,18 +52,19 @@ class VirtualNodeInserter:
         return self._virtualNodes
 
     @classmethod
-    def insert(cls, hierarchicalLink: SugiyamaLink, levels: Levels) -> List[VirtualSugiyamaNode]:
+    def insert(cls, hierarchicalLink: SugiyamaLink, levels: Levels, horizontalSpacing: Optional[int] = None) -> List[VirtualSugiyamaNode]:
         """
         Insert virtual nodes on a hierarchical link spanning multiple levels.
 
         Args:
-            hierarchicalLink: The hierarchical SugiyamaLink to split with virtual nodes.
-            levels: The hierarchy levels structure where virtual nodes are registered.
+            hierarchicalLink:  The hierarchical SugiyamaLink to split with virtual nodes.
+            levels:            The hierarchy levels structure where virtual nodes are registered.
+            horizontalSpacing: Optional minimum horizontal clearance buffer for virtual nodes.
 
         Returns:
             List of VirtualSugiyamaNode created and registered.
         """
-        inserter: VirtualNodeInserter = cls(hierarchicalLink, levels)
+        inserter: VirtualNodeInserter = cls(hierarchicalLink, levels, horizontalSpacing=horizontalSpacing)
         inserter.execute()
         return inserter.virtualNodes
 
@@ -89,7 +93,7 @@ class VirtualNodeInserter:
         if not indexLevels:
             return False
 
-        self._virtualNodes = [VirtualSugiyamaNode() for _ in indexLevels]
+        self._virtualNodes = [VirtualSugiyamaNode(horizontalSpacing=self._horizontalSpacing) for _ in indexLevels]
 
         for i in range(len(self._virtualNodes)):
             virtualNode: VirtualSugiyamaNode = self._virtualNodes[i]

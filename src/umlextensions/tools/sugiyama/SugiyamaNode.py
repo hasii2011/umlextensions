@@ -8,7 +8,7 @@ from typing import Optional
 from typing import Tuple
 from typing import List
 from typing import TYPE_CHECKING
-from umlextensions.tools.sugiyama.SugiyamaConstants import H_SPACE
+from umlextensions.tools.sugiyama.SugiyamaPreferences import SugiyamaPreferences
 
 if TYPE_CHECKING:
     from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
@@ -30,9 +30,13 @@ class SugiyamaNode(ABC):
     SugiyamaNode. You have to use RealSugiyamaNode or VirtualSugiyamaNode
     objects.
     """
-    def __init__(self):
+    def __init__(self, horizontalSpacing: Optional[int] = None):
         """
         Initialize Sugiyama node level, index, neighbor, and link state.
+
+        Args:
+            horizontalSpacing: Optional minimum horizontal clearance buffer. If omitted,
+                               defaults to SugiyamaPreferences().horizontalSpacing.
         """
         self._barycenter: Optional[int]        = None
         self._index:      int                  = UNASSIGNED_INDEX
@@ -42,6 +46,11 @@ class SugiyamaNode(ABC):
         self._parents:    SugiyamaVertexEdges  = SugiyamaVertexEdges([])
         self._children:   SugiyamaVertexEdges  = SugiyamaVertexEdges([])
         self._links:      SugiyamaVertexEdges  = SugiyamaVertexEdges([])
+
+        if horizontalSpacing is None:
+            self._horizontalSpacing: int = SugiyamaPreferences().horizontalSpacing
+        else:
+            self._horizontalSpacing = horizontalSpacing
 
     @property
     @abstractmethod
@@ -331,7 +340,7 @@ class SugiyamaNode(ABC):
         else:
             xRightNode = self._rightNode.position[0]
             widthSelfNode = self.size[0]
-            return xRightNode - widthSelfNode - H_SPACE
+            return xRightNode - widthSelfNode - self._horizontalSpacing
 
     def addChild(self, child: 'SugiyamaNode', link: 'SugiyamaLink'):
         """

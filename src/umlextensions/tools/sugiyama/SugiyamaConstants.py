@@ -1,7 +1,7 @@
 
-# Constants used in automatic layout
+# Default constants used in automatic layout and runtime preferences fallback
 
-LEFT_MARGIN: int = 10    # Left margin
-UP_MARGIN:   int = 10    # Up margin
-H_SPACE:     int = 20     # Horizontal space (minimum value between nodes)
-V_SPACE:     int = 50     # Vertical space (minimum value between nodes)
+DEFAULT_LEFT_MARGIN:        int = 10
+DEFAULT_TOP_MARGIN:         int = 10
+DEFAULT_HORIZONTAL_SPACING: int = 20
+DEFAULT_VERTICAL_SPACING:   int = 50

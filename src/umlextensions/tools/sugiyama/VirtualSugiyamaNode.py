@@ -1,5 +1,6 @@
 
 from typing import Tuple
+from typing import Optional
 
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 
@@ -10,8 +11,8 @@ class VirtualSugiyamaNode(SugiyamaNode):
     will not be visible on the diagram.  It is used to reserve space
     for the links drawing.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, horizontalSpacing: Optional[int] = None):
+        super().__init__(horizontalSpacing=horizontalSpacing)
 
         self.__position: Tuple[int, int] = (0, 0)
         self.__size:     Tuple[int, int] = (1, 1)

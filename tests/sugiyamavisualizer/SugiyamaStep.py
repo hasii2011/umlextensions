@@ -28,10 +28,7 @@ from umlextensions.tools.sugiyama.Sugiyama import Levels
 from umlextensions.tools.sugiyama.Sugiyama import NodeList
 from umlextensions.tools.sugiyama.Sugiyama import Nodes
 from umlextensions.tools.sugiyama.Sugiyama import Sugiyama
-from umlextensions.tools.sugiyama.SugiyamaConstants import H_SPACE
-from umlextensions.tools.sugiyama.SugiyamaConstants import LEFT_MARGIN
-from umlextensions.tools.sugiyama.SugiyamaConstants import UP_MARGIN
-from umlextensions.tools.sugiyama.SugiyamaConstants import V_SPACE
+from umlextensions.tools.sugiyama.SugiyamaPreferences import SugiyamaPreferences
 from umlextensions.tools.sugiyama.SugiyamaLink import SugiyamaLink
 from umlextensions.tools.sugiyama.VirtualSugiyamaNode import VirtualSugiyamaNode
 
@@ -302,16 +299,17 @@ class SugiyamaStepper:
         """
         levelsData:   Levels                       = sugiyama.levels
         levelSnaps:   List[List[SugiyamaNodeSnapshot]] = []
+        prefs:        SugiyamaPreferences          = SugiyamaPreferences()
         placedNames:  Dict[str, bool]              = {}
         virtualCount: int                          = 0
         virtualIdx:   int                          = 0
 
-        yCoord:    int = UP_MARGIN
+        yCoord:    int = prefs.topMargin
         levelIdx:  int = 0
         levelList: NodeList
         for levelList in levelsData:
             rowSnaps:  List[SugiyamaNodeSnapshot] = []
-            xCoord:    int = LEFT_MARGIN
+            xCoord:    int = prefs.leftMargin
             maxHeight: int = 0
 
             node: Nodes
@@ -358,12 +356,12 @@ class SugiyamaStepper:
                         height=int(height),
                     )
                 )
-                xCoord += width + H_SPACE
+                xCoord += width + prefs.horizontalSpacing
                 if height > maxHeight:
                     maxHeight = height
 
             levelSnaps.append(rowSnaps)
-            yCoord += maxHeight + V_SPACE
+            yCoord += maxHeight + prefs.verticalSpacing
             levelIdx += 1
 
         unleveled: List[SugiyamaNodeSnapshot] = []

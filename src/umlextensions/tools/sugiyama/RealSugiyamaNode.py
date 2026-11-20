@@ -1,5 +1,6 @@
 
 from typing import Tuple
+from typing import Optional
 
 from umlshapes.ShapeTypes import UmlShape
 
@@ -17,14 +18,16 @@ class RealSugiyamaNode(SugiyamaNode):
     A real node in the Sugiyama layout graph associated with an actual UML
     shape (such as a class or note) in the diagram.
     """
-    def __init__(self, umlShape: UmlShape):
+    def __init__(self, umlShape: UmlShape, horizontalSpacing: Optional[int] = None):
         """
         Initialize a real Sugiyama node wrapping the given UML shape.
 
         Args:
-            umlShape: The UML shape (such as a class or note) to wrap for layout.
+            umlShape:          The UML shape (such as a class or note) to wrap for layout.
+            horizontalSpacing: Optional minimum horizontal clearance buffer. If omitted,
+                               defaults to SugiyamaPreferences().horizontalSpacing.
         """
-        super().__init__()
+        super().__init__(horizontalSpacing=horizontalSpacing)
 
         self._layoutInterfaceNode: LayoutInterfaceNode = LayoutInterfaceNode(umlShape)
 

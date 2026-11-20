@@ -1,6 +1,7 @@
 from typing import Dict
 from typing import List
 from typing import NewType
+from typing import Optional
 from typing import Set
 from typing import Union
 
@@ -33,16 +34,18 @@ class SugiyamaGraphBuilder:
     (associations), and partitioning nodes accordingly.
     """
 
-    def __init__(self, umlShapes: UmlShapes, umlFrame: UmlFrame):
+    def __init__(self, umlShapes: UmlShapes, umlFrame: UmlFrame, horizontalSpacing: Optional[int] = None):
         """
         Initialize the graph builder.
 
         Args:
-            umlShapes: The list of UML shapes on the diagram canvas.
-            umlFrame:  The UML diagram frame owning the shapes and links.
+            umlShapes:         The list of UML shapes on the diagram canvas.
+            umlFrame:          The UML diagram frame owning the shapes and links.
+            horizontalSpacing: Optional minimum horizontal clearance buffer for nodes.
         """
-        self._umlShapes: UmlShapes = umlShapes
-        self._umlFrame: UmlFrame = umlFrame
+        self._umlShapes:         UmlShapes     = umlShapes
+        self._umlFrame:          UmlFrame      = umlFrame
+        self._horizontalSpacing: Optional[int] = horizontalSpacing
 
         self._shapeNodeMap: Dict[UmlShape, RealSugiyamaNode] = {}
         self._hierarchicalNodeSet: Set[RealSugiyamaNode] = set()
@@ -104,18 +107,19 @@ class SugiyamaGraphBuilder:
         return self._nonHierarchicalLinks
 
     @classmethod
-    def build(cls, umlShapes: UmlShapes, umlFrame: UmlFrame) -> 'SugiyamaGraphBuilder':
+    def build(cls, umlShapes: UmlShapes, umlFrame: UmlFrame, horizontalSpacing: Optional[int] = None) -> 'SugiyamaGraphBuilder':
         """
         Factory method to construct and execute a SugiyamaGraphBuilder.
 
         Args:
-            umlShapes: The list of UML shapes on the diagram canvas.
-            umlFrame:  The UML diagram frame owning the shapes and links.
+            umlShapes:         The list of UML shapes on the diagram canvas.
+            umlFrame:          The UML diagram frame owning the shapes and links.
+            horizontalSpacing: Optional minimum horizontal clearance buffer for nodes.
 
         Returns:
             Constructed SugiyamaGraphBuilder instance with populated graph collections.
         """
-        builder: SugiyamaGraphBuilder = cls(umlShapes=umlShapes, umlFrame=umlFrame)
+        builder: SugiyamaGraphBuilder = cls(umlShapes=umlShapes, umlFrame=umlFrame, horizontalSpacing=horizontalSpacing)
         builder.execute()
         return builder
 
@@ -142,7 +146,7 @@ class SugiyamaGraphBuilder:
             The corresponding RealSugiyamaNode.
         """
         if shape not in self._shapeNodeMap:
-            node: RealSugiyamaNode = RealSugiyamaNode(umlShape=shape)
+            node: RealSugiyamaNode = RealSugiyamaNode(umlShape=shape, horizontalSpacing=self._horizontalSpacing)
             self._realNodes.append(node)
             self._shapeNodeMap[shape] = node
 

@@ -14,6 +14,7 @@ from umlextensions.ui.preferences.ArrangerPanel import ArrangerPanel
 from umlextensions.ui.preferences.ExtensionsPanel import ExtensionsPanel
 from umlextensions.ui.preferences.FeaturesPanel import FeaturesPanel
 from umlextensions.ui.preferences.ShapeLayoutPanel import ShapeLayoutPanel
+from umlextensions.ui.preferences.SugiyamaPanel import SugiyamaPanel
 from umlextensions.ui.preferences.TooltipPanel import TooltipPanel
 
 
@@ -79,11 +80,13 @@ class ExtensionsPreferencesPage(SizedPanel):
         extensionsPanel:  ExtensionsPanel  = ExtensionsPanel(subBook)
         featuresPanel:    FeaturesPanel    = FeaturesPanel(subBook)
         shapeLayoutPanel: ShapeLayoutPanel = ShapeLayoutPanel(subBook)
+        sugiyamaPanel:    SugiyamaPanel    = SugiyamaPanel(subBook)
         arrangerPanel:    ArrangerPanel    = ArrangerPanel(subBook)
         tooltipPanel:     TooltipPanel     = TooltipPanel(subBook)
 
         subBook.AddPage(extensionsPanel,  text=extensionsPanel.name,  select=True)
         subBook.AddPage(featuresPanel,    text=featuresPanel.name,    select=False)
         subBook.AddPage(shapeLayoutPanel, text=shapeLayoutPanel.name, select=False)
+        subBook.AddPage(sugiyamaPanel,    text=sugiyamaPanel.name,    select=False)
         subBook.AddPage(arrangerPanel,    text=arrangerPanel.name,    select=False)
         subBook.AddPage(tooltipPanel,     text=tooltipPanel.name,     select=False)
