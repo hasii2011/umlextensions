@@ -16,7 +16,7 @@ from umlextensions.tools.sugiyama.SugiyamaNode import OptionalSugiyamaNode
 from umlextensions.tools.sugiyama.SugiyamaNode import SugiyamaNode
 
 
-def cmp(left, right):
+def cmp(left: int, right: int) -> int:
     """
         Python 2 replacement
 
@@ -39,7 +39,7 @@ class SugiyamaGlobals:
     clsLogger: Logger = getLogger(__name__)
 
     @staticmethod
-    def cmpIndex(aTuple: Tuple):
+    def cmpIndex(aTuple: Tuple) -> int:
         """
         Internal comparison function for sorting list of parents or children by index.
 
@@ -58,21 +58,29 @@ class SugiyamaGlobals:
             return cmp(l.index, r.index)
 
     @staticmethod
-    def cmpBarycenter(theNode: SugiyamaNode) -> int:
+    def cmpBarycenter(sugiyamaNode: SugiyamaNode) -> int:
         """
-        Comparison function on barycenter value
+        Sort key function for ordering nodes on a level by their pre-computed
+        barycenter value via Python 3 ``list.sort(key=SugiyamaGlobals.cmpBarycenter)``.
+
+        During the barycenter crossing-reduction phase (``Sugiyama._sortLevel``),
+        horizontal neighbor links (``leftNode`` and ``rightNode``) have not yet
+        been wired (they are populated later in ``assignCoordinates``). Therefore,
+        this key function extracts ``theNode.barycenter`` directly rather than
+        comparing neighbor nodes, returning ``0`` as a safe fallback if ``barycenter``
+        is ``None``.
+
         Args:
-            theNode
+            sugiyamaNode: The SugiyamaNode being sorted.
 
-        Returns: The return value from cmp()
+        Returns:
+            The integer barycenter value of ``theNode``, or ``0`` if ``None``.
         """
-        xNode: OptionalSugiyamaNode = theNode.leftNode
-        yNode: OptionalSugiyamaNode = theNode.rightNode
-
-        if xNode is None or yNode is None:
+        nodeBarycenter: int | None = sugiyamaNode.barycenter
+        if nodeBarycenter is None:
             return 0
         else:
-            return cmp(xNode.barycenter, yNode.barycenter)
+            return nodeBarycenter
 
     @staticmethod
     def waitKey(extensionsFacade: IExtensionsFacade, optionalMessage: str | None):
