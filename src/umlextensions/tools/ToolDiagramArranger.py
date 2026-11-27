@@ -4,12 +4,12 @@ from typing import cast
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.frames.ShapeMoveInfo import ShapeId
-from umlshapes.frames.ShapeMoveInfo import InitialPositions
+from umlshapes.commands.shapemove.ShapeMoveInfo import MovedLinks
+from umlshapes.commands.shapemove.ShapeMoveInfo import MovedShapes
+from umlshapes.commands.shapemove.ShapeMoveRecorder import ShapeMoveRecorder
+from umlshapes.commands.shapemove.ShapesMovedCommand import ShapesMovedCommand
 
 from umlshapes.ShapeTypes import UmlShapes
-
-from umlshapes.commands.ShapesMovedCommand import ShapesMovedCommand
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -37,7 +37,8 @@ class ToolDiagramArranger(BaseToolExtension):
 
         self._displayBusyCursor = False
 
-        self._initialPositions:  InitialPositions = InitialPositions({})
+        self._movedShapes: MovedShapes = MovedShapes({})
+        self._movedLinks:  MovedLinks  = MovedLinks({})
 
         self._shapesMovedCommand: ShapesMovedCommand = cast(ShapesMovedCommand, None)   # noqa
 
@@ -47,23 +48,17 @@ class ToolDiagramArranger(BaseToolExtension):
     def doAction(self):
 
         from umlshapes.frames.UmlFrame import UmlFrame
-        from umlshapes.ShapeTypes import UmlShapeGenre
-        from umlshapes.links.UmlLink import UmlLink
-        from umlshapes.links.UmlLinkLabel import UmlLinkLabel
 
-        umlFrame: UmlFrame = self._frameInformation.umlFrame
+        umlFrame:          UmlFrame  = self._frameInformation.umlFrame
+        selectedUmlShapes: UmlShapes = self._frameInformation.selectedUmlShapes
 
-        shapes = umlFrame.selectedShapes
-        for s in shapes:
-            umlShape: UmlShapeGenre = cast(UmlShapeGenre, s)
-            if not isinstance(umlShape, UmlLink) and not isinstance(umlShape, UmlLinkLabel):
-                self._initialPositions[ShapeId(umlShape.id)] = umlShape.position
-                umlFrame.markShapeAsMoved(umlShape)
+        self._movedShapes = ShapeMoveRecorder.recordInitialShapePositions(umlShapes=selectedUmlShapes)
+        self._movedLinks  = ShapeMoveRecorder.recordInitialLinkPositions(umlShapes=selectedUmlShapes)
 
         self._shapesMovedCommand = ShapesMovedCommand(
             umlFrame=umlFrame,
-            movedShapes=umlFrame.movedShapes,
-            initialPositions=self._initialPositions
+            movedShapes=self._movedShapes,
+            movedLinks=self._movedLinks
         )
 
         umlFrame.commandProcessor.Submit(self._shapesMovedCommand)

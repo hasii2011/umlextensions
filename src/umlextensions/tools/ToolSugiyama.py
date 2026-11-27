@@ -1,19 +1,18 @@
 
+from typing import Tuple
 from typing import cast
 
 from logging import Logger
 from logging import getLogger
 
-from umlshapes.commands.ShapesMovedCommand import ShapesMovedCommand
+from umlshapes.commands.shapemove.ShapeMoveInfo import MovedLinks
+from umlshapes.commands.shapemove.ShapeMoveInfo import MovedShapes
+from umlshapes.commands.shapemove.ShapeMoveRecorder import ShapeMoveRecorder
+from umlshapes.commands.shapemove.ShapesMovedCommand import ShapesMovedCommand
 
 from umlshapes.frames.UmlFrame import UmlFrame
-from umlshapes.frames.ShapeMoveInfo import ShapeId
-from umlshapes.frames.ShapeMoveInfo import InitialPositions
 
 from umlshapes.ShapeTypes import UmlShapes
-from umlshapes.links.UmlLink import UmlLink
-from umlshapes.ShapeTypes import UmlShapeGenre
-from umlshapes.links.UmlLinkLabel import UmlLinkLabel
 
 from umlextensions.IExtensionsFacade import IExtensionsFacade
 
@@ -56,7 +55,9 @@ class ToolSugiyama(BaseToolExtension):
         selectedUmlShapes: UmlShapes = self._frameInformation.selectedUmlShapes
         umlFrame:          UmlFrame  = self._frameInformation.umlFrame
 
-        initialPositions: InitialPositions = self._recordInitialPositions(selectedUmlShapes=selectedUmlShapes, umlFrame=umlFrame)
+        movedShapes: MovedShapes
+        movedLinks:  MovedLinks
+        movedShapes, movedLinks = self._recordInitialPositions(selectedUmlShapes=selectedUmlShapes)
 
         sugiyama: Sugiyama = Sugiyama(extensionsFacade=self._extensionsFacade, umlFrame=umlFrame)
         sugiyama.buildGraph(umlShapes=selectedUmlShapes)
@@ -71,52 +72,43 @@ class ToolSugiyama(BaseToolExtension):
         sugiyama.addNonHierarchicalNodes()
         sugiyama.assignCoordinates()
 
-        self._submitShapesMovedCommand(initialPositions=initialPositions, umlFrame=umlFrame)
+        self._submitShapesMovedCommand(movedShapes=movedShapes, movedLinks=movedLinks, umlFrame=umlFrame)
 
         self._extensionsFacade.extensionModifiedProject()
         self._extensionsFacade.refreshFrame()
 
         self.logger.info('End Sugiyama algorithm')
 
-    def _recordInitialPositions(self, selectedUmlShapes: UmlShapes, umlFrame: UmlFrame) -> InitialPositions:
+    def _recordInitialPositions(self, selectedUmlShapes: UmlShapes) -> Tuple[MovedShapes, MovedLinks]:
         """
-        Record initial positions of selected shapes prior to running the layout.
+        Record initial positions of selected shapes and attached links prior to running the layout.
 
         Args:
             selectedUmlShapes:  The selected shapes on the diagram
-            umlFrame:           The active UML frame
 
-        Returns: The dictionary of shape IDs to their starting positions
+        Returns: A tuple containing the moved shapes and moved links dictionaries
         """
-        initialPositions: InitialPositions = InitialPositions({})
+        movedShapes: MovedShapes = ShapeMoveRecorder.recordInitialShapePositions(umlShapes=selectedUmlShapes)
+        movedLinks:  MovedLinks  = ShapeMoveRecorder.recordInitialLinkPositions(umlShapes=selectedUmlShapes)
 
-        for shape in selectedUmlShapes:
+        return movedShapes, movedLinks
 
-            umlShape: UmlShapeGenre = cast(UmlShapeGenre, shape)
-
-            if not isinstance(umlShape, UmlLink) and not isinstance(umlShape, UmlLinkLabel):
-                initialPositions[ShapeId(umlShape.id)] = umlShape.position
-                umlFrame.markShapeAsMoved(umlShape)
-
-        return initialPositions
-
-    def _submitShapesMovedCommand(self, initialPositions: InitialPositions, umlFrame: UmlFrame):
+    def _submitShapesMovedCommand(self, movedShapes: MovedShapes, movedLinks: MovedLinks, umlFrame: UmlFrame):
         """
         Construct and submit the ShapesMovedCommand once shapes are at their final positions.
 
         Args:
-            initialPositions:  The initial positions of the shapes before layout
-            umlFrame:          The active UML frame
+            movedShapes:  The initial and final positions of the shapes before and after layout
+            movedLinks:   The initial and final intermediate bend and end positions of attached links
+            umlFrame:     The active UML frame
         """
         self._shapesMovedCommand = ShapesMovedCommand(
             umlFrame=umlFrame,
-            movedShapes=umlFrame.movedShapes,
-            initialPositions=initialPositions,
+            movedShapes=movedShapes,
+            movedLinks=movedLinks,
             name='Sugiyama'
         )
 
         wasSuccessful: bool = umlFrame.commandProcessor.Submit(self._shapesMovedCommand)
         if not wasSuccessful:
             self.logger.warning('Sugiyama failed to record initial position')
-
-        umlFrame.clearMovedShapes()
